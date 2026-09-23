@@ -794,7 +794,14 @@ module SwaggerYard
 
           def process_returns_tags(docstring, operation)
             docstring.tags(:returns).each do |tag|
-              types = tag.types || ["String"]
+              if !tag.types.nil?
+                types = [tag.types.to_s.tr('"', '')]
+              else
+                unless tag.text.nil?
+                  types = [tag.text]
+                end
+              end
+              return unless types
               desc = tag.text.to_s.strip
 
               # Extract model name from types before building schema
