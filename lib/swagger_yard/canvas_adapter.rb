@@ -24,6 +24,7 @@
 #
 # This adapter allows SwaggerYard to parse Canvas's existing YARD documentation
 # and generate OpenAPI 3.0 specifications from it.
+require "securerandom"
 
 module SwaggerYard
   module CanvasAdapter
@@ -36,6 +37,9 @@ module SwaggerYard
     # Storage for tracking which operations return which models
     # Format: { operation_id => { response_status => model_name } }
     @operation_models = {}
+
+    # Storage for tracking unique operation ids
+    @operation_ids = []
 
     class << self
       attr_accessor :canvas_examples, :canvas_schemas, :operation_models
@@ -58,6 +62,19 @@ module SwaggerYard
       example_request: { name: "Example request", handler: :example_request },
       example_response: { name: "Example response", handler: :example_response },
     }.freeze
+
+    # original hypothesis, duplicate operation ids were caused by having controllers that supported lookups for
+    # courses, groups, accounts, users
+    # CONTEXT = %w[courses groups accounts users]
+
+    # if i updated it to include sections, assignments, quizzes etc then I'll have less duplicate operation ids
+    # by if instead i just create better operation ids maybe se
+    CONTEXT = %w[courses groups accounts users sections assessment_questions assignments quizzes quiz_statistics group_categories].freeze
+    CONTEXT_REGEX =   %r{\A(/api/(v\d|sis))?/(#{Regexp.union(CONTEXT).source})/\{[^\}]+\}/.*}im
+    LOOKUP_BY_REGEX = %r{\A(/api/(v\d|sis))?/(#{Regexp.union(CONTEXT).source})/\{[^\}]+\}/.*/\{([^\}]+)\}(/[^/]+){0,2}\z}im
+    SPECIAL_PATH_VARIABLES = %w[full_path self latest all_quizzes].freeze
+
+    PROBLEMATIC_SUB_CLASSES = %w[MetadataSaxDoc].freeze
 
     # Public: call once before building the spec
     def self.install!
@@ -116,10 +133,17 @@ module SwaggerYard
 
     def self.add_route_entry(action_name, path, method)
       @canvas_routes[action_name] ||= []
+
+      context = detect_context_from_path(path)
+      lookup_by = detect_lookup_by_from_path(path)
+
+      name = resolve_unique_name(action_name, path, method, context, lookup_by)
+
       route_entry = {
         method: method.upcase,
         path:,
-        context: detect_context_from_path(path)
+        context:,
+        name:,
       }
 
       return if route_exists?(@canvas_routes[action_name], path, method)
@@ -529,13 +553,92 @@ module SwaggerYard
 
     # Detect context (courses, groups, accounts, users) from path
     def self.detect_context_from_path(path)
-      case path
-      when %r{^/courses/} then :courses
-      when %r{^/groups/} then :groups
-      when %r{^/accounts/} then :accounts
-      when %r{^/users/} then :users
-      else :other
+      # distinguish between user/{user_id} and /user/self/
+      if path.include?("/self/")
+        return :self
       end
+
+      # copy what open_api_generator did for assignment groups
+      if %r{^(/api/(v\d|sis))?/courses/[^/]+/assignment_groups/}.match?(path)
+        return :assignment_groups
+      end
+
+      # Not all APIs start with context, update to optionally match below prefix
+      #  * /api/v1/
+      #  * /api/sis/
+      #
+      match = path.match(CONTEXT_REGEX)
+      match.nil? ? :other : match[3]
+    end
+
+    # Detect context (courses, groups, accounts, users) from path
+    def self.detect_lookup_by_from_path(path)
+      # Hypothesis: less duplicate operationIds if path variables after context's path variable is added to operation id
+      #  * /api/v1/courses/{course_id}/files/{file_id}
+      #  * /api/v1/section/{section_id}/assignments/{assignment_id}/submissions
+      match = path.match(LOOKUP_BY_REGEX)
+      return match[4].gsub(/[{}]/, "").gsub(/[^a-zA-Z0-9_-]/, "_") unless match.nil?
+
+      matched_word = SPECIAL_PATH_VARIABLES.find { |param| path.end_with?(param) }
+      return matched_word unless matched_word.nil?
+
+      match = path.match(%r{/([^/]+)\z})
+      match[1]&.gsub(/[{}]/, "")&.gsub(/[^a-zA-Z0-9_-]/, "_")
+    end
+
+    # Detect context (courses, groups, accounts, users) from path
+    def self.resolve_unique_name(action_name, path, method, context, lookup_by)
+      method_name = action_name.split("#").last
+      class_name = action_name.split("#").first
+      if class_name.include?("/")
+        class_name = class_name.split("/").last
+      end
+      full_name = method_name
+
+      unless @operation_ids.include?("#{class_name}-#{full_name}")
+        @operation_ids.push("#{class_name}-#{full_name}")
+        return full_name
+      end
+
+      method_name_with_context = ""
+      method_name_with_lookup = ""
+      method_name_with_dynamic_context = ""
+
+      unless lookup_by.nil?
+        full_name += "_by_#{lookup_by}"
+        method_name_with_lookup = "#{method_name}_by_#{lookup_by}"
+      end
+
+      unless context.nil?
+        full_name += "_for_#{context}"
+        method_name_with_context = "#{method_name}_for_#{context}"
+      end
+
+      if (context == :other) && lookup_by.nil?
+        match = path.match(%r{^(/api/(v\d|sis))?/([^/]+).*})
+        new_context = match[3] || ""
+        method_name_with_dynamic_context = "#{method_name}_#{new_context}"
+      end
+
+      # track operation ids and switch between different naming conventions
+      # this whole block might not be a good idea as it could introduce breaking changes if path processing order
+      # changes.
+      if !@operation_ids.include?("#{class_name}-#{method_name_with_context}") && method_name_with_context.present?
+        full_name = method_name_with_context
+      elsif !@operation_ids.include?("#{class_name}-#{full_name}")
+        full_name
+      elsif !@operation_ids.include?("#{class_name}-#{method_name_with_lookup}") && method_name_with_lookup.present?
+        full_name = method_name_with_lookup
+      elsif !@operation_ids.include?("#{class_name}-#{method_name_with_dynamic_context}") && method_name_with_dynamic_context.present?
+        full_name = method_name_with_dynamic_context
+      else
+        # fall back if in the future new paths result in more duplication
+        puts "[warn]: attaching random string to #{class_name}-#{full_name}"
+        full_name = "#{full_name}_#{SecureRandom.alphanumeric(3).downcase}"
+      end
+
+      @operation_ids.push("#{class_name}-#{full_name}")
+      full_name
     end
 
     class << self
@@ -555,6 +658,9 @@ module SwaggerYard
       def patch_api_group!
         SwaggerYard::ApiGroup.prepend(Module.new do
           def add_info(yard_object)
+            # Subclasses with no APIs are overriding operation id naming & conflicting track_operation_model
+            # this change cleaned up 12 missing return types
+            return if yard_object.type == :class && PROBLEMATIC_SUB_CLASSES.include?(yard_object.name.to_s)
             super
 
             # Canvas doesn't use @resource tags. Instead, the resource name is defined
@@ -579,14 +685,39 @@ module SwaggerYard
               path = path_info[:path]
               http_method = path_info[:http_method]
               path_info[:context]
+              name = path_info[:name]
 
               path_item = (path_items[path] ||= SwaggerYard::PathItem.new(self))
 
-              # Add @path tag to yard_object so SwaggerYard processes it
-              yard_object.add_tag(YARD::Tags::Tag.new("path", path, [http_method]))
+              cloned_yard_object = yard_object.clone
+              cloned_yard_object.instance_variable_set(:@name, name.to_sym)
 
-              path_item.add_operation(yard_object)
+              # 2. Fully detach and clone the underlying docstring
+              if yard_object.respond_to?(:docstring) && yard_object.docstring
+                # Create a copy of the docstring string object øitself
+                cloned_docstring = yard_object.docstring.clone
+
+                # Deep copy the internal tag collections within the docstring
+                if yard_object.docstring.instance_variable_defined?(:@tags)
+                  cloned_tags = yard_object.docstring.instance_variable_get(:@tags).map(&:clone)
+                  cloned_docstring.instance_variable_set(:@tags, cloned_tags)
+                end
+
+                if yard_object.docstring.instance_variable_defined?(:@ref_tags)
+                  cloned_ref_tags = yard_object.docstring.instance_variable_get(:@ref_tags).map(&:clone)
+                  cloned_docstring.instance_variable_set(:@ref_tags, cloned_ref_tags)
+                end
+
+                # Associate the fully detached docstring with your cloned object
+                cloned_yard_object.docstring = cloned_docstring
+              end
+
+              # Now you can safely append without mutating the original object
+              cloned_yard_object.add_tag(YARD::Tags::Tag.new("path", path, [http_method]))
+              path_item.add_operation(cloned_yard_object)
             end
+            # print "end add_path_item: "
+            # p yard_object
 
             paths.first[:path] # Return first path for compatibility
           end
@@ -617,7 +748,8 @@ module SwaggerYard
               {
                 path: route_info[:path],
                 http_method: route_info[:method],
-                context: route_info[:context]
+                context: route_info[:context],
+                name: route_info[:name],
               }
             end
           end
@@ -794,14 +926,15 @@ module SwaggerYard
 
           def process_returns_tags(docstring, operation)
             docstring.tags(:returns).each do |tag|
-              if !tag.types.nil?
-                types = [tag.types.to_s.tr('"', '')]
-              else
+              if tag.types.nil?
                 unless tag.text.nil?
                   types = [tag.text]
                 end
+              else
+                types = [tag.types.to_s.tr('"', "")]
               end
               return unless types
+
               desc = tag.text.to_s.strip
 
               # Extract model name from types before building schema
