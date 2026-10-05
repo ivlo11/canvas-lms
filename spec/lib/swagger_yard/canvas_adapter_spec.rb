@@ -97,6 +97,46 @@ describe SwaggerYard::CanvasAdapter do
       expect(described_class.detect_context_from_path("/users/123/profile")).to eq(:users)
     end
 
+    it "detects courses context" do
+      expect(described_class.detect_context_from_path("/api/v1/courses/123/assignments")).to eq(:courses)
+    end
+
+    it "detects groups context" do
+      expect(described_class.detect_context_from_path("/api/v1/groups/456/assignments")).to eq(:groups)
+    end
+
+    it "detects accounts context" do
+      expect(described_class.detect_context_from_path("/api/v1/accounts/789/users")).to eq(:accounts)
+    end
+
+    it "detects users context" do
+      expect(described_class.detect_context_from_path("/api/v1/users/123/profile")).to eq(:users)
+    end
+
+    it "detects courses context" do
+      expect(described_class.detect_context_from_path("/api/sis/courses/123/assignments")).to eq(:courses)
+    end
+
+    it "detects groups context" do
+      expect(described_class.detect_context_from_path("/api/sis/groups/456/assignments")).to eq(:groups)
+    end
+
+    it "detects accounts context" do
+      expect(described_class.detect_context_from_path("/api/sis/accounts/789/users")).to eq(:accounts)
+    end
+
+    it "detects users context" do
+      expect(described_class.detect_context_from_path("/api/sis/users/123/profile")).to eq(:users)
+    end
+
+    it "detects users self context" do
+      expect(described_class.detect_context_from_path("/api/v1/users/self/profile")).to eq(:self)
+    end
+
+    it "detects assignment groups context" do
+      expect(described_class.detect_context_from_path("/api/v1/courses/123/assignment_groups")).to eq(:assignment_groups)
+    end
+
     it "returns :other for unknown context" do
       expect(described_class.detect_context_from_path("/api/v1/custom")).to eq(:other)
     end
