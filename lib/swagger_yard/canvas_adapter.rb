@@ -24,6 +24,7 @@
 #
 # This adapter allows SwaggerYard to parse Canvas's existing YARD documentation
 # and generate OpenAPI 3.0 specifications from it.
+require "securerandom"
 
 module SwaggerYard
   module CanvasAdapter
@@ -36,6 +37,9 @@ module SwaggerYard
     # Storage for tracking which operations return which models
     # Format: { operation_id => { response_status => model_name } }
     @operation_models = {}
+
+    # Storage for tracking unique operation ids
+    @operation_ids = []
 
     class << self
       attr_accessor :canvas_examples, :canvas_schemas, :operation_models
@@ -59,12 +63,29 @@ module SwaggerYard
       example_response: { name: "Example response", handler: :example_response },
     }.freeze
 
+    # Original list of contexts
+    # CONTEXT = %w[courses groups accounts users]
+
+    # While reviewing duplicate operation IDs these additional contexts were in the output
+    CONTEXT = %w[courses groups accounts users sections assessment_questions assignments quizzes quiz_statistics group_categories].freeze
+
+    # Not all APIs start with context, update to optionally match below prefix
+    #  * /api/v1/
+    #  * /api/sis/
+    #
+    CONTEXT_REGEX =   %r{\A(/api/(v\d|sis))?/(#{Regexp.union(CONTEXT).source})/\{[^\}]+\}/.*}im
+    LOOKUP_BY_REGEX = %r{\A(/api/(v\d|sis))?/(#{Regexp.union(CONTEXT).source})/\{[^\}]+\}/.*/\{([^\}]+)\}(/[^/]+){0,2}\z}im
+    SPECIAL_PATH_VARIABLES = %w[full_path self latest all_quizzes].freeze
+
+    PROBLEMATIC_SUB_CLASSES = %w[MetadataSaxDoc].freeze
+
     # Public: call once before building the spec
     def self.install!
       define_canvas_tags
       load_canvas_routes!
       patch_api_group!
       patch_operation!
+      patch_extended_attributes!
       collect_model_schemas!
     end
 
@@ -75,6 +96,7 @@ module SwaggerYard
       @canvas_examples = {} # Reset examples storage
       @canvas_schemas = {} # Reset schemas storage
       @operation_models = {} # Reset operation model tracking
+      @operation_ids = [] # Reset operation ids tracking
       load_routes_from_api_route_set!
     end
 
@@ -116,10 +138,17 @@ module SwaggerYard
 
     def self.add_route_entry(action_name, path, method)
       @canvas_routes[action_name] ||= []
+
+      context = detect_context_from_path(path)
+      lookup_by = detect_lookup_by_from_path(path)
+
+      name = resolve_unique_name(action_name, path, method, context, lookup_by)
+
       route_entry = {
         method: method.upcase,
         path:,
-        context: detect_context_from_path(path)
+        context:,
+        name:,
       }
 
       return if route_exists?(@canvas_routes[action_name], path, method)
@@ -529,13 +558,116 @@ module SwaggerYard
 
     # Detect context (courses, groups, accounts, users) from path
     def self.detect_context_from_path(path)
-      case path
-      when %r{^/courses/} then :courses
-      when %r{^/groups/} then :groups
-      when %r{^/accounts/} then :accounts
-      when %r{^/users/} then :users
-      else :other
+      # Context that should be different than what REGEX pulls
+      # distinguish between user/{user_id} and /user/self/
+      if path.include?("/self/")
+        return "self"
       end
+
+      # copy what open_api_generator did for assignment groups
+      if %r{^(/api/(v\d|sis))?/courses/[^/]+/assignment_groups/}.match?(path)
+        return "assignment_groups"
+      end
+
+      # handle duplicate audit urls
+      if %r{^(/api/(v\d|sis))?/audit/grade_change/}.match?(path)
+        return "audit"
+      end
+
+      # Context extraction. Do what past switch case did with regex. Simplifies adding additional contexts
+      match = path.match(CONTEXT_REGEX)
+      match.nil? ? "other" : match[3]
+    end
+
+    # Detect lookup by from path after the context's path variable to solve for less duplicate operationIds
+    def self.detect_lookup_by_from_path(path)
+      # Extract path variables
+      #  * /api/v1/courses/{course_id}/files/{file_id}
+      #  * /api/v1/section/{section_id}/assignments/{assignment_id}/submissions
+      match = path.match(LOOKUP_BY_REGEX)
+      return match[4].gsub(/[{}]/, "").gsub(/[^a-zA-Z0-9_-]/, "_") unless match.nil?
+
+      # Extract special variables that showed up in the duplicate operation ids
+      matched_word = SPECIAL_PATH_VARIABLES.find { |param| path.end_with?(param) }
+      return matched_word unless matched_word.nil?
+
+      # Fallback of last segment in case needed when generating unique names
+      match = path.match(%r{/([^/]+)\z})
+      match[1]&.gsub(/[{}]/, "")&.gsub(/[^a-zA-Z0-9_-]/, "_")
+    end
+
+    # Generate unique operation IDs. Attempt to follow previous pattern to only rename when duplicate found
+    def self.resolve_unique_name(action_name, path, method, context, lookup_by)
+      method_name = action_name.split("#").last
+      class_name = action_name.split("#").first
+      if class_name.include?("/")
+        class_name = class_name.split("/").last
+      end
+      full_name = method_name
+
+      # This is current default naming convention (happy path)
+      unless @operation_ids.include?("#{class_name}-#{full_name}")
+        @operation_ids.push("#{class_name}-#{full_name}")
+        return full_name
+      end
+
+      method_name_with_context = ""
+      method_name_with_lookup = ""
+      method_name_with_dynamic_context = ""
+      method_name_with_dynamic_lookup = path.scan(/\{([^}]+)\}/).flatten.join("_")
+
+      unless method_name_with_dynamic_lookup == ""
+        method_name_with_dynamic_lookup = "#{method_name}_by_#{method_name_with_dynamic_lookup}"
+      end
+
+      unless lookup_by.nil?
+        full_name += "_by_#{lookup_by}"
+        method_name_with_lookup = "#{method_name}_by_#{lookup_by}"
+      end
+
+      unless context.nil?
+        full_name += "_for_#{context}"
+        method_name_with_context = "#{method_name}_for_#{context}"
+
+        unless method_name_with_dynamic_lookup == ""
+          method_name_with_dynamic_lookup += "_for_#{context}"
+        end
+      end
+
+      if (context == "other") && lookup_by.nil?
+        match = path.match(%r{^(/api/(v\d|sis))?/([^/]+).*})
+        new_context = match[3] || nil
+        unless new_context.nil?
+          method_name_with_dynamic_context = "#{method_name}_#{new_context}"
+        end
+      end
+
+      if !@operation_ids.include?("#{class_name}-#{method_name_with_context}") && method_name_with_context.present?
+        # Adds context like open_api_generator did
+        # Rename to <method>_for_<context>
+        full_name = method_name_with_context
+      elsif !@operation_ids.include?("#{class_name}-#{full_name}")
+        # Breaking change where generators will resolve a different name - but since generators were broken non-issue?
+        # Rename to <method>_by_<path_variable>_for_<context>
+        full_name
+      elsif !@operation_ids.include?("#{class_name}-#{method_name_with_lookup}") && method_name_with_lookup.present?
+        # Rename to <method>_by_<path_variable>
+        full_name = method_name_with_lookup
+      elsif !@operation_ids.include?("#{class_name}-#{method_name_with_dynamic_context}") && method_name_with_dynamic_context.present?
+        # Rename to <method>_by_<first_path_segment>
+        full_name = method_name_with_dynamic_context
+      elsif !@operation_ids.include?("#{class_name}-#{method_name_with_dynamic_lookup}") && method_name_with_dynamic_lookup.present?
+        full_name = method_name_with_dynamic_lookup
+      else
+        # Fall back if in the future new paths result in more duplication
+        # Rename to <method>_by_<path_variable>_for_<context>_<random_string>
+        puts "[warn]: attaching random string to #{class_name}-#{full_name} for #{method} -> #{path}"
+        full_name = "#{full_name}_#{SecureRandom.alphanumeric(3).downcase}"
+      end
+
+      # Store and return unique name
+      @operation_ids.push("#{class_name}-#{full_name}")
+      full_name
     end
 
     class << self
@@ -555,6 +687,10 @@ module SwaggerYard
       def patch_api_group!
         SwaggerYard::ApiGroup.prepend(Module.new do
           def add_info(yard_object)
+            # Subclasses with no APIs are overriding operation id naming & conflicting track_operation_model
+            # this change cleaned up 12 missing return types
+            return if yard_object.type == :class && PROBLEMATIC_SUB_CLASSES.include?(yard_object.name.to_s)
+
             super
 
             # Canvas doesn't use @resource tags. Instead, the resource name is defined
@@ -579,13 +715,38 @@ module SwaggerYard
               path = path_info[:path]
               http_method = path_info[:http_method]
               path_info[:context]
+              name = path_info[:name]
 
               path_item = (path_items[path] ||= SwaggerYard::PathItem.new(self))
 
-              # Add @path tag to yard_object so SwaggerYard processes it
-              yard_object.add_tag(YARD::Tags::Tag.new("path", path, [http_method]))
+              cloned_yard_object = yard_object.clone
 
-              path_item.add_operation(yard_object)
+              # Set unique name so that generated operation id has no conflicts and can be used by tracker
+              cloned_yard_object.instance_variable_set(:@name, name.to_sym)
+
+              # Fully detach and clone the underlying docstring since added tags were ignored as duplicate tags
+              if yard_object.respond_to?(:docstring) && yard_object.docstring
+                # Create a copy of the docstring string object itself
+                cloned_docstring = yard_object.docstring.clone
+
+                # Deep copy the internal tag collections within the docstring
+                if yard_object.docstring.instance_variable_defined?(:@tags)
+                  cloned_tags = yard_object.docstring.instance_variable_get(:@tags).map(&:clone)
+                  cloned_docstring.instance_variable_set(:@tags, cloned_tags)
+                end
+
+                if yard_object.docstring.instance_variable_defined?(:@ref_tags)
+                  cloned_ref_tags = yard_object.docstring.instance_variable_get(:@ref_tags).map(&:clone)
+                  cloned_docstring.instance_variable_set(:@ref_tags, cloned_ref_tags)
+                end
+
+                # Associate the fully detached docstring with cloned object
+                cloned_yard_object.docstring = cloned_docstring
+              end
+
+              # Safely append without mutating the original object
+              cloned_yard_object.add_tag(YARD::Tags::Tag.new("path", path, [http_method]))
+              path_item.add_operation(cloned_yard_object)
             end
 
             paths.first[:path] # Return first path for compatibility
@@ -617,7 +778,8 @@ module SwaggerYard
               {
                 path: route_info[:path],
                 http_method: route_info[:method],
-                context: route_info[:context]
+                context: route_info[:context],
+                name: route_info[:name],
               }
             end
           end
@@ -628,6 +790,30 @@ module SwaggerYard
                .gsub(/([a-z\d])([A-Z])/, '\1_\2')
                .tr("-", "_")
                .downcase
+          end
+        end)
+      end
+
+      # Add OpenAPI Spec vendor extension so that generators can conditionally add Canvas LMS specific features.
+      def patch_extended_attributes!
+        SwaggerYard::Operation.prepend(Module.new do
+          def extended_attributes
+            attributes = super
+
+            if http_method.to_s.upcase == "GET"
+              existing_params = parameters.map { |p| p.name.to_s }
+              has_page = existing_params.include?("page")
+              has_per_page = existing_params.include?("per_page")
+
+              # Add OpenAPI Spec vendor extension for pagination so that generators can Link header support
+              # Two reasons: SwaggerYard does not allow adding expected response headers and OpenAPI spec
+              # does not allow a way to specify how Link header should be parsed.
+              if has_page && has_per_page
+                attributes["x-paginated"] = true
+              end
+            end
+
+            attributes
           end
         end)
       end
@@ -794,7 +980,15 @@ module SwaggerYard
 
           def process_returns_tags(docstring, operation)
             docstring.tags(:returns).each do |tag|
-              types = tag.types || ["String"]
+              if tag.types.nil?
+                unless tag.text.nil?
+                  types = [tag.text]
+                end
+              else
+                types = [tag.types.to_s.tr('"', "")]
+              end
+              return unless types
+
               desc = tag.text.to_s.strip
 
               # Extract model name from types before building schema
@@ -890,9 +1084,17 @@ module SwaggerYard
             false
           rescue
             # If we can't get the source, fall back to conservative heuristic
-            # Only add pagination to endpoints that end with _index or _list
+            # Original check expected exact match and not ends with _index or _list as comment intended.
+            # But, also unique naming breaks this now. Feature parity could be starts with, and assumes rest of name is
+            # context or lookup, but won't catch mistakes like GradingStandardsApi context_index_for_accounts.
+            # Visual scan shows match on any word in name that is index or list won't catch false positives in current
+            # state.
             operation_id = yard_object.name.to_s
-            %w[index list].include?(operation_id)
+            if operation_id.split("_").intersect?(%w[index list])
+              return true
+            end
+
+            false
           end
 
           def extract_model_name_from_types(types)
