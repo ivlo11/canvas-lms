@@ -901,7 +901,10 @@ module SwaggerYard
           def normalize_nested_param_name(name, types, desc)
             first_type = types.first
             return [name, types] unless first_type
-            return [name, types] if first_type.match?(/^(String|Integer|Float|Number|Boolean|Array|Hash|Object|DateTime|Date|Time|Numeric|nil|optional|required)$/i)
+
+            # Check if first_type is a primitive type or generic type like Array<Integer>
+            # Generic types like Array<Integer>, Hash<String,User> should NOT be treated as nested params
+            return [name, types] if first_type.match?(/^(String|Integer|Float|Number|Boolean|Array|Hash|Object|DateTime|Date|Time|Numeric|nil|optional|required)([<>,\s\w]+)?$/i)
 
             # YARD parser treats brackets as type notation
             # @argument account_notification[subject] → name="account_notification", types=["subject", ...]
@@ -1317,7 +1320,8 @@ module SwaggerYard
 
             nested_params[parent_name] ||= { properties: {}, required: [] }
             nested_params[parent_name][:properties][child_name] = param
-            nested_params[parent_name][:required] << child_name if param[:required]
+            # Don't add "*" to required list since it's a wildcard
+            nested_params[parent_name][:required] << child_name if param[:required] && child_name != "*"
           end
 
           def process_flat_params(flat_params, properties, required_fields)
@@ -1385,8 +1389,15 @@ module SwaggerYard
               properties: nested_properties
             }
 
+            # Check for wildcard property "*"
+            if nested_properties.key?("*")
+              nested_properties.delete("*")
+              nested_schema["additionalProperties"] = true
+            end
+
             # Only include required array if there are required properties (OpenAPI spec requires at least 1 item)
             required_list = nested_data[:required].uniq
+            required_list.delete("*") # Remove wildcard from required if present
             nested_schema[:required] = required_list unless required_list.empty?
 
             nested_schema
@@ -1415,29 +1426,35 @@ module SwaggerYard
 
               if schema_info[:properties].present?
                 props = {}
+                has_wildcard = false
                 schema_info[:properties].each do |name, prop_info|
-                  props[name.to_s] = if prop_info.is_a?(Hash)
-                                       result = prop_info.transform_keys(&:to_s)
-                                       # Recursively transform nested properties if present
-                                       if result["properties"].is_a?(Hash)
-                                         result["properties"] = result["properties"].transform_keys(&:to_s)
-                                       end
-                                       # Clean up required array (OpenAPI requires at least 1 item)
-                                       if result["required"].is_a?(Array)
-                                         unique_required = result["required"].map(&:to_s).uniq
-                                         if unique_required.empty?
-                                           result.delete("required")
-                                         else
-                                           result["required"] = unique_required
+                  if name.to_s == "*"
+                    has_wildcard = true
+                  else
+                    props[name.to_s] = if prop_info.is_a?(Hash)
+                                         result = prop_info.transform_keys(&:to_s)
+                                         # Recursively transform nested properties if present
+                                         if result["properties"].is_a?(Hash)
+                                           result["properties"] = result["properties"].transform_keys(&:to_s)
                                          end
+                                         # Clean up required array (OpenAPI requires at least 1 item)
+                                         if result["required"].is_a?(Array)
+                                           unique_required = result["required"].map(&:to_s).uniq
+                                           if unique_required.empty?
+                                             result.delete("required")
+                                           else
+                                             result["required"] = unique_required
+                                           end
+                                         end
+                                         result
+                                       else
+                                         # Simple type string
+                                         { "type" => prop_info, "description" => "" }
                                        end
-                                       result
-                                     else
-                                       # Simple type string
-                                       { "type" => prop_info, "description" => "" }
-                                     end
+                  end
                 end
-                schema["properties"] = props
+                schema["properties"] = props unless props.empty?
+                schema["additionalProperties"] = true if has_wildcard
               end
 
               unless schema_info[:required].empty?
