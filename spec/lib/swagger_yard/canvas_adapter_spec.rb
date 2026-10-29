@@ -82,23 +82,126 @@ describe SwaggerYard::CanvasAdapter do
 
   describe ".detect_context_from_path" do
     it "detects courses context" do
-      expect(described_class.detect_context_from_path("/courses/123/assignments")).to eq(:courses)
+      expect(described_class.detect_context_from_path("/courses/{course_id}/assignments")).to eq("courses")
     end
 
     it "detects groups context" do
-      expect(described_class.detect_context_from_path("/groups/456/assignments")).to eq(:groups)
+      expect(described_class.detect_context_from_path("/groups/{group_id}/assignments")).to eq("groups")
     end
 
     it "detects accounts context" do
-      expect(described_class.detect_context_from_path("/accounts/789/users")).to eq(:accounts)
+      expect(described_class.detect_context_from_path("/accounts/{account_id}/users")).to eq("accounts")
     end
 
     it "detects users context" do
-      expect(described_class.detect_context_from_path("/users/123/profile")).to eq(:users)
+      expect(described_class.detect_context_from_path("/users/{user_id}/profile")).to eq("users")
+    end
+
+    it "detects courses context" do
+      expect(described_class.detect_context_from_path("/api/v1/courses/{course_id}/assignments")).to eq("courses")
+    end
+
+    it "detects groups context" do
+      expect(described_class.detect_context_from_path("/api/v1/groups/{group_id}/assignments")).to eq("groups")
+    end
+
+    it "detects accounts context" do
+      expect(described_class.detect_context_from_path("/api/v1/accounts/{account_id}/users")).to eq("accounts")
+    end
+
+    it "detects users context" do
+      expect(described_class.detect_context_from_path("/api/v1/users/{user_id}/profile")).to eq("users")
+    end
+
+    it "detects courses context" do
+      expect(described_class.detect_context_from_path("/api/sis/courses/{course_id}/assignments")).to eq("courses")
+    end
+
+    it "detects groups context" do
+      expect(described_class.detect_context_from_path("/api/sis/groups/{group_id}/assignments")).to eq("groups")
+    end
+
+    it "detects accounts context" do
+      expect(described_class.detect_context_from_path("/api/sis/accounts/{account_id}/users")).to eq("accounts")
+    end
+
+    it "detects users context" do
+      expect(described_class.detect_context_from_path("/api/sis/users/{user_id}/profile")).to eq("users")
+    end
+
+    it "detects users self context" do
+      expect(described_class.detect_context_from_path("/api/v1/users/self/profile")).to eq("self")
+    end
+
+    it "detects assignment groups context" do
+      expect(described_class.detect_context_from_path("/api/v1/courses/{course_id}/assignment_groups/foo")).to eq("assignment_groups")
     end
 
     it "returns :other for unknown context" do
-      expect(described_class.detect_context_from_path("/api/v1/custom")).to eq(:other)
+      expect(described_class.detect_context_from_path("/api/v1/custom")).to eq("other")
+    end
+  end
+
+  describe ".detect_lookup_by_from_path" do
+    it "detects assignment_id as lookup by with no trailing path segments" do
+      expect(described_class.detect_lookup_by_from_path("/courses/{course_id}/assignments/{assignment_id}")).to eq("assignment_id")
+    end
+
+    it "detects file_id as lookup by with one trailing path segment" do
+      expect(described_class.detect_lookup_by_from_path("/courses/{course_id}/files/{file_id}/foo")).to eq("file_id")
+    end
+
+    it "detects file_id as lookup by with two trailing path segments" do
+      expect(described_class.detect_lookup_by_from_path("/courses/{course_id}/files/{file_id}/foo/bar")).to eq("file_id")
+    end
+
+    it "detects latest special path variable with three trailing path segments after path variable" do
+      expect(described_class.detect_lookup_by_from_path("/courses/{course_id}/files/{file_id}/foo/bar/latest")).to eq("latest")
+    end
+
+    it "detects latest special path variable" do
+      expect(described_class.detect_lookup_by_from_path("/courses/{course_id}/foo/bar/latest")).to eq("latest")
+    end
+
+    it "detects fallback lookup when not special character and has no context" do
+      expect(described_class.detect_lookup_by_from_path("/foo/bar/latest/apple/sauce")).to eq("sauce")
+    end
+  end
+
+  # resolve_unique_name(action_name, path, method, context, lookup_by)
+  describe ".resolve_unique_name" do
+    before(:all) do
+      # This runs ONCE before all tests in this describe block start
+      described_class.instance_variable_set(:@operation_ids, %w[Clazz-second_method Clazz-third_method Clazz-third_method_for_foo Clazz-fourth_method Clazz-fourth_method_for_foo Clazz-fourth_method_by_latest_for_foo Clazz-fifth_method Clazz-fifth_method_for_other Clazz-fifth_method_by_latest_for_other Clazz-fifth_method_by_latest Clazz-sixth_method Clazz-sixth_method_for_foo Clazz-sixth_method_by_latest_for_foo Clazz-sixth_method_by_latest Clazz-seventh_method Clazz-seventh_method_for_foo Clazz-seventh_method_by_latest_for_foo Clazz-seventh_method_by_latest])
+    end
+
+    it "returns method name for first instance" do
+      expect(described_class.resolve_unique_name("Clazz#first_method", "/foo/{bar}/latest", "GET", "foo", "latest")).to eq("first_method")
+    end
+
+    it "unique name falls back to for context like open_api_generator.rb when method previously seen" do
+      expect(described_class.resolve_unique_name("Clazz#second_method", "/foo/{bar}/latest", "GET", "foo", "latest")).to eq("second_method_for_foo")
+    end
+
+    it "unique name falls back to include both lookup by and context when previous variations seen" do
+      expect(described_class.resolve_unique_name("Clazz#third_method", "/foo/{bar}/latest", "GET", "foo", "latest")).to eq("third_method_by_latest_for_foo")
+    end
+
+    it "unique name falls back to only include lookup by when previous variations seen" do
+      expect(described_class.resolve_unique_name("Clazz#fourth_method", "/foo/{bar}/latest", "GET", "foo", "latest")).to eq("fourth_method_by_latest")
+    end
+
+    it "unique name falls back to dynamic context when context is other" do
+      expect(described_class.resolve_unique_name("Clazz#fifth_method", "/bar/{bar_id}/latest", "GET", "other", nil)).to eq("fifth_method_bar")
+    end
+
+    it "unique name falls back to 3 random alphanumeric characters at the end" do
+      match = described_class.resolve_unique_name("Clazz#sixth_method", "/foo/bar/latest", "GET", "foo", "latest").match(/.*(_[a-z0-9]{3})\z/)
+      expect(match[1].nil?).to be(false)
+    end
+
+    it "unique name falls back to dynamic lookup" do
+      expect(described_class.resolve_unique_name("Clazz#seventh_method", "/bar/{bar_id}/latest", "GET", "foo", "latest")).to eq("seventh_method_by_bar_id_for_foo")
     end
   end
 
