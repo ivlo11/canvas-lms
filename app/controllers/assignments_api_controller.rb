@@ -822,6 +822,7 @@ class AssignmentsApiController < ApplicationController
   # @API List assignments for user
   # Returns the paginated list of assignments for the specified user if the current user has rights to view.
   # See {api:AssignmentsApiController#index List assignments} for valid arguments.
+  # @returns [Assignment]
   def user_index
     GuardRail.activate(:secondary) do
       @user.shard.activate do
