@@ -243,6 +243,7 @@ class AppointmentGroupsController < ApplicationController
   #   "reserved_times":: the event id, start time and end time of reservations
   #                      the current user has made)
   #   "all_context_codes":: all context codes associated with this appointment group
+  # @returns [AppointmentGroup]
   def index
     return web_index unless request.format == :json
 
@@ -564,6 +565,7 @@ class AppointmentGroupsController < ApplicationController
   #
   # @argument registration_status ["all"|"registered"|"registered"]
   #   Limits results to the a given participation status, defaults to "all"
+  # @returns [User]
   def users
     participants("User") { |u| user_json(u, @current_user, session) }
   end
@@ -576,6 +578,7 @@ class AppointmentGroupsController < ApplicationController
   #
   # @argument registration_status ["all"|"registered"|"registered"]
   #   Limits results to the a given participation status, defaults to "all"
+  # @returns [Group]
   def groups
     participants("Group") { |g| group_json(g, @current_user, session) }
   end

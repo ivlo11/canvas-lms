@@ -273,6 +273,7 @@ class RubricsApiController < ApplicationController
 
   # @API List rubrics
   # Returns the paginated list of active rubrics for the current context.
+  # @returns [Rubric]
 
   def index
     return unless authorized_action(@context, @current_user, :manage_rubrics)
