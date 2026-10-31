@@ -381,6 +381,7 @@ class SubmissionsApiController < ApplicationController
   #         ]
   #       }
   #     ]
+  # @returns [Submission]
   def for_students
     if params[:student_ids].try(:include?, "all")
       all = true
@@ -671,6 +672,8 @@ class SubmissionsApiController < ApplicationController
   #
   # @argument include[] [String, "submission_history"|"submission_comments"|"rubric_assessment"|"full_rubric_assessment"|"visibility"|"course"|"user"|"read_status"]
   #   Associations to include with the group.
+  #
+  # @returns Submission
   def show_anonymous
     assignment_scope = AbstractAssignment.assignment_or_peer_review.where(context: @context).active
     @assignment = api_find(assignment_scope, params[:assignment_id])
