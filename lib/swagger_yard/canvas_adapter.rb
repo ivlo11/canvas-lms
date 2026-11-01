@@ -47,6 +47,14 @@ module SwaggerYard
     # Matches Canvas example responses of the form { "<key>": [<Model>] }
     WRAPPED_LIST_EXAMPLE = /\A\{\s*"?([a-z][a-z0-9_]*)"?\s*:\s*\[\s*([A-Z][A-Za-z0-9_:]*)\s*\]\s*\}\z/
 
+    # One <key>: <value> entry of an inline object @returns; the key may be quoted
+    INLINE_OBJECT_ENTRY = /\A(?:"([a-z][a-z0-9_]*)"|([a-z][a-z0-9_]*))\s*:\s*(.+)\z/m
+
+    # A model or primitive type name in an inline object @returns
+    INLINE_OBJECT_NAME = /[A-Za-z][A-Za-z0-9_]*(?:::[A-Za-z][A-Za-z0-9_]*)*/
+
+    INLINE_OBJECT_PRIMITIVES = %w[integer string boolean number].freeze
+
     class << self
       attr_accessor :canvas_examples, :canvas_schemas, :operation_models, :wrapped_list_operations
 
@@ -350,18 +358,103 @@ module SwaggerYard
       schema_name && [key, schema_name]
     end
 
-    # Registers a "<Key>Response" schema wrapping a list of schema_name under key.
-    # Reuses an identical schema; never overwrites a different one. Returns the
-    # wrapper name, or nil when the name is taken.
-    def self.register_wrapper_schema(key, schema_name)
-      wrapper_name = "#{key.camelize}Response"
-      wrapper = {
-        "type" => "object",
-        "description" => "Paginated `#{key}` list response (from the Canvas example response).",
-        "properties" => {
-          key => { "type" => "array", "items" => { "$ref" => "#/components/schemas/#{schema_name}" } }
-        }
-      }
+    # Parses an inline object @returns, { <key>: <value>, ... } [prose], into wrapper
+    # schema properties. Values may be [Model], Model, a primitive type name (quoted
+    # or not, any case) or a primitive literal. Returns nil unless every entry is
+    # typeable, so a partially understood object stays a plain mapping.
+    def self.inline_object_properties(text)
+      inner, prose = split_inline_object(text.to_s.strip)
+      return nil if inner.nil? || prose.start_with?("|")
+
+      entries = split_top_level(inner)
+      return nil if entries.empty?
+
+      entries.each_with_object({}) do |entry, properties|
+        match = INLINE_OBJECT_ENTRY.match(entry.strip)
+        return nil unless match
+
+        key = match[1] || match[2]
+        schema = inline_object_value_schema(match[3].strip)
+        return nil if schema.nil? || properties.key?(key)
+
+        properties[key] = schema
+      end
+    end
+
+    # Splits "{ ... } prose" into the text between the braces and the prose after
+    # them, or returns nil when the text is not a single balanced brace literal
+    def self.split_inline_object(text)
+      return nil unless text.start_with?("{")
+
+      depth = 0
+      quoted = false
+      text.each_char.with_index do |char, index|
+        quoted = !quoted if char == '"'
+        next if quoted
+
+        depth += 1 if "{[".include?(char)
+        depth -= 1 if "}]".include?(char)
+        return [text[1...index], text[(index + 1)..].strip] if depth.zero?
+      end
+      nil
+    end
+
+    # Splits on commas outside quotes, brackets and braces
+    def self.split_top_level(text)
+      entries = [+""]
+      depth = 0
+      quoted = false
+      text.each_char do |char|
+        quoted = !quoted if char == '"'
+        unless quoted
+          depth += 1 if "{[".include?(char)
+          depth -= 1 if "}]".include?(char)
+          if char == "," && depth.zero?
+            entries << +""
+            next
+          end
+        end
+        entries.last << char
+      end
+      entries.reject { |entry| entry.strip.empty? }
+    end
+
+    def self.inline_object_value_schema(value)
+      case value
+      when /\A\[\s*(#{INLINE_OBJECT_NAME})\s*\]\z/o
+        schema_name = resolve_schema_name($1)
+        schema_name && { "type" => "array", "items" => { "$ref" => "#/components/schemas/#{schema_name}" } }
+      when "true", "false"
+        { "type" => "boolean" }
+      when /\A\d+\z/
+        { "type" => "integer" }
+      when /\A"([^"]*)"\z/
+        { "type" => INLINE_OBJECT_PRIMITIVES.include?($1.downcase) ? $1.downcase : "string" }
+      when /\A#{INLINE_OBJECT_NAME}\z/o
+        return { "type" => value.downcase } if INLINE_OBJECT_PRIMITIVES.include?(value.downcase)
+
+        schema_name = resolve_schema_name(value)
+        schema_name && { "$ref" => "#/components/schemas/#{schema_name}" }
+      end
+    end
+
+    # The wrapper schema name for an operation: its controller resource and Rails
+    # action, so route aliases share it and other operations never change it
+    def self.wrapper_schema_name(resource, action)
+      "#{resource}#{action.to_s.camelize}Response"
+    end
+
+    # Registers a wrapper schema with the given properties, none of them required.
+    # source is :returns (an inline object @returns) or :example_response (a
+    # { "<key>": [<Model>] } example). Reuses an identical schema; never overwrites
+    # a different one. Returns the wrapper name, or nil when the name is taken.
+    def self.register_wrapper_schema(wrapper_name, properties, source)
+      description = if source == :example_response
+                      "Paginated `#{properties.keys.first}` list response (from the Canvas example response)."
+                    else
+                      "Object response with #{properties.keys.map { |key| "`#{key}`" }.join(", ")} (from the Canvas `@returns`)."
+                    end
+      wrapper = { "type" => "object", "description" => description, "properties" => properties }
 
       existing = @canvas_schemas[wrapper_name]
       return wrapper_name if existing == wrapper
@@ -1056,7 +1149,16 @@ module SwaggerYard
           end
 
           def process_returns_tags(docstring, operation)
-            docstring.tags(:returns).each do |tag|
+            returns_lines = returns_tag_lines(docstring)
+
+            docstring.tags(:returns).each_with_index do |tag, index|
+              # YARD strips both {} and [] from a type list, so an inline object can
+              # only be told apart from a list in the raw docstring
+              if returns_lines[index]&.start_with?("{")
+                process_inline_object_returns(tag, returns_lines[index], docstring, operation)
+                next
+              end
+
               if tag.types.nil?
                 unless tag.text.nil?
                   types = [tag.text]
@@ -1080,6 +1182,29 @@ module SwaggerYard
                 track_operation_model(operation.operation_id, model_name, response_schema)
               end
             end
+          end
+
+          # The text after each "@returns" in the raw docstring, in tag order
+          def returns_tag_lines(docstring)
+            docstring.all.to_s.scan(/^@returns\b[ \t]*(.*)$/).map { |(text)| text.strip }
+          end
+
+          # An inline object @returns is always an object response: a wrapper schema
+          # when every entry is typeable, otherwise a plain mapping
+          def process_inline_object_returns(tag, text, docstring, operation)
+            operation.add_response_type(SwaggerYard::Type.new("object"), tag.text.to_s.strip)
+
+            properties = SwaggerYard::CanvasAdapter.inline_object_properties(text)
+            return unless properties
+
+            wrapper_name = SwaggerYard::CanvasAdapter.register_wrapper_schema(wrapper_schema_name(docstring, operation), properties, :returns)
+            track_operation_model(operation.operation_id, wrapper_name, "object") if wrapper_name
+          end
+
+          # Operations are cloned per route and renamed, but the docstring still
+          # belongs to the documented method, whose name is the Rails action
+          def wrapper_schema_name(docstring, operation)
+            SwaggerYard::CanvasAdapter.wrapper_schema_name(operation.api_group.resource, docstring.object.name)
           end
 
           def add_pagination_parameters_if_needed(_docstring, operation, yard_object)
@@ -1249,7 +1374,8 @@ module SwaggerYard
             key, schema_name = SwaggerYard::CanvasAdapter.wrapped_list_example(example_text)
             return unless key
 
-            wrapper_name = SwaggerYard::CanvasAdapter.register_wrapper_schema(key, schema_name)
+            properties = { key => { "type" => "array", "items" => { "$ref" => "#/components/schemas/#{schema_name}" } } }
+            wrapper_name = SwaggerYard::CanvasAdapter.register_wrapper_schema(wrapper_schema_name(docstring, operation), properties, :example_response)
             return unless wrapper_name
 
             operation.add_response_type(SwaggerYard::Type.new("object"), operation.default_response.description)

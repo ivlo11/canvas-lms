@@ -993,26 +993,38 @@ describe SwaggerYard::CanvasAdapter do
     end
 
     describe ".register_wrapper_schema" do
+      let(:polls_properties) { polls_wrapper["properties"] }
+
       it "adds the wrapper schema without required keys" do
-        expect(described_class.register_wrapper_schema("polls", "Poll")).to eq "PollsResponse"
-        expect(described_class.canvas_schemas["PollsResponse"]).to eq polls_wrapper
+        expect(described_class.register_wrapper_schema("PollsIndexResponse", polls_properties, :example_response))
+          .to eql "PollsIndexResponse"
+        expect(described_class.canvas_schemas["PollsIndexResponse"]).to eql polls_wrapper
       end
 
       it "reuses an identical existing wrapper" do
-        described_class.register_wrapper_schema("polls", "Poll")
+        described_class.register_wrapper_schema("PollsIndexResponse", polls_properties, :example_response)
 
-        expect(described_class.register_wrapper_schema("polls", "Poll")).to eq "PollsResponse"
+        expect(described_class.register_wrapper_schema("PollsIndexResponse", polls_properties, :example_response))
+          .to eql "PollsIndexResponse"
       end
 
       it "does not overwrite a different existing schema" do
         existing = { "type" => "object", "properties" => { "other" => { "type" => "string" } } }
-        described_class.canvas_schemas["PollsResponse"] = existing
+        described_class.canvas_schemas["PollsIndexResponse"] = existing
 
         result = nil
-        expect { result = described_class.register_wrapper_schema("polls", "Poll") }
-          .to output(/PollsResponse already exists/).to_stdout
+        expect { result = described_class.register_wrapper_schema("PollsIndexResponse", polls_properties, :example_response) }
+          .to output(/PollsIndexResponse already exists/).to_stdout
         expect(result).to be_nil
-        expect(described_class.canvas_schemas["PollsResponse"]).to eq existing
+        expect(described_class.canvas_schemas["PollsIndexResponse"]).to eql existing
+      end
+
+      it "describes a wrapper from an inline @returns by its keys" do
+        properties = { "count" => { "type" => "integer" }, "polls" => polls_properties["polls"] }
+        described_class.register_wrapper_schema("PollsCountResponse", properties, :returns)
+
+        expect(described_class.canvas_schemas["PollsCountResponse"]["description"])
+          .to eql "Object response with `count`, `polls` (from the Canvas `@returns`)."
       end
     end
 
@@ -1020,7 +1032,7 @@ describe SwaggerYard::CanvasAdapter do
       let(:example_text) { "{\n  \"polls\": [Poll]\n}" }
       let(:operation) do
         SwaggerYard::Operation.new(nil).tap do |op|
-          allow(op).to receive(:operation_id).and_return("Polls-index")
+          allow(op).to receive_messages(operation_id: "Polls-index", api_group: instance_double(SwaggerYard::ApiGroup, resource: "Polls"))
         end
       end
 
@@ -1030,7 +1042,7 @@ describe SwaggerYard::CanvasAdapter do
 
       def docstring_with(example, returns: [])
         example_tag = instance_double(YARD::Tags::Tag, text: example)
-        docstring = instance_double(YARD::Docstring)
+        docstring = instance_double(YARD::Docstring, object: instance_double(YARD::CodeObjects::MethodObject, name: :index))
         allow(docstring).to receive(:tags).with(:returns).and_return(returns)
         allow(docstring).to receive(:tags).with(:example_request).and_return([])
         allow(docstring).to receive(:tags).with(:example_response).and_return([example_tag])
@@ -1044,7 +1056,7 @@ describe SwaggerYard::CanvasAdapter do
       it "tracks the wrapper and gives the operation a response type when there is no @returns" do
         process_example_tags(docstring_with(example_text))
 
-        expect(described_class.operation_models["Polls-index"]["200"]).to eq(model: "PollsResponse", is_array: false)
+        expect(described_class.operation_models["Polls-index"]["200"]).to eq(model: "PollsIndexResponse", is_array: false)
         expect(operation.default_response.type.source).to eq "object"
         expect(described_class.wrapped_list_operations).to eq ["Polls-index"]
       end
@@ -1054,7 +1066,7 @@ describe SwaggerYard::CanvasAdapter do
         process_example_tags(docstring_with(example_text, returns: [returns_tag]))
 
         expect(described_class.operation_models).to be_empty
-        expect(described_class.canvas_schemas).not_to have_key("PollsResponse")
+        expect(described_class.canvas_schemas).not_to have_key("PollsIndexResponse")
         expect(described_class.wrapped_list_operations).to be_empty
       end
 
@@ -1085,9 +1097,9 @@ describe SwaggerYard::CanvasAdapter do
         SwaggerYard::OpenApiGenerator.send(:add_canvas_schemas!, spec)
         SwaggerYard::OpenApiGenerator.send(:replace_responses_with_schema_refs!, spec)
 
-        expect(spec["components"]["schemas"]["PollsResponse"]).to eq polls_wrapper
+        expect(spec["components"]["schemas"]["PollsIndexResponse"]).to eq polls_wrapper
         expect(spec.dig("paths", "/api/v1/polls", "get", "responses", "default", "content", "application/json", "schema"))
-          .to eq("$ref" => "#/components/schemas/PollsResponse")
+          .to eq("$ref" => "#/components/schemas/PollsIndexResponse")
       end
     end
   end
@@ -1230,6 +1242,188 @@ describe SwaggerYard::CanvasAdapter do
       it "is true for a class in a class" do
         YARD.parse_string("class FooController\nclass FooError; end\nend")
         expect(described_class.nested_class?(YARD::Registry.at("FooController::FooError"))).to be true
+      end
+    end
+  end
+
+  describe "inline object @returns" do
+    around do |example|
+      storage = %i[@canvas_schemas @canvas_examples @operation_models @wrapped_list_operations]
+      saved = storage.index_with { |ivar| described_class.instance_variable_get(ivar) }
+      example.run
+    ensure
+      saved.each { |ivar, value| described_class.instance_variable_set(ivar, value) }
+    end
+
+    before do
+      described_class.canvas_schemas = %w[AccountCalendar Grades Submission Poll Lti_ToolConfiguration].index_with { { "type" => "object" } }
+      described_class.operation_models = {}
+    end
+
+    def ref(name)
+      { "$ref" => "#/components/schemas/#{name}" }
+    end
+
+    def list_of(name)
+      { "type" => "array", "items" => ref(name) }
+    end
+
+    describe ".inline_object_properties" do
+      it "types quoted keys holding a model list and a quoted primitive" do
+        expect(described_class.inline_object_properties('{ "account_calendars": [AccountCalendar], "total_results": "integer"}'))
+          .to eql("account_calendars" => list_of("AccountCalendar"), "total_results" => { "type" => "integer" })
+      end
+
+      it "types a model alongside a model list" do
+        expect(described_class.inline_object_properties('{"grades": [Grades], "submission": Submission}'))
+          .to eql("grades" => list_of("Grades"), "submission" => ref("Submission"))
+      end
+
+      it "types a bare key holding a namespaced model" do
+        expect(described_class.inline_object_properties("{ configuration: Lti::ToolConfiguration }"))
+          .to eql("configuration" => ref("Lti_ToolConfiguration"))
+      end
+
+      it "types a capitalized primitive and ignores trailing prose" do
+        expect(described_class.inline_object_properties("{experience: String} The newly set experience"))
+          .to eql("experience" => { "type" => "string" })
+      end
+
+      it "types a bare lowercase primitive" do
+        expect(described_class.inline_object_properties("{enabled: boolean}")).to eql("enabled" => { "type" => "boolean" })
+      end
+
+      it "types a boolean literal" do
+        expect(described_class.inline_object_properties("{success: true}")).to eql("success" => { "type" => "boolean" })
+      end
+
+      it "types a quoted literal as a string" do
+        expect(described_class.inline_object_properties('{ "token": "eyJ..." }')).to eql("token" => { "type" => "string" })
+      end
+
+      it "types a whole number literal as an integer" do
+        expect(described_class.inline_object_properties('{ "count": 42 }')).to eql("count" => { "type" => "integer" })
+      end
+
+      {
+        "an {Object} with prose" => "{Object} Hash with conversation details including messages",
+        "a union" => "{ configuration: Lti::ToolConfiguration } | { errors: [String] }",
+        "a nested object" => "{ duplicates: [{ id: String, name: String, admin_nickname: String | null }] }",
+        "a list of a primitive" => "{ errors: [String] }",
+        "an unknown model" => "{ calendar: Missing }",
+        "a type list" => "{BrandConfig, Progress}",
+        "one bad entry among good ones" => '{ "grades": [Grades], "missing": [Missing] }',
+        "an unbalanced literal" => '{ "grades": [Grades]'
+      }.each do |description, text|
+        it "rejects #{description}" do
+          expect(described_class.inline_object_properties(text)).to be_nil
+        end
+      end
+    end
+
+    describe ".wrapper_schema_name" do
+      it "names the wrapper after the resource and Rails action" do
+        expect(described_class.wrapper_schema_name("AccountCalendarsApi", :visible_calendars_count))
+          .to eql "AccountCalendarsApiVisibleCalendarsCountResponse"
+      end
+    end
+
+    describe "generated operations" do
+      before do
+        described_class.install!
+        described_class.canvas_schemas = %w[AccountCalendar Poll].index_with { { "type" => "object" } }
+        described_class.operation_models = {}
+        YARD::Registry.clear
+        allow(described_class).to receive(:canvas_routes).and_return(routes)
+      end
+
+      after { YARD::Registry.clear }
+
+      let(:routes) do
+        {
+          "foo#index" => [
+            { path: "/api/v1/foos", method: "GET", context: "other", name: "index" },
+            { path: "/api/v1/courses/{course_id}/foos", method: "GET", context: "courses", name: "index_for_courses" }
+          ],
+          "foo#show" => [{ path: "/api/v1/foos/{id}", method: "GET", context: "other", name: "show" }]
+        }
+      end
+
+      def operations_for(index_doc, show_doc = "@returns Poll")
+        YARD.parse_string(<<~RUBY)
+          class FooController < ApplicationController
+            # @API List foos
+            # #{index_doc}
+            def index; end
+
+            # @API Get a foo
+            # #{show_doc}
+            def show; end
+          end
+        RUBY
+        group = SwaggerYard::ApiGroup.from_yard_object(YARD::Registry.at("FooController"))
+        group.path_items.values.flat_map { |path_item| path_item.operations.values }.index_by(&:operation_id)
+      end
+
+      it "returns a typed wrapper for a typeable inline object" do
+        operations = operations_for('@returns { "account_calendars": [AccountCalendar], "total_results": "integer"}')
+
+        expect(operations["Foo-index"].default_response.type.source).to eql "object"
+        expect(described_class.operation_models["Foo-index"]["200"]).to eql(model: "FooIndexResponse", is_array: false)
+        expect(described_class.canvas_schemas["FooIndexResponse"]["properties"])
+          .to eql("account_calendars" => list_of("AccountCalendar"), "total_results" => { "type" => "integer" })
+        expect(described_class.canvas_schemas["FooIndexResponse"]).not_to have_key("required")
+      end
+
+      it "returns a plain object for an untypeable inline object" do
+        operations = operations_for("@returns {Object} Hash with conversation details")
+
+        expect(operations["Foo-index"].default_response.type.source).to eql "object"
+        expect(described_class.operation_models).not_to have_key("Foo-index")
+        expect(described_class.canvas_schemas).not_to have_key("FooIndexResponse")
+      end
+
+      it "still returns a list for a bracketed @returns" do
+        operations = operations_for("@returns [Poll]")
+
+        expect(operations["Foo-index"].default_response.type.source).to eql "array<object>"
+        expect(described_class.operation_models["Foo-index"]["200"]).to eql(model: "Poll", is_array: true)
+      end
+
+      it "gives two actions with the same shape their own wrappers" do
+        operations_for('@returns { "polls": [Poll] }', '@returns { "polls": [Poll] }')
+
+        expect(described_class.operation_models["Foo-index"]["200"][:model]).to eql "FooIndexResponse"
+        expect(described_class.operation_models["Foo-show"]["200"][:model]).to eql "FooShowResponse"
+        expect(described_class.canvas_schemas["FooShowResponse"]["properties"])
+          .to eql described_class.canvas_schemas["FooIndexResponse"]["properties"]
+      end
+
+      it "shares one wrapper between the routes of an action" do
+        operations = operations_for('@returns { "polls": [Poll] }')
+
+        expect(operations.keys).to include("Foo-index", "Foo-index_for_courses")
+        expect(described_class.operation_models["Foo-index_for_courses"]["200"][:model]).to eql "FooIndexResponse"
+        expect(described_class.canvas_schemas.keys.grep(/Response\z/)).to eql ["FooIndexResponse"]
+      end
+
+      it "falls back to a plain object when a different schema has the wrapper name" do
+        existing = { "type" => "object", "properties" => { "other" => { "type" => "string" } } }
+        described_class.canvas_schemas["FooIndexResponse"] = existing
+
+        operations = nil
+        expect { operations = operations_for('@returns { "polls": [Poll] }') }.to output(/FooIndexResponse already exists/).to_stdout
+
+        expect(operations["Foo-index"].default_response.type.source).to eql "object"
+        expect(described_class.operation_models).not_to have_key("Foo-index")
+        expect(described_class.canvas_schemas["FooIndexResponse"]).to eql existing
+      end
+
+      it "names an example-inferred wrapper after the resource and action" do
+        operations_for("@example_response { \"polls\": [Poll] }")
+
+        expect(described_class.operation_models["Foo-index"]["200"][:model]).to eql "FooIndexResponse"
+        expect(described_class.operation_models["Foo-index_for_courses"]["200"][:model]).to eql "FooIndexResponse"
       end
     end
   end
