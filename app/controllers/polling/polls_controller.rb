@@ -28,8 +28,8 @@ module Polling
   #       "properties": {
   #         "id": {
   #           "description": "The unique identifier for the poll.",
-  #           "example": 1023,
-  #           "type": "integer"
+  #           "example": "1023",
+  #           "type": "string"
   #         },
   #         "question": {
   #           "description": "The question/title of the poll.",
@@ -49,8 +49,8 @@ module Polling
   #         },
   #         "user_id": {
   #           "description": "The unique identifier for the user that created the poll.",
-  #           "example": 105,
-  #           "type": "integer"
+  #           "example": "105",
+  #           "type": "string"
   #         },
   #         "total_results": {
   #           "description": "An aggregate of the results of all associated poll sessions, with the poll choice id as the key, and the aggregated submission count as the value.",

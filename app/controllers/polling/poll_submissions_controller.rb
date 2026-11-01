@@ -24,22 +24,22 @@ module Polling
   # @model PollSubmission
   #    {
   #       "id": "PollSubmission",
-  #       "required": ["id", "poll_choice"],
+  #       "required": ["id", "poll_choice_id"],
   #       "properties": {
   #         "id": {
   #           "description": "The unique identifier for the poll submission.",
-  #           "example": 1023,
-  #           "type": "integer"
+  #           "example": "1023",
+  #           "type": "string"
   #         },
   #         "poll_choice_id": {
   #           "description": "The unique identifier of the poll choice chosen for this submission.",
-  #           "example": 155,
-  #           "type": "integer"
+  #           "example": "155",
+  #           "type": "string"
   #         },
   #         "user_id": {
   #           "description": "the unique identifier of the user who submitted this poll submission.",
-  #           "example": 4555,
-  #           "type": "integer"
+  #           "example": "4555",
+  #           "type": "string"
   #         },
   #         "created_at": {
   #           "description": "The date and time the poll submission was submitted.",

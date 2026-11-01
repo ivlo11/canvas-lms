@@ -28,23 +28,23 @@ module Polling
   #     "properties": {
   #       "id": {
   #         "description": "The unique identifier for the poll session.",
-  #         "example": 1023,
-  #         "type": "integer"
+  #         "example": "1023",
+  #         "type": "string"
   #       },
   #       "poll_id": {
   #         "description": "The id of the Poll this poll session is associated with",
-  #         "example": 55,
-  #         "type": "integer"
+  #         "example": "55",
+  #         "type": "string"
   #       },
   #       "course_id": {
   #         "description": "The id of the Course this poll session is associated with",
-  #         "example": 1111,
-  #         "type": "integer"
+  #         "example": "1111",
+  #         "type": "string"
   #       },
   #       "course_section_id": {
   #         "description": "The id of the Course Section this poll session is associated with",
-  #         "example": 444,
-  #         "type": "integer"
+  #         "example": "444",
+  #         "type": "string"
   #       },
   #       "is_published": {
   #         "description": "Specifies whether or not this poll session has been published for students to participate in.",
@@ -69,7 +69,8 @@ module Polling
   #       },
   #       "poll_submissions": {
   #         "description": "If the poll session has public results, this will return an array of all submissions, viewable by both students and teachers. If the results are not public, for students it will return their submission only.",
-  #         "$ref": "PollSubmission"
+  #         "type": "array",
+  #         "items": { "$ref": "PollSubmission" }
   #       }
   #     }
   #   }
