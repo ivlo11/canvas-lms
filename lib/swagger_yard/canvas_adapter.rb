@@ -41,8 +41,14 @@ module SwaggerYard
     # Storage for tracking unique operation ids
     @operation_ids = []
 
+    # Storage for operations typed from a { "<key>": [<Model>] } example response
+    @wrapped_list_operations = []
+
+    # Matches Canvas example responses of the form { "<key>": [<Model>] }
+    WRAPPED_LIST_EXAMPLE = /\A\{\s*"?([a-z][a-z0-9_]*)"?\s*:\s*\[\s*([A-Z][A-Za-z0-9_:]*)\s*\]\s*\}\z/
+
     class << self
-      attr_accessor :canvas_examples, :canvas_schemas, :operation_models
+      attr_accessor :canvas_examples, :canvas_schemas, :operation_models, :wrapped_list_operations
 
       # Single source of truth for controller patterns to scan
       # Used by both SwaggerYard config and model schema collection
@@ -97,6 +103,7 @@ module SwaggerYard
       @canvas_schemas = {} # Reset schemas storage
       @operation_models = {} # Reset operation model tracking
       @operation_ids = [] # Reset operation ids tracking
+      @wrapped_list_operations = [] # Reset wrapped list operation tracking
       load_routes_from_api_route_set!
     end
 
@@ -318,6 +325,42 @@ module SwaggerYard
     def self.sanitize_schema_name(name)
       # Replace :: with _ (namespace separator)
       name.to_s.gsub("::", "_")
+    end
+
+    # Parses an example response of the form { "<key>": [<Model>] } whose model
+    # is a collected schema. Returns [key, schema name] or nil.
+    def self.wrapped_list_example(text)
+      match = WRAPPED_LIST_EXAMPLE.match(text.to_s.strip)
+      return nil unless match
+
+      key, model = match.captures
+      schema_name = [model, sanitize_schema_name(model)].find { |name| @canvas_schemas.key?(name) }
+      schema_name && [key, schema_name]
+    end
+
+    # Registers a "<Key>Response" schema wrapping a list of schema_name under key.
+    # Reuses an identical schema; never overwrites a different one. Returns the
+    # wrapper name, or nil when the name is taken.
+    def self.register_wrapper_schema(key, schema_name)
+      wrapper_name = "#{key.camelize}Response"
+      wrapper = {
+        "type" => "object",
+        "description" => "Paginated `#{key}` list response (from the Canvas example response).",
+        "properties" => {
+          key => { "type" => "array", "items" => { "$ref" => "#/components/schemas/#{schema_name}" } }
+        }
+      }
+
+      existing = @canvas_schemas[wrapper_name]
+      return wrapper_name if existing == wrapper
+
+      if existing
+        puts "   Warning: #{wrapper_name} already exists and differs; not inferring it" # rubocop:disable Rails/Output
+        return nil
+      end
+
+      @canvas_schemas[wrapper_name] = wrapper
+      wrapper_name
     end
 
     # Clean up schema type conflicts (e.g., object with items field)
@@ -1159,10 +1202,28 @@ module SwaggerYard
             example_text = example_resp.text.to_s.strip
             return if example_text.empty?
 
+            infer_wrapped_list_response(docstring, operation, example_text)
+
             parsed_example = parse_json_example(example_text)
             op_id = operation.operation_id
             SwaggerYard::CanvasAdapter.canvas_examples[op_id] ||= {}
             SwaggerYard::CanvasAdapter.canvas_examples[op_id][:response] = parsed_example
+          end
+
+          # Treats a { "<key>": [<Model>] } example as an implied @returns of a
+          # wrapper schema when the operation documents no @returns of its own
+          def infer_wrapped_list_response(docstring, operation, example_text)
+            return unless docstring.tags(:returns).empty?
+
+            key, schema_name = SwaggerYard::CanvasAdapter.wrapped_list_example(example_text)
+            return unless key
+
+            wrapper_name = SwaggerYard::CanvasAdapter.register_wrapper_schema(key, schema_name)
+            return unless wrapper_name
+
+            operation.add_response_type(SwaggerYard::Type.new("object"), operation.default_response.description)
+            track_operation_model(operation.operation_id, wrapper_name, "object")
+            SwaggerYard::CanvasAdapter.wrapped_list_operations << operation.operation_id
           end
 
           def parse_json_example(text)

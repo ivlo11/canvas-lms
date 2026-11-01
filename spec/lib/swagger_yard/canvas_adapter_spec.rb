@@ -18,6 +18,8 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+require_relative "../../../lib/swagger_yard/open_api_generator"
+
 describe SwaggerYard::CanvasAdapter do
   describe ".install!" do
     it "installs without errors" do
@@ -831,6 +833,160 @@ describe SwaggerYard::CanvasAdapter do
       expect(result).to be_an(Array)
       expect(result.size).to eq(1)
       expect(result.first[:path]).to eq("/api/lti/courses/{course_id}/names_and_roles")
+    end
+  end
+
+  describe "wrapped list example responses" do
+    around do |example|
+      storage = %i[@canvas_schemas @canvas_examples @operation_models @wrapped_list_operations]
+      saved = storage.index_with { |ivar| described_class.instance_variable_get(ivar) }
+      described_class.canvas_schemas = {
+        "Poll" => { "type" => "object" },
+        "OutcomeResult" => { "type" => "object" },
+        "Lti_Thing" => { "type" => "object" }
+      }
+      described_class.canvas_examples = {}
+      described_class.operation_models = {}
+      described_class.wrapped_list_operations = []
+      example.run
+    ensure
+      saved.each { |ivar, value| described_class.instance_variable_set(ivar, value) }
+    end
+
+    let(:polls_wrapper) do
+      {
+        "type" => "object",
+        "description" => "Paginated `polls` list response (from the Canvas example response).",
+        "properties" => {
+          "polls" => { "type" => "array", "items" => { "$ref" => "#/components/schemas/Poll" } }
+        }
+      }
+    end
+
+    describe ".wrapped_list_example" do
+      it "matches a quoted key" do
+        expect(described_class.wrapped_list_example("{\n  \"polls\": [Poll]\n}")).to eq %w[polls Poll]
+      end
+
+      it "matches an unquoted key" do
+        expect(described_class.wrapped_list_example("{ outcome_results: [OutcomeResult] }"))
+          .to eq %w[outcome_results OutcomeResult]
+      end
+
+      it "resolves namespaced models with :: replaced by _" do
+        expect(described_class.wrapped_list_example('{ "things": [Lti::Thing] }')).to eq %w[things Lti_Thing]
+      end
+
+      it "returns nil for an unknown model" do
+        expect(described_class.wrapped_list_example('{ "grading_period_set": [GradingPeriodGroup] }')).to be_nil
+      end
+
+      it "returns nil for a literal JSON example" do
+        expect(described_class.wrapped_list_example('{ "polls": [{ "id": 1 }] }')).to be_nil
+      end
+
+      it "returns nil for a multi-key example" do
+        expect(described_class.wrapped_list_example('{ "polls": [Poll], "meta": [Poll] }')).to be_nil
+      end
+    end
+
+    describe ".register_wrapper_schema" do
+      it "adds the wrapper schema without required keys" do
+        expect(described_class.register_wrapper_schema("polls", "Poll")).to eq "PollsResponse"
+        expect(described_class.canvas_schemas["PollsResponse"]).to eq polls_wrapper
+      end
+
+      it "reuses an identical existing wrapper" do
+        described_class.register_wrapper_schema("polls", "Poll")
+
+        expect(described_class.register_wrapper_schema("polls", "Poll")).to eq "PollsResponse"
+      end
+
+      it "does not overwrite a different existing schema" do
+        existing = { "type" => "object", "properties" => { "other" => { "type" => "string" } } }
+        described_class.canvas_schemas["PollsResponse"] = existing
+
+        result = nil
+        expect { result = described_class.register_wrapper_schema("polls", "Poll") }
+          .to output(/PollsResponse already exists/).to_stdout
+        expect(result).to be_nil
+        expect(described_class.canvas_schemas["PollsResponse"]).to eq existing
+      end
+    end
+
+    describe "example response hook" do
+      let(:example_text) { "{\n  \"polls\": [Poll]\n}" }
+      let(:operation) do
+        SwaggerYard::Operation.new(nil).tap do |op|
+          allow(op).to receive(:operation_id).and_return("Polls-index")
+        end
+      end
+
+      before do
+        described_class.send(:patch_operation!) unless SwaggerYard::Operation.respond_to?(:process_example_tags, true)
+      end
+
+      def docstring_with(example, returns: [])
+        example_tag = instance_double(YARD::Tags::Tag, text: example)
+        docstring = instance_double(YARD::Docstring)
+        allow(docstring).to receive(:tags).with(:returns).and_return(returns)
+        allow(docstring).to receive(:tags).with(:example_request).and_return([])
+        allow(docstring).to receive(:tags).with(:example_response).and_return([example_tag])
+        docstring
+      end
+
+      def process_example_tags(docstring)
+        SwaggerYard::Operation.send(:process_example_tags, docstring, operation)
+      end
+
+      it "tracks the wrapper and gives the operation a response type when there is no @returns" do
+        process_example_tags(docstring_with(example_text))
+
+        expect(described_class.operation_models["Polls-index"]["200"]).to eq(model: "PollsResponse", is_array: false)
+        expect(operation.default_response.type.source).to eq "object"
+        expect(described_class.wrapped_list_operations).to eq ["Polls-index"]
+      end
+
+      it "infers nothing when the operation has a @returns" do
+        returns_tag = instance_double(YARD::Tags::Tag)
+        process_example_tags(docstring_with(example_text, returns: [returns_tag]))
+
+        expect(described_class.operation_models).to be_empty
+        expect(described_class.canvas_schemas).not_to have_key("PollsResponse")
+        expect(described_class.wrapped_list_operations).to be_empty
+      end
+
+      it "still stores the example" do
+        process_example_tags(docstring_with(example_text))
+
+        expect(described_class.canvas_examples["Polls-index"][:response]).to eq example_text
+      end
+
+      it "is turned into a $ref by the generator" do
+        process_example_tags(docstring_with(example_text))
+        spec = {
+          "paths" => {
+            "/api/v1/polls" => {
+              "get" => {
+                "operationId" => "Polls-index",
+                "responses" => {
+                  "default" => {
+                    "description" => "List polls",
+                    "content" => { "application/json" => { "schema" => { "type" => "object" } } }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        SwaggerYard::OpenApiGenerator.send(:add_canvas_schemas!, spec)
+        SwaggerYard::OpenApiGenerator.send(:replace_responses_with_schema_refs!, spec)
+
+        expect(spec["components"]["schemas"]["PollsResponse"]).to eq polls_wrapper
+        expect(spec.dig("paths", "/api/v1/polls", "get", "responses", "default", "content", "application/json", "schema"))
+          .to eq("$ref" => "#/components/schemas/PollsResponse")
+      end
     end
   end
 end
