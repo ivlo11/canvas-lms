@@ -327,6 +327,13 @@ module SwaggerYard
       name.to_s.gsub("::", "_")
     end
 
+    # Returns the collected schema name for a documented model name (namespaced
+    # or not), or nil when no such schema was collected.
+    def self.resolve_schema_name(name)
+      schema_name = sanitize_schema_name(name)
+      schema_name if @canvas_schemas.key?(schema_name)
+    end
+
     # Parses an example response of the form { "<key>": [<Model>] } whose model
     # is a collected schema. Returns [key, schema name] or nil.
     def self.wrapped_list_example(text)
@@ -451,7 +458,13 @@ module SwaggerYard
     end
 
     def self.convert_single_property(prop_def)
-      return { "$ref" => "#/components/schemas/#{sanitize_schema_name(prop_def["$ref"])}" } if prop_def["$ref"]
+      if prop_def["$ref"]
+        ref = { "$ref" => "#/components/schemas/#{sanitize_schema_name(prop_def["$ref"])}" }
+        # "string|Model": Canvas sends either the model or a plain string
+        return { "oneOf" => [{ "type" => "string" }, ref] } if prop_def["type"].to_s.split("|").map(&:strip).include?("string")
+
+        return ref
+      end
 
       converted_prop = {}
       convert_property_type(converted_prop, prop_def)
@@ -1173,7 +1186,7 @@ module SwaggerYard
 
             SwaggerYard::CanvasAdapter.operation_models[operation_id] ||= {}
             SwaggerYard::CanvasAdapter.operation_models[operation_id]["200"] = {
-              model: model_name,
+              model: SwaggerYard::CanvasAdapter.resolve_schema_name(model_name),
               is_array: response_schema.include?("array")
             }
           end
@@ -1580,7 +1593,7 @@ module SwaggerYard
           end
 
           def model_schema_exists?(model_name)
-            SwaggerYard::CanvasAdapter.canvas_schemas.key?(model_name)
+            !SwaggerYard::CanvasAdapter.resolve_schema_name(model_name).nil?
           end
 
           # rubocop:disable Naming/PredicateMethod

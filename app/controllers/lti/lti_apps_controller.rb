@@ -32,8 +32,8 @@ module Lti
   #       },
   #       "definition_id": {
   #         "description": "The Canvas ID of the tool",
-  #         "example": "123",
-  #         "type": "string"
+  #         "example": 123,
+  #         "type": "integer"
   #       },
   #       "name": {
   #         "description": "The display name of the tool for the given placement",

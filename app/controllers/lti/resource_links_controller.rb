@@ -282,7 +282,7 @@ class Lti::ResourceLinksController < ApplicationController
   #       -H "Authorization: Bearer <token>" \
   #       --json '[{"url":"https://example.com/lti/launch/new_content_item/456","title":"New Content Item","custom":{"hello":"world"}}]'
   #
-  # @returns Lti::ResourceLink
+  # @returns [Lti::ResourceLink]
   def bulk_create
     if bulk_create_params[:_json].size > MAX_BULK_CREATE
       return render_error(:invalid_request, "Cannot create more than #{MAX_BULK_CREATE} resource links at once")

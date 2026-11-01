@@ -238,6 +238,35 @@ describe SwaggerYard::CanvasAdapter do
     end
   end
 
+  describe ".resolve_schema_name" do
+    around do |example|
+      saved = described_class.canvas_schemas
+      described_class.canvas_schemas = {
+        "Lti_Deployment" => { "type" => "object" },
+        "User" => { "type" => "object" }
+      }
+      example.run
+    ensure
+      described_class.canvas_schemas = saved
+    end
+
+    it "resolves a namespaced model to its sanitized schema name" do
+      expect(described_class.resolve_schema_name("Lti::Deployment")).to eq("Lti_Deployment")
+    end
+
+    it "resolves a simple model to itself" do
+      expect(described_class.resolve_schema_name("User")).to eq("User")
+    end
+
+    it "returns nil for an unknown model" do
+      expect(described_class.resolve_schema_name("GradingPeriodGroup")).to be_nil
+    end
+
+    it "returns nil for an unknown namespaced model" do
+      expect(described_class.resolve_schema_name("Lti::Missing")).to be_nil
+    end
+  end
+
   describe ".convert_single_type" do
     it "converts datetime to string" do
       expect(described_class.convert_single_type("datetime")).to eq("string")
@@ -350,6 +379,18 @@ describe SwaggerYard::CanvasAdapter do
       prop_def = { "$ref" => "Api::User" }
       result = described_class.convert_single_property(prop_def)
       expect(result).to eq({ "$ref" => "#/components/schemas/Api_User" })
+    end
+
+    it "allows a string alongside a $ref typed string|Model" do
+      prop_def = { "type" => "string|User", "$ref" => "User" }
+      result = described_class.convert_single_property(prop_def)
+      expect(result).to eq({ "oneOf" => [{ "type" => "string" }, { "$ref" => "#/components/schemas/User" }] })
+    end
+
+    it "keeps a bare $ref when the type is only the model" do
+      prop_def = { "type" => "User", "$ref" => "User" }
+      result = described_class.convert_single_property(prop_def)
+      expect(result).to eq({ "$ref" => "#/components/schemas/User" })
     end
 
     it "converts basic properties" do

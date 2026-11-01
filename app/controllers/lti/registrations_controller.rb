@@ -193,13 +193,15 @@
 #           "type": "string"
 #         },
 #         "created_by": {
-#           "description": "The user that created this binding",
+#           "description": "The user that created this binding. If a string, this binding was created by Instructure.",
 #           "example": { "type": "User" },
+#           "type": "string|User",
 #           "$ref": "User"
 #         },
 #         "updated_by": {
-#           "description": "The user that last updated this binding",
+#           "description": "The user that last updated this binding. If a string, this binding was last updated by Instructure.",
 #           "example": { "type": "User" },
+#           "type": "string|User",
 #           "$ref": "User"
 #         }
 #       }
@@ -935,7 +937,7 @@
 #           "type": "array",
 #           "items": {
 #             "type": "array",
-#             "items": {"type": "object"}
+#             "items": {}
 #           }
 #         },
 #         "lti_overlay_id": {
