@@ -1091,4 +1091,146 @@ describe SwaggerYard::CanvasAdapter do
       end
     end
   end
+
+  describe "nested classes in controllers" do
+    before do
+      described_class.install!
+      YARD::Registry.clear
+      allow(described_class).to receive(:canvas_routes).and_return(routes)
+    end
+
+    after { YARD::Registry.clear }
+
+    let(:routes) do
+      %w[foo lti/foo].each_with_object({}) do |controller, hash|
+        hash["#{controller}#index"] = [{ path: "/api/v1/#{controller}s", method: "GET", context: "other", name: "index" }]
+        hash["#{controller}#show"] = [{ path: "/api/v1/#{controller}s/{id}", method: "GET", context: "other", name: "show" }]
+      end
+    end
+
+    let(:index_action) do
+      <<~RUBY
+        # @API List foos
+        def index; end
+      RUBY
+    end
+
+    let(:show_action) do
+      <<~RUBY
+        # @API Get a foo
+        def show; end
+      RUBY
+    end
+
+    def parse_controller(body, wrap_in_module: nil)
+      source = "class FooController < ApplicationController\n#{body}\nend\n"
+      source = "module #{wrap_in_module}\n#{source}end\n" if wrap_in_module
+      YARD.parse_string(source)
+    end
+
+    def api_group_for(path)
+      SwaggerYard::ApiGroup.from_yard_object(YARD::Registry.at(path))
+    end
+
+    def operations_of(group)
+      group.path_items.values.flat_map { |path_item| path_item.operations.values }
+    end
+
+    it "keeps the controller's resource and actions around a nested error class between actions" do
+      parse_controller("#{index_action}\nclass FooError < StandardError; end\n#{show_action}")
+      group = api_group_for("FooController")
+
+      expect(group.resource).to eq "Foo"
+      expect(group.path_items.keys).to contain_exactly("/api/v1/foos", "/api/v1/foos/{id}")
+      expect(operations_of(group).map(&:operation_id)).to all(start_with("Foo-"))
+    end
+
+    it "keeps every action after a nested class defined before all actions" do
+      parse_controller("class FooError < StandardError; end\n#{index_action}\n#{show_action}")
+      group = api_group_for("FooController")
+
+      expect(group.resource).to eq "Foo"
+      expect(group.path_items.keys).to contain_exactly("/api/v1/foos", "/api/v1/foos/{id}")
+    end
+
+    it "keeps the controller's resource and actions around a nested Struct constant" do
+      parse_controller("#{index_action}\nCredentials = Struct.new(:a)\n#{show_action}")
+      group = api_group_for("FooController")
+
+      expect(group.resource).to eq "Foo"
+      expect(group.path_items.keys).to contain_exactly("/api/v1/foos", "/api/v1/foos/{id}")
+      expect(operations_of(group).map(&:operation_id)).to all(start_with("Foo-"))
+    end
+
+    it "does not treat a nested class's documented method as a controller action" do
+      parse_controller(<<~RUBY)
+        #{index_action}
+        class Helper
+          # @API Helper index
+          def index; end
+        end
+      RUBY
+      group = api_group_for("FooController")
+      operations = operations_of(group)
+
+      expect(group.resource).to eq "Foo"
+      expect(operations.size).to eq 1
+      expect(operations.first.summary).to eq "List foos"
+    end
+
+    it "leaves the group unchanged by a nested SAX document class after the actions" do
+      parse_controller(<<~RUBY)
+        #{index_action}
+        #{show_action}
+        class MetadataSaxDoc < Nokogiri::XML::SAX::Document
+          def start_element(name, attrs = []); end
+
+          def characters(string); end
+        end
+      RUBY
+      group = api_group_for("FooController")
+
+      expect(group.resource).to eq "Foo"
+      expect(operations_of(group).map(&:operation_id)).to contain_exactly("Foo-index", "Foo-show")
+    end
+
+    it "does not build a valid group from the nested class itself" do
+      parse_controller("#{index_action}\nclass FooError < StandardError; end")
+
+      expect(api_group_for("FooController::FooError")).not_to be_valid
+    end
+
+    it "is unaffected by a controller namespace that is a module" do
+      parse_controller("#{index_action}\nclass FooError < StandardError; end\n#{show_action}", wrap_in_module: "Lti")
+      group = api_group_for("Lti::FooController")
+
+      expect(group.resource).to eq "Foo"
+      expect(group.path_items.keys).to contain_exactly("/api/v1/lti/foos", "/api/v1/lti/foos/{id}")
+    end
+
+    describe ".nested_class?" do
+      it "is false for a class in a module" do
+        YARD.parse_string("module Lti\nclass FooController; end\nend")
+        expect(described_class.nested_class?(YARD::Registry.at("Lti::FooController"))).to be false
+      end
+
+      it "is false for a top-level class" do
+        YARD.parse_string("class FooController; end")
+        expect(described_class.nested_class?(YARD::Registry.at("FooController"))).to be false
+      end
+
+      it "is false for a class in an unresolved namespace" do
+        YARD.parse_string("class Unknown::FooController; end")
+        yard_object = YARD::Registry.at("Unknown::FooController")
+
+        expect(yard_object.namespace).to be_a(YARD::CodeObjects::Proxy)
+        expect(described_class.nested_class?(yard_object)).to be false
+      end
+
+      it "is true for a class in a class" do
+        YARD.parse_string("class FooController\nclass FooError; end\nend")
+        expect(described_class.nested_class?(YARD::Registry.at("FooController::FooError"))).to be true
+      end
+    end
+  end
 end

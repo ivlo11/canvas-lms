@@ -83,8 +83,6 @@ module SwaggerYard
     LOOKUP_BY_REGEX = %r{\A(/api/(v\d|sis))?/(#{Regexp.union(CONTEXT).source})/\{[^\}]+\}/.*/\{([^\}]+)\}(/[^/]+){0,2}\z}im
     SPECIAL_PATH_VARIABLES = %w[full_path self latest all_quizzes].freeze
 
-    PROBLEMATIC_SUB_CLASSES = %w[MetadataSaxDoc].freeze
-
     # Public: call once before building the spec
     def self.install!
       define_canvas_tags
@@ -93,6 +91,13 @@ module SwaggerYard
       patch_operation!
       patch_extended_attributes!
       collect_model_schemas!
+    end
+
+    # A class defined inside another class, such as a controller's error class or
+    # Struct constant. Controllers are only ever namespaced by modules, so these are
+    # helpers that must not take over the controller's API group.
+    def self.nested_class?(yard_object)
+      yard_object.type == :class && yard_object.namespace.respond_to?(:type) && yard_object.namespace.type == :class
     end
 
     # Load Canvas routes to map controller#action to actual route paths
@@ -742,11 +747,15 @@ module SwaggerYard
       # Patch SwaggerYard::ApiGroup to auto-generate @resource from class name
       def patch_api_group!
         SwaggerYard::ApiGroup.prepend(Module.new do
-          def add_info(yard_object)
-            # Subclasses with no APIs are overriding operation id naming & conflicting track_operation_model
-            # this change cleaned up 12 missing return types
-            return if yard_object.type == :class && PROBLEMATIC_SUB_CLASSES.include?(yard_object.name.to_s)
+          # Skip nested classes entirely: when reached from the controller's children they
+          # would rename its resource and route lookups, and on their own they stay invalid.
+          def add_yard_object(yard_object)
+            return self if SwaggerYard::CanvasAdapter.nested_class?(yard_object)
 
+            super
+          end
+
+          def add_info(yard_object)
             super
 
             # Canvas doesn't use @resource tags. Instead, the resource name is defined
