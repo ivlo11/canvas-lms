@@ -695,6 +695,67 @@ describe SwaggerYard::CanvasAdapter do
     end
   end
 
+  describe "query parameter naming" do
+    before do
+      described_class.send(:patch_operation!) unless SwaggerYard::Operation.respond_to?(:process_argument_tags, true)
+    end
+
+    def operation_for(path, http_method)
+      SwaggerYard::Operation.new(nil).tap do |op|
+        allow(op).to receive_messages(path:, http_method:)
+      end
+    end
+
+    def argument_tag(name, types, text = "desc")
+      instance_double(YARD::Tags::Tag, name:, types:, text:)
+    end
+
+    def add_argument(operation, tag, body_params = [])
+      param_info = SwaggerYard::Operation.send(:extract_param_info_from_tag, tag)
+      SwaggerYard::Operation.send(:add_parameter_to_operation, param_info, operation, body_params)
+      body_params
+    end
+
+    let(:list_operation) { operation_for("/api/v1/courses/{course_id}/lti_apps/launch_definitions", "GET") }
+
+    def parameter_names(operation)
+      operation.parameters.map(&:name)
+    end
+
+    it "keeps the brackets on an @argument name[] parameter" do
+      add_argument(list_operation, argument_tag("include[]", nil, '[String, "term"|"teachers"] desc'))
+
+      expect(parameter_names(list_operation)).to eq ["include[]"]
+    end
+
+    it "adds brackets to an Array-typed parameter" do
+      add_argument(list_operation, argument_tag("placements", ["Array"]))
+
+      expect(parameter_names(list_operation)).to eq ["placements[]"]
+    end
+
+    it "leaves a scalar parameter unbracketed" do
+      add_argument(list_operation, argument_tag("per_page", ["Integer"]))
+
+      expect(parameter_names(list_operation)).to eq ["per_page"]
+    end
+
+    it "leaves a path parameter unchanged" do
+      add_argument(list_operation, argument_tag("course_id", ["Integer"]))
+
+      expect(parameter_names(list_operation)).to eq ["course_id"]
+      expect(list_operation.parameters.first.param_type).to eq "path"
+    end
+
+    it "leaves a body array parameter unchanged" do
+      operation = operation_for("/api/v1/courses/{course_id}/enrollments", "POST")
+      body_params = add_argument(operation, argument_tag("ids[]", nil, "[Integer] desc"))
+
+      expect(operation.parameters).to be_empty
+      expect(body_params.map { |p| p.values_at(:name, :original_name) }).to eq [%w[ids ids[]]]
+    end
+  end
+
   describe "paths_from_yard_object_canvas (via add_path_item integration)" do
     # Test via integration since the method is private and deeply integrated with YARD/SwaggerYard
     # This tests the core logic without needing full YARD object mocking

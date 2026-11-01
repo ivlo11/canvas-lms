@@ -1015,8 +1015,17 @@ module SwaggerYard
           end
 
           def add_query_parameter(operation, param_info, schema, required)
-            param = create_parameter(param_info[:name], "query", schema, param_info[:description], required)
+            name = query_parameter_name(param_info[:name], schema)
+            param = create_parameter(name, "query", schema, param_info[:description], required)
             operation.add_or_update_parameter(param)
+          end
+
+          # Canvas only reads list query parameters in Rails bracket form
+          # (include[]=a&include[]=b), so any array-schema query parameter gets
+          # a trailing [] whether it was documented as name[] or name [Array]
+          def query_parameter_name(name, schema)
+            array = schema.is_a?(Hash) ? schema["type"] == "array" : schema.to_s.start_with?("array")
+            array ? "#{name.chomp("[]")}[]" : name
           end
 
           def add_body_parameter(body_params, param_info, schema, required)
