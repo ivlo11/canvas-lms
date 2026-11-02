@@ -265,6 +265,14 @@ describe SwaggerYard::CanvasAdapter do
     it "returns nil for an unknown namespaced model" do
       expect(described_class.resolve_schema_name("Lti::Missing")).to be_nil
     end
+
+    it "resolves a lib/schemas/docs class to its schema name" do
+      expect(described_class.resolve_schema_name("Schemas::Docs::User")).to eq("User")
+    end
+
+    it "returns nil for an unknown lib/schemas/docs class" do
+      expect(described_class.resolve_schema_name("Schemas::Docs::Missing")).to be_nil
+    end
   end
 
   describe ".convert_single_type" do

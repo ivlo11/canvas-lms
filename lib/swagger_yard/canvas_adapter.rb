@@ -341,9 +341,11 @@ module SwaggerYard
     end
 
     # Returns the collected schema name for a documented model name (namespaced
-    # or not), or nil when no such schema was collected.
+    # or not), or nil when no such schema was collected. A lib/schemas/docs
+    # class (@returns Schemas::Docs::User) is stored under its own name, as
+    # Canvas's doc tooling strips the prefix too.
     def self.resolve_schema_name(name)
-      schema_name = sanitize_schema_name(name)
+      schema_name = sanitize_schema_name(name.to_s.delete_prefix("Schemas::Docs::"))
       schema_name if @canvas_schemas.key?(schema_name)
     end
 
