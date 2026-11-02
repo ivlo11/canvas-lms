@@ -19,9 +19,9 @@
 
 # @API What If Grades
 #
-# @model Grade
+# @model WhatIfGrade
 #     {
-#       "id": "Grade",
+#       "id": "WhatIfGrade",
 #       "properties": {
 #         "grade": {
 #           "description": "The grade for the course",
@@ -103,13 +103,13 @@
 #       "id": "Grades",
 #       "properties": {
 #         "current": {
-#            "$ref": "Grade"
+#            "$ref": "WhatIfGrade"
 #         },
 #         "current_groups": {
 #            "$ref": "GradeGroup"
 #         },
 #         "final": {
-#            "$ref": "Grade"
+#            "$ref": "WhatIfGrade"
 #         },
 #         "final_groups": {
 #            "$ref": "GradeGroup"
