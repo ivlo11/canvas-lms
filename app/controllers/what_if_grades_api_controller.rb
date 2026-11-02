@@ -117,9 +117,9 @@
 #       }
 #     }
 #
-# @model Submission
+# @model WhatIfSubmission
 #     {
-#       "id": "Submission",
+#       "id": "WhatIfSubmission",
 #       "properties": {
 #         "id": {
 #           "description": "The ID of the submission",
@@ -209,7 +209,7 @@ class WhatIfGradesApiController < ApplicationController
   #       }
   #   }
   #
-  # @returns {"grades": [Grades], "submission": Submission}
+  # @returns {"grades": [Grades], "submission": WhatIfSubmission}
   def update
     submission = @current_user.submissions.find(params[:id])
     return render_unauthorized_action unless submission.grants_right?(@current_user, :submit)

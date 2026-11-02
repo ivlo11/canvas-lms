@@ -33,6 +33,11 @@
 #       "id": "Submission",
 #       "description": "",
 #       "properties": {
+#         "id": {
+#           "description": "The submission's id",
+#           "example": 1,
+#           "type": "integer"
+#         },
 #         "assignment_id": {
 #           "description": "The submission's assignment id",
 #           "example": 23,
