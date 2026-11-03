@@ -22,53 +22,96 @@
 #
 # When you upload or record webcam video/audio to kaltura, it makes a Media Object
 #
-# @object MediaObject
-#   {
-#     // whether or not the current user can upload media_tracks (subtitles) to this Media Object
-#     "can_add_captions": true,
-#     "user_entered_title": "User Entered Title",
-#     "title": "filename-or-user-title-or-untitled",
-#     "media_id": "m-JYmy6TLsHkxcrhgYmqa7XW1HCH3wEYc",
-#     "media_type": "video",
-#     // an array of all the media_tracks uploaded to this Media Object
-#     "media_tracks": [{
-#       "kind": "captions",
-#       "created_at": "2012-09-27T16:46:50-06:00",
-#       "updated_at": "2012-09-27T16:46:50-06:00",
-#       "url": "https://<canvas>/media_objects/0_r949z9lk/media_tracks/1",
-#       "id": 1,
-#       "locale": "af"
-#     }, {
-#       "kind": "subtitles",
-#       "created_at": "2012-09-27T20:29:17-06:00",
-#       "updated_at": "2012-09-27T20:29:17-06:00",
-#       "url": "https://<canvas>/media_objects/0_r949z9lk/media_tracks/14",
-#       "id": 14,
-#       "locale": "cs"
-#     }],
-#     // an array of all the transcoded files (flavors) available for this Media Object
-#     "media_sources": [{
-#       "height": "240",
-#       "width": "336",
-#       "content_type": "video/mp4",
-#       "containerFormat": "isom",
-#       "url": "http://example.com/p/100/sp/10000/download/entry_id/0_r949z9lk/flavor/0_xdp3qrpc/ks/MjUxNjY4MjlhMTkxN2VmNTA0OGRkZjY2ODNjMjgxNTkwYWE3NGMyNHwxMDA7MTAwOzEzNDkyNzU5MDY7MDsxMzQ5MTg5NTA2LjUxOTk7O2Rvd25sb2FkOjBfcjk0OXo5bGs7/relocate/download.mp4",
-#       "bitrate": "382",
-#       "size": "204",
-#       "isOriginal": "0",
-#       "fileExt": "mp4"
-#     }, {
-#       "height": "252",
-#       "width": "336",
-#       "content_type": "video/x-flv",
-#       "containerFormat": "flash video",
-#       "url": "http://example.com/p/100/sp/10000/download/entry_id/0_r949z9lk/flavor/0_0f2x4odx/ks/NmY2M2Q2MDdhMjBlMzA2ZmRhMWZjZjAxNWUyOTg0MzA5MDI5NGE4ZXwxMDA7MTAwOzEzNDkyNzU5MDY7MDsxMzQ5MTg5NTA2LjI5MDM7O2Rvd25sb2FkOjBfcjk0OXo5bGs7/relocate/download.flv",
-#       "bitrate": "797",
-#       "size": "347",
-#       "isOriginal": "1",
-#       "fileExt": "flv"
-#     }]
-#   }
+# @model MediaObject
+#     {
+#       "id": "MediaObject",
+#       "description": "A media object uploaded or recorded to Canvas's media service",
+#       "properties": {
+#         "media_id": {
+#           "description": "The media service's id for the media object",
+#           "example": "m-JYmy6TLsHkxcrhgYmqa7XW1HCH3wEYc",
+#           "type": "string"
+#         },
+#         "created_at": {
+#           "description": "When the media object was created",
+#           "example": "2012-09-27T16:46:50-06:00",
+#           "type": "datetime"
+#         },
+#         "media_type": {
+#           "description": "The kind of media, for example video or audio",
+#           "example": "video",
+#           "type": "string"
+#         },
+#         "title": {
+#           "description": "The user-entered title, the file name, or Untitled",
+#           "example": "filename-or-user-title-or-untitled",
+#           "type": "string"
+#         },
+#         "can_add_captions": {
+#           "description": "Whether the current user can upload media tracks (subtitles) to this media object",
+#           "example": true,
+#           "type": "boolean"
+#         },
+#         "embedded_iframe_url": {
+#           "description": "The URL of the media player for embedding in an iframe",
+#           "example": "https://<canvas>/media_objects_iframe/m-JYmy6TLsHkxcrhgYmqa7XW1HCH3wEYc",
+#           "type": "string"
+#         },
+#         "auto_caption_status": {
+#           "description": "The status of automatic captioning, if requested",
+#           "example": "complete",
+#           "type": "string"
+#         },
+#         "status": {
+#           "description": "The media service's processing status. Only included when the media object has one",
+#           "example": "ready",
+#           "type": "string"
+#         },
+#         "viewer_restrictions": {
+#           "description": "Viewer access restrictions for this media, for example show_rolling_transcript",
+#           "example": { "show_rolling_transcript": true },
+#           "type": "object"
+#         },
+#         "media_sources": {
+#           "description": "All the transcoded files (flavors) available for this media object. Omitted with exclude[]=sources",
+#           "type": "array",
+#           "items": {
+#             "type": "object",
+#             "properties": {
+#               "height": { "description": "The flavor's height", "example": "240", "type": "string" },
+#               "width": { "description": "The flavor's width", "example": "336", "type": "string" },
+#               "content_type": { "description": "The flavor's content type", "example": "video/mp4", "type": "string" },
+#               "containerFormat": { "description": "The flavor's container format", "example": "isom", "type": "string" },
+#               "url": { "description": "The URL to download the flavor", "example": "https://<canvas>/media_objects/m-JYmy6TLsHkxcrhgYmqa7XW1HCH3wEYc/redirect?bitrate=382", "type": "string" },
+#               "bitrate": { "description": "The flavor's bitrate", "example": "382", "type": "string" },
+#               "size": { "description": "The flavor's size", "example": "204", "type": "string" },
+#               "isOriginal": { "description": "Whether the flavor is the original upload (\"1\") or not (\"0\")", "example": "0", "type": "string" },
+#               "fileExt": { "description": "The flavor's file extension", "example": "mp4", "type": "string" },
+#               "src": { "description": "The same as url", "example": "https://<canvas>/media_objects/m-JYmy6TLsHkxcrhgYmqa7XW1HCH3wEYc/redirect?bitrate=382", "type": "string" },
+#               "label": { "description": "The bitrate as a label", "example": "0 kbps", "type": "string" }
+#             }
+#           }
+#         },
+#         "media_tracks": {
+#           "description": "All the media tracks uploaded to this media object. Omitted with exclude[]=tracks",
+#           "type": "array",
+#           "items": {
+#             "type": "object",
+#             "properties": {
+#               "id": { "description": "The media track's id", "example": 1, "type": "integer" },
+#               "kind": { "description": "The kind of track, for example captions or subtitles", "example": "captions", "type": "string" },
+#               "locale": { "description": "The track's locale", "example": "af", "type": "string" },
+#               "workflow_state": { "description": "The track's state", "example": "ready", "type": "string" },
+#               "asr": { "description": "Whether the track was created by automatic speech recognition", "example": false, "type": "boolean" },
+#               "url": { "description": "The URL of the track's content", "example": "https://<canvas>/media_objects/0_r949z9lk/media_tracks/1", "type": "string" },
+#               "inherited": { "description": "Whether the track is inherited from the original media. Only on media attachment routes", "example": false, "type": "boolean" },
+#               "created_at": { "description": "When the track was created", "example": "2012-09-27T16:46:50-06:00", "type": "string", "format": "date-time" },
+#               "updated_at": { "description": "When the track was last updated", "example": "2012-09-27T16:46:50-06:00", "type": "string", "format": "date-time" }
+#             }
+#           }
+#         }
+#       }
+#     }
 #
 class MediaObjectsController < ApplicationController
   include Api::V1::MediaObject
@@ -199,6 +242,7 @@ class MediaObjectsController < ApplicationController
   #   A JSON object describing viewer access restrictions for this media.
   #   - show_rolling_transcript [Optional, Boolean]: Whether to show the rolling transcripts of the media during playback, or not.
   #
+  # @returns MediaObject
   def update_media_object
     # media objects don't have any permissions associated with them,
     # so we just check that this is the user's media unless the media

@@ -25,18 +25,25 @@
 #
 # Closed captions added to a video MediaObject
 #
-# @object MediaTrack
-#   {
-#     "id": 42,
-#     "user_id": 1,
-#     "media_object_id": 14,
-#     "kind": "subtitles",
-#     "locale": "es",
-#     "content": "1]\\n00:00:00,000 --> 00:00:01,251\nI'm spanish",
-#     "created_at": "Mon, 24 Feb 2020 16:04:02 EST -05:00",
-#     "updated_at": "Mon, 24 Feb 2020 16:59:05 EST -05:00",
-#     "webvtt_content": "WEBVTT\n\n1]\\n00:00:00.000 --> 00:00:01.251\nI'm spanish"
-#   }
+# @model MediaTrack
+#     {
+#       "id": "MediaTrack",
+#       "description": "Closed captions added to a video media object",
+#       "required": ["id", "locale", "kind"],
+#       "properties": {
+#         "id": { "description": "The media track's id", "example": 42, "type": "integer" },
+#         "user_id": { "description": "The id of the user who added the track", "example": 1, "type": "integer" },
+#         "media_object_id": { "description": "The id of the track's media object", "example": 14, "type": "integer" },
+#         "kind": { "description": "The kind of track, for example captions or subtitles", "example": "subtitles", "type": "string" },
+#         "locale": { "description": "The track's locale", "example": "es", "type": "string" },
+#         "workflow_state": { "description": "The track's state", "example": "ready", "type": "string" },
+#         "asr": { "description": "Whether the track was created by automatic speech recognition", "example": false, "type": "boolean" },
+#         "content": { "description": "The track's content. Only included with include[]=content", "example": "1]\\n00:00:00,000 --> 00:00:01,251\nI'm spanish", "type": "string" },
+#         "webvtt_content": { "description": "The track's content as WebVTT. Only included with include[]=webvtt_content", "example": "WEBVTT\n\n1]\\n00:00:00.000 --> 00:00:01.251\nI'm spanish", "type": "string" },
+#         "created_at": { "description": "When the track was created. Only included with include[]=created_at", "example": "2020-02-24T16:04:02-05:00", "type": "datetime" },
+#         "updated_at": { "description": "When the track was last updated. Only included with include[]=updated_at", "example": "2020-02-24T16:59:05-05:00", "type": "datetime" }
+#       }
+#     }
 #
 class MediaTracksController < ApplicationController
   include Api::V1::MediaObject
