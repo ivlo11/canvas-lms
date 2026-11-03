@@ -437,6 +437,51 @@ describe SwaggerYard::CanvasAdapter do
       expect(result["type"]).to eq("array")
       expect(result["items"]).to eq({ "type" => "object" })
     end
+
+    it "converts the nested properties of an object" do
+      prop_def = {
+        "type" => "object",
+        "properties" => {
+          "id" => { "type" => "integer" },
+          "due_at" => { "type" => "datetime" },
+          "overrides" => { "type" => "array", "items" => { "$ref" => "Api::AssignmentOverride" } }
+        }
+      }
+      result = described_class.convert_single_property(prop_def)
+      expect(result["type"]).to eq("object")
+      expect(result["properties"]).to eq({
+                                           "id" => { "type" => "integer" },
+                                           "due_at" => { "type" => "string", "format" => "date-time" },
+                                           "overrides" => {
+                                             "type" => "array",
+                                             "items" => { "$ref" => "#/components/schemas/Api_AssignmentOverride" }
+                                           }
+                                         })
+    end
+
+    it "copies the required fields of a nested object" do
+      prop_def = { "type" => "object", "required" => "id", "properties" => { "id" => { "type" => "integer" } } }
+      result = described_class.convert_single_property(prop_def)
+      expect(result["required"]).to eq(["id"])
+    end
+
+    it "converts an object nested two levels deep" do
+      prop_def = {
+        "properties" => {
+          "settings" => { "type" => "object", "properties" => { "starts_at" => { "type" => "datetime" } } }
+        }
+      }
+      result = described_class.convert_single_property(prop_def)
+      expect(result["type"]).to eq("object")
+      expect(result.dig("properties", "settings", "properties", "starts_at"))
+        .to eq({ "type" => "string", "format" => "date-time" })
+    end
+
+    it "leaves an object without nested properties unchanged" do
+      prop_def = { "type" => "object", "description" => "Custom fields", "example" => { "a" => "b" } }
+      result = described_class.convert_single_property(prop_def)
+      expect(result).to eq({ "type" => "object", "description" => "Custom fields", "example" => { "a" => "b" } })
+    end
   end
 
   describe ".convert_properties" do

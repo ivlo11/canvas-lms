@@ -580,8 +580,20 @@ module SwaggerYard
         handle_property_enum(converted_prop, prop_def)
         handle_property_items(converted_prop, prop_def)
       end
+      handle_nested_properties(converted_prop, prop_def)
 
       converted_prop
+    end
+
+    # An object property with its own fields keeps them, converted like
+    # top-level properties, so clients get a nested model instead of a map
+    def self.handle_nested_properties(converted_prop, prop_def)
+      return unless prop_def["properties"].is_a?(Hash)
+
+      converted_prop["type"] ||= "object"
+      converted_prop["properties"] = convert_properties(prop_def["properties"])
+      required = prop_def["required"]
+      converted_prop["required"] = required.is_a?(String) ? [required] : required if required
     end
 
     def self.convert_property_type(converted_prop, prop_def)
