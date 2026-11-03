@@ -24,6 +24,11 @@
 #       "id": "QuizSubmissionEvent",
 #       "description": "An event passed from the Quiz Submission take page",
 #       "properties": {
+#         "id": {
+#           "description": "The ID of the event.",
+#           "example": "3409",
+#           "type": "string"
+#         },
 #         "created_at": {
 #           "description": "a timestamp record of creation time",
 #           "example": "2014-10-08T19:29:58Z",
@@ -35,9 +40,8 @@
 #           "type": "string"
 #         },
 #         "event_data": {
-#           "description": "custom contextual data for the specific event type",
-#           "example": {"answer": "42"},
-#           "type": "object"
+#           "description": "custom contextual data for the specific event type. Its shape depends on event_type: a list of answers for question_answered, an object for question_flagged and submission_created, and null for page_blurred and page_focused.",
+#           "example": {"answer": "42"}
 #         }
 #       }
 #     }
@@ -98,6 +102,8 @@ class Quizzes::QuizSubmissionEventsApiController < ApplicationController
   # @argument attempt [Integer]
   #  The specific submission attempt to look up the events for. If unspecified,
   #  the latest attempt will be used.
+  #
+  # @returns { "quiz_submission_events": [QuizSubmissionEvent] }
   #
   # @example_response
   #  {

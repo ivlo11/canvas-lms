@@ -28,8 +28,13 @@
 #       "properties": {
 #         "id": {
 #           "description": "The unique identifier for the grading period.",
-#           "example": 1023,
-#           "type": "integer"
+#           "example": "1023",
+#           "type": "string"
+#         },
+#         "grading_period_group_id": {
+#           "description": "The id of the grading period set the grading period belongs to.",
+#           "example": "1",
+#           "type": "string"
 #         },
 #         "title": {
 #           "description": "The title for the grading period.",
@@ -56,13 +61,18 @@
 #         },
 #         "weight": {
 #           "description": "A weight value that contributes to the overall weight of a grading period set which is used to calculate how much assignments in this period contribute to the total grade",
-#           "type": "integer",
-#           "example": "33.33"
+#           "type": "number",
+#           "example": 33.33
 #         },
 #         "is_closed": {
 #           "description": "If true, the grading period's close_date has passed.",
 #           "example": true,
 #           "type": "boolean"
+#         },
+#         "permissions": {
+#           "description": "The current user's permissions on the grading period (read, create, update, delete).",
+#           "example": {"read": true, "create": true, "update": true, "delete": true},
+#           "type": "object"
 #         }
 #       }
 #    }

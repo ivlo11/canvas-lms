@@ -72,6 +72,39 @@
 #       }
 #     }
 #
+# @model CourseGradingPeriod
+#     {
+#       "id": "CourseGradingPeriod",
+#       "description": "A grading period of the course's term, as included with include[]=grading_periods",
+#       "properties": {
+#         "id": {
+#           "description": "The unique identifier for the grading period.",
+#           "example": 1023,
+#           "type": "integer"
+#         },
+#         "title": {
+#           "description": "The title for the grading period.",
+#           "example": "First Block",
+#           "type": "string"
+#         },
+#         "start_date": {
+#           "description": "The start date of the grading period.",
+#           "example": "2014-01-07T15:04:00Z",
+#           "type": "datetime"
+#         },
+#         "end_date": {
+#           "description": "The end date of the grading period.",
+#           "example": "2014-05-07T17:07:00Z",
+#           "type": "datetime"
+#         },
+#         "workflow_state": {
+#           "description": "The state of the grading period: active or deleted.",
+#           "example": "active",
+#           "type": "string"
+#         }
+#       }
+#     }
+#
 # @model Course
 #     {
 #       "id": "Course",
@@ -146,7 +179,7 @@
 #         "grading_periods": {
 #           "description": "A list of grading periods associated with the course",
 #           "type": "array",
-#           "items": { "$ref": "GradingPeriod" }
+#           "items": { "$ref": "CourseGradingPeriod" }
 #         },
 #         "grading_standard_id": {
 #            "description": "the grading standard associated with the course",

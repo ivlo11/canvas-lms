@@ -39,6 +39,36 @@
 #           "description": "If true, the totals for all grading periods in the set are displayed.",
 #           "example": true,
 #           "type": "boolean"
+#         },
+#         "id": {
+#           "description": "The unique identifier for the grading period set.",
+#           "example": "1",
+#           "type": "string"
+#         },
+#         "account_id": {
+#           "description": "The id of the account the set belongs to, or null if it belongs to a course.",
+#           "example": "1",
+#           "type": "string"
+#         },
+#         "course_id": {
+#           "description": "The id of the course the set belongs to, or null if it belongs to an account.",
+#           "example": null,
+#           "type": "string"
+#         },
+#         "grading_periods": {
+#           "description": "The active grading periods in the set.",
+#           "type": "array",
+#           "items": { "$ref": "GradingPeriod" }
+#         },
+#         "permissions": {
+#           "description": "The current user's permissions on the set (read, create, update, delete).",
+#           "example": {"read": true, "create": true, "update": true, "delete": true},
+#           "type": "object"
+#         },
+#         "created_at": {
+#           "description": "When the set was created.",
+#           "example": "2016-01-15T19:00:00Z",
+#           "type": "datetime"
 #         }
 #       }
 #    }
@@ -52,9 +82,11 @@ class GradingPeriodSetsController < ApplicationController
   #
   # Returns the paginated list of grading period sets
   #
+  # @returns { "grading_period_sets": [GradingPeriodSets] }
+  #
   # @example_response
   #   {
-  #     "grading_period_set": [GradingPeriodGroup]
+  #     "grading_period_sets": [GradingPeriodSets]
   #   }
   #
   def index
@@ -86,9 +118,11 @@ class GradingPeriodSetsController < ApplicationController
   # @argument grading_period_set[display_totals_for_all_grading_periods] [Boolean]
   #   A boolean to determine whether the totals for all grading periods in the set are displayed
   #
+  # @returns { "grading_period_set": GradingPeriodSets }
+  #
   # @example_response
   #   {
-  #     "grading_period_set": [GradingPeriodGroup]
+  #     "grading_period_set": GradingPeriodSets
   #   }
   #
   def create
