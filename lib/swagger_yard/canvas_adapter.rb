@@ -57,7 +57,9 @@ module SwaggerYard
     # A model or primitive type name in an inline object @returns
     INLINE_OBJECT_NAME = /[A-Za-z][A-Za-z0-9_]*(?:::[A-Za-z][A-Za-z0-9_]*)*/
 
-    INLINE_OBJECT_PRIMITIVES = %w[integer string boolean number].freeze
+    # object is an untyped mapping, for entries whose keys vary (e.g. audit
+    # links and linked)
+    INLINE_OBJECT_PRIMITIVES = %w[integer string boolean number object].freeze
 
     # A model reference in a @returns type: an identifier with optional ::
     # segments. Prose ("the input arguments") and status lines don't match

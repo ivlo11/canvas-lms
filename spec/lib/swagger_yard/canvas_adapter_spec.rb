@@ -1423,6 +1423,20 @@ describe SwaggerYard::CanvasAdapter do
         expect(described_class.inline_object_properties('{ "count": 42 }')).to eql("count" => { "type" => "integer" })
       end
 
+      it "types object entries as mappings alongside a model list" do
+        expect(described_class.inline_object_properties('{ "links": object, "grades": [Grades], "linked": object }'))
+          .to eql("links" => { "type" => "object" }, "grades" => list_of("Grades"), "linked" => { "type" => "object" })
+      end
+
+      it "types a quoted object entry as a mapping" do
+        expect(described_class.inline_object_properties('{ "grades": [Grades], "linked": "object" }'))
+          .to eql("grades" => list_of("Grades"), "linked" => { "type" => "object" })
+      end
+
+      it "keeps an Object entry with prose rejected" do
+        expect(described_class.inline_object_properties("{Object} Hash with details")).to be_nil
+      end
+
       {
         "an {Object} with prose" => "{Object} Hash with conversation details including messages",
         "a union" => "{ configuration: Lti::ToolConfiguration } | { errors: [String] }",
