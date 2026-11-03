@@ -78,6 +78,110 @@
 #       }
 #     }
 #
+# @model TodoItem
+#     {
+#       "id": "TodoItem",
+#       "description": "An assignment or quiz that the user needs to grade or submit",
+#       "required": [
+#         "type"
+#       ],
+#       "properties": {
+#         "context_type": {
+#           "description": "The type of the item's context: course or group",
+#           "example": "course",
+#           "type": "string"
+#         },
+#         "course_id": {
+#           "description": "The id of the item's course, when the context is a course",
+#           "example": 1,
+#           "type": "integer"
+#         },
+#         "group_id": {
+#           "description": "The id of the item's group, when the context is a group",
+#           "example": 2,
+#           "type": "integer"
+#         },
+#         "context_name": {
+#           "description": "The name of the item's context",
+#           "example": "Biology 101",
+#           "type": "string"
+#         },
+#         "context_short_name": {
+#           "description": "The short name of the item's context",
+#           "example": "BIO101",
+#           "type": "string"
+#         },
+#         "type": {
+#           "description": "grading for an assignment that needs grading, or submitting for an assignment or quiz that needs submitting soon",
+#           "example": "grading",
+#           "type": "string"
+#         },
+#         "assignment": {
+#           "description": "The assignment, for assignment items",
+#           "$ref": "Assignment"
+#         },
+#         "quiz": {
+#           "description": "The quiz, for ungraded quiz items",
+#           "$ref": "Quiz"
+#         },
+#         "ignore": {
+#           "description": "A URL that hides this item from future requests until it changes, with a DELETE request",
+#           "example": "https://canvas.instructure.com/api/v1/users/self/todo/assignment_1/grading?permanent=0",
+#           "type": "string"
+#         },
+#         "ignore_permanently": {
+#           "description": "A URL that hides this item forever, with a DELETE request",
+#           "example": "https://canvas.instructure.com/api/v1/users/self/todo/assignment_1/grading?permanent=1",
+#           "type": "string"
+#         },
+#         "html_url": {
+#           "description": "The URL of the item in Canvas: SpeedGrader for grading items, the submission page otherwise",
+#           "example": "https://canvas.instructure.com/courses/1/assignments/1#submit",
+#           "type": "string"
+#         },
+#         "needs_grading_count": {
+#           "description": "The number of submissions that need grading, for grading items",
+#           "example": 3,
+#           "type": "integer"
+#         },
+#         "checkpoint_label": {
+#           "description": "The checkpoint's tag, for checkpoint (sub-assignment) items",
+#           "example": "reply_to_topic",
+#           "type": "string"
+#         },
+#         "parent_assignment_id": {
+#           "description": "The id of the parent assignment, for checkpoint (sub-assignment) items",
+#           "example": 4,
+#           "type": "integer"
+#         },
+#         "on_time_needs_grading_count": {
+#           "description": "Optional: on-time submissions that need grading, for grading items with include[]=grading_counts",
+#           "example": 1,
+#           "type": "integer"
+#         },
+#         "late_needs_grading_count": {
+#           "description": "Optional: late submissions that need grading, for grading items with include[]=grading_counts",
+#           "example": 1,
+#           "type": "integer"
+#         },
+#         "resubmitted_needs_grading_count": {
+#           "description": "Optional: resubmissions that need grading, for grading items with include[]=grading_counts",
+#           "example": 1,
+#           "type": "integer"
+#         },
+#         "submitted_submissions_count": {
+#           "description": "Optional: submitted submissions, for grading items with include[]=grading_counts",
+#           "example": 3,
+#           "type": "integer"
+#         },
+#         "total_submissions_count": {
+#           "description": "Optional: all submissions, for grading items with include[]=grading_counts",
+#           "example": 10,
+#           "type": "integer"
+#         }
+#       }
+#     }
+#
 #
 class UsersController < ApplicationController
   include SearchHelper
@@ -958,6 +1062,8 @@ class UsersController < ApplicationController
   #       'course_id': 1,
   #     },
   #   ]
+  #
+  # @returns [TodoItem]
   def todo_items
     GuardRail.activate(:secondary) do
       bookmark = Plannable::Bookmarker.new(Assignment, false, [:due_at, :created_at], :id)

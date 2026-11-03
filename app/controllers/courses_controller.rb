@@ -1557,6 +1557,8 @@ class CoursesController < ApplicationController
   # Returns the current user's course-specific todo items.
   #
   # For full documentation, see the API documentation for the user todo items, in the user api.
+  #
+  # @returns [TodoItem]
   def todo_items
     GuardRail.activate(:secondary) do
       get_context
