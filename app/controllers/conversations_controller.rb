@@ -150,6 +150,46 @@
 #         }
 #       }
 #     }
+#
+# @model ConversationBatch
+#     {
+#       "id": "ConversationBatch",
+#       "description": "A bulk private message that is being sent asynchronously.",
+#       "properties": {
+#         "id": {
+#           "description": "The ID of the batch.",
+#           "example": 1,
+#           "type": "integer",
+#           "format": "int64"
+#         },
+#         "workflow_state": {
+#           "description": "The state of the batch: created or sending while it is running.",
+#           "example": "created",
+#           "type": "string"
+#         },
+#         "completion": {
+#           "description": "How much of the batch has been sent, from 0 to 1.",
+#           "example": 0.1234,
+#           "type": "number"
+#         },
+#         "recipient_count": {
+#           "description": "The number of recipients the batch is sent to.",
+#           "example": 2,
+#           "type": "integer"
+#         },
+#         "message": {
+#           "description": "The batch's root conversation message.",
+#           "type": "object"
+#         },
+#         "tags": {
+#           "description": "The batch's tags (context asset strings).",
+#           "example": [],
+#           "type": "array",
+#           "items": { "type": "string" }
+#         }
+#       }
+#     }
+#
 class ConversationsController < ApplicationController
   include ConversationsHelper
   include SearchHelper
@@ -554,6 +594,8 @@ class ConversationsController < ApplicationController
   #       }
   #     }
   #   ]
+  #
+  # @returns [ConversationBatch]
   def batches
     batches = Api.paginate(@current_user.conversation_batches.in_progress.order(:id),
                            self,

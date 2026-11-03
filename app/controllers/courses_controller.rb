@@ -72,6 +72,54 @@
 #       }
 #     }
 #
+# @model UserProgress
+#     {
+#       "id": "UserProgress",
+#       "description": "A user's display fields with their progress in the course.",
+#       "properties": {
+#         "id": {
+#           "description": "The ID of the user.",
+#           "example": 2,
+#           "type": "integer",
+#           "format": "int64"
+#         },
+#         "anonymous_id": {
+#           "description": "The anonymous ID of the user, for use in anonymous grading.",
+#           "example": "b",
+#           "type": "string"
+#         },
+#         "display_name": {
+#           "description": "The name of the user, as it should be displayed.",
+#           "example": "Test Student 1",
+#           "type": "string"
+#         },
+#         "avatar_image_url": {
+#           "description": "The URL of the user's avatar image.",
+#           "example": "https://<canvas>/images/messages/avatar-50.png",
+#           "type": "string"
+#         },
+#         "html_url": {
+#           "description": "The URL of the user's page in the course.",
+#           "example": "https://<canvas>/courses/1/users/1",
+#           "type": "string"
+#         },
+#         "pronouns": {
+#           "description": "The user's pronouns, if pronouns are enabled.",
+#           "example": "they/them",
+#           "type": "string"
+#         },
+#         "fake_student": {
+#           "description": "Optional: true if the user is the course's test student. Only included for test students.",
+#           "example": true,
+#           "type": "boolean"
+#         },
+#         "progress": {
+#           "description": "The user's progress through the course's module requirements. If it can't be evaluated for this user, it holds an error instead.",
+#           "$ref": "CourseProgress"
+#         }
+#       }
+#     }
+#
 # @model CourseGradingPeriod
 #     {
 #       "id": "CourseGradingPeriod",
@@ -4057,6 +4105,8 @@ class CoursesController < ApplicationController
   #       }
   #     }
   #   ]
+  #
+  # @returns [UserProgress]
   def bulk_user_progress
     get_context
     return unless authorized_action(@context, @current_user, :view_all_grades)

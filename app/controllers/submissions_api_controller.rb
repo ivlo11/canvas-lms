@@ -215,6 +215,56 @@
 #       }
 #     }
 #
+# @model MultipleGradeableStudent
+#     {
+#       "id": "MultipleGradeableStudent",
+#       "description": "A student's display fields with the requested assignments they can submit.",
+#       "properties": {
+#         "id": {
+#           "description": "The ID of the user.",
+#           "example": 2,
+#           "type": "integer",
+#           "format": "int64"
+#         },
+#         "anonymous_id": {
+#           "description": "The anonymous ID of the user, for use in anonymous grading.",
+#           "example": "b",
+#           "type": "string"
+#         },
+#         "display_name": {
+#           "description": "The name of the user, as it should be displayed.",
+#           "example": "Test Student 1",
+#           "type": "string"
+#         },
+#         "avatar_image_url": {
+#           "description": "The URL of the user's avatar image.",
+#           "example": "https://<canvas>/images/messages/avatar-50.png",
+#           "type": "string"
+#         },
+#         "html_url": {
+#           "description": "The URL of the user's page in the course.",
+#           "example": "https://<canvas>/courses/1/users/1",
+#           "type": "string"
+#         },
+#         "pronouns": {
+#           "description": "The user's pronouns, if pronouns are enabled.",
+#           "example": "they/them",
+#           "type": "string"
+#         },
+#         "fake_student": {
+#           "description": "Optional: true if the user is the course's test student. Only included for test students.",
+#           "example": true,
+#           "type": "boolean"
+#         },
+#         "assignment_ids": {
+#           "description": "The IDs of the requested assignments this student can submit.",
+#           "example": [1, 2, 3],
+#           "type": "array",
+#           "items": { "type": "integer" }
+#         }
+#       }
+#     }
+#
 class SubmissionsApiController < ApplicationController
   before_action :get_course_from_section, :require_context, :require_user
   batch_jobs_in_actions only: [:update, :update_anonymous], batch: { priority: Delayed::LOW_PRIORITY }
@@ -1325,6 +1375,8 @@ class SubmissionsApiController < ApplicationController
   #       "assignment_ids": [1, 2, 3]
   #     }
   #   ]
+  #
+  # @returns [MultipleGradeableStudent]
   def multiple_gradeable_students
     if authorized_action(@context, @current_user, [:manage_grades, :view_all_grades])
       assignment_ids = Array(params[:assignment_ids])

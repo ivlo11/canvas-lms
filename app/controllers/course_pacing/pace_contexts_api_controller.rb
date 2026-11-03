@@ -17,6 +17,76 @@
 # You should have received a copy of the GNU Affero General Public License along
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
+# @model PaceContext
+#     {
+#       "id": "PaceContext",
+#       "description": "A course, section or student enrollment that can be paced.",
+#       "properties": {
+#         "name": {
+#           "description": "The name of the context.",
+#           "example": "Biology 101",
+#           "type": "string"
+#         },
+#         "type": {
+#           "description": "The type of the context: Course, CourseSection or StudentEnrollment.",
+#           "example": "Course",
+#           "type": "string"
+#         },
+#         "item_id": {
+#           "description": "The ID of the course, section or enrollment.",
+#           "example": 1,
+#           "type": "integer",
+#           "format": "int64"
+#         },
+#         "associated_section_count": {
+#           "description": "The number of sections in the course. Null for sections and enrollments.",
+#           "example": 1,
+#           "type": "integer"
+#         },
+#         "associated_student_count": {
+#           "description": "The number of students in the course or section. Null for enrollments.",
+#           "example": 25,
+#           "type": "integer"
+#         },
+#         "applied_pace": {
+#           "description": "The course pace that applies to this context, or null.",
+#           "$ref": "AppliedPace"
+#         },
+#         "on_pace": {
+#           "description": "Whether the student is on pace. Null for courses and sections.",
+#           "example": true,
+#           "type": "boolean"
+#         }
+#       }
+#     }
+#
+# @model AppliedPace
+#     {
+#       "id": "AppliedPace",
+#       "description": "The course pace that applies to a pace context.",
+#       "properties": {
+#         "name": {
+#           "description": "The name of the context the pace belongs to.",
+#           "example": "Biology 101",
+#           "type": "string"
+#         },
+#         "type": {
+#           "description": "The type of the pace: Course, Section or Enrollment.",
+#           "example": "Course",
+#           "type": "string"
+#         },
+#         "duration": {
+#           "description": "The pace's duration, in days.",
+#           "example": 20,
+#           "type": "integer"
+#         },
+#         "last_modified": {
+#           "description": "When the pace was last published.",
+#           "example": "2022-11-01T10:00:00Z",
+#           "type": "datetime"
+#         }
+#       }
+#     }
 class CoursePacing::PaceContextsApiController < ApplicationController
   before_action :require_context
   before_action :ensure_pacing_enabled
@@ -50,6 +120,8 @@ class CoursePacing::PaceContextsApiController < ApplicationController
   # @example_request
   #   curl https://<canvas>/api/v1/courses/1/pace_contexts?type=course \
   #     -H 'Authorization: Bearer <token>'
+  #
+  # @returns { "pace_contexts": [PaceContext], "total_entries": integer }
   def index
     contexts = CoursePacing::PaceContextsService.new(@context).contexts_of_type(@type, params: filter_params)
     paginated_contexts = Api.paginate(contexts, self, api_v1_pace_contexts_url, total_entries: contexts.count)
