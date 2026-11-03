@@ -21,6 +21,110 @@
 require "benchmark"
 
 # @API Discussion Topics
+#
+# @model DiscussionEntry
+#     {
+#       "id": "DiscussionEntry",
+#       "description": "An entry (a root post or a reply) in a discussion topic",
+#       "required": [
+#         "id"
+#       ],
+#       "properties": {
+#         "id": {
+#           "description": "The unique identifier for the entry.",
+#           "example": 1019,
+#           "type": "integer"
+#         },
+#         "user_id": {
+#           "description": "The unique identifier for the author of the entry. Not returned for deleted entries.",
+#           "example": 7086,
+#           "type": "integer"
+#         },
+#         "editor_id": {
+#           "description": "The unique identifier for the user who last edited or deleted the entry, if any.",
+#           "example": 7087,
+#           "type": "integer"
+#         },
+#         "user_name": {
+#           "description": "The author's display name, or null for anonymous topics when the author is not an instructor. Not returned for deleted entries.",
+#           "example": "nobody@example.com",
+#           "type": "string"
+#         },
+#         "message": {
+#           "description": "The content of the entry (HTML). Not returned for deleted entries.",
+#           "example": "Newer entry",
+#           "type": "string"
+#         },
+#         "deleted": {
+#           "description": "True if the entry has been deleted. user_id, user_name and message are not returned for deleted entries.",
+#           "example": true,
+#           "type": "boolean"
+#         },
+#         "parent_id": {
+#           "description": "The unique identifier of the parent entry, or null for a root entry.",
+#           "example": 1016,
+#           "type": "integer"
+#         },
+#         "created_at": {
+#           "description": "The creation time of the entry, in ISO8601 format.",
+#           "example": "2011-11-03T21:33:29Z",
+#           "type": "datetime"
+#         },
+#         "updated_at": {
+#           "description": "The time the entry was last updated, in ISO8601 format.",
+#           "example": "2011-11-03T21:33:29Z",
+#           "type": "datetime"
+#         },
+#         "rating_count": {
+#           "description": "The number of ratings the entry has, or null if it has none.",
+#           "example": 1,
+#           "type": "integer"
+#         },
+#         "rating_sum": {
+#           "description": "The sum of the entry's ratings, or null if it has none.",
+#           "example": 1,
+#           "type": "integer"
+#         },
+#         "read_state": {
+#           "description": "The read state of the entry, \"read\" or \"unread\".",
+#           "example": "read",
+#           "type": "string"
+#         },
+#         "forced_read_state": {
+#           "description": "Whether the read_state was forced (was set manually).",
+#           "example": false,
+#           "type": "boolean"
+#         },
+#         "user": {
+#           "description": "The author's display information (id, display_name, avatar_image_url, html_url, pronouns, anonymous_id).",
+#           "type": "object"
+#         },
+#         "attachment": {
+#           "description": "The file attached to the entry, if any.",
+#           "type": "object"
+#         },
+#         "attachments": {
+#           "description": "The files attached to the entry, if any.",
+#           "type": "array",
+#           "items": {
+#             "type": "object"
+#           }
+#         },
+#         "recent_replies": {
+#           "description": "The 10 most recent replies for a root entry, newest first. Present only if there is at least one reply.",
+#           "type": "array",
+#           "items": {
+#             "$ref": "DiscussionEntry"
+#           }
+#         },
+#         "has_more_replies": {
+#           "description": "True if there are more than 10 replies for a root entry. Present only if there is at least one reply.",
+#           "example": false,
+#           "type": "boolean"
+#         }
+#       }
+#     }
+#
 class DiscussionTopicsApiController < ApplicationController
   include Api::V1::DiscussionTopics
   include Api::V1::User
@@ -760,6 +864,8 @@ class DiscussionTopicsApiController < ApplicationController
   #           "created_at": "2011-11-03T21:32:29Z"
   #         } ],
   #       "has_more_replies": false } ]
+  #
+  # @returns [DiscussionEntry]
   def entries
     return unless is_not_anonymous
 
@@ -841,6 +947,8 @@ class DiscussionTopicsApiController < ApplicationController
   #       "read_state": "unread",
   #       "forced_read_state": false,
   #       "created_at": "2011-11-03T21:26:44Z" } ]
+  #
+  # @returns [DiscussionEntry]
   def replies
     return unless is_not_anonymous
 
@@ -889,6 +997,8 @@ class DiscussionTopicsApiController < ApplicationController
   #     { ... entry 2 ... },
   #     { ... entry 3 ... },
   #   ]
+  #
+  # @returns [DiscussionEntry]
   def entry_list
     return unless is_not_anonymous
 
