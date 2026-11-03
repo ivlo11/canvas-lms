@@ -710,6 +710,7 @@ module SwaggerYard
         logger.puts "=" * 60
         logger.puts "📊 Endpoints: #{paths_count}"
         logger.puts "📦 Schemas: #{schemas_count}"
+        logger.puts "⚠️  Unresolved @returns models: #{SwaggerYard::CanvasAdapter.unresolved_returns&.size || 0}"
         logger.puts "📁 Output: #{output_path}"
         logger.puts "=" * 60
       end

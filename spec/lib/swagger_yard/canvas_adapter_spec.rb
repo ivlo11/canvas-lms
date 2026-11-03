@@ -275,6 +275,71 @@ describe SwaggerYard::CanvasAdapter do
     end
   end
 
+  describe ".unresolved_return_models" do
+    around do |example|
+      saved = described_class.canvas_schemas
+      described_class.canvas_schemas = {
+        "Lti_Deployment" => { "type" => "object" },
+        "User" => { "type" => "object" }
+      }
+      example.run
+    ensure
+      described_class.canvas_schemas = saved
+    end
+
+    it "reports an undefined list model" do
+      expect(described_class.unresolved_return_models("[UsedLocations]")).to eq(["UsedLocations"])
+    end
+
+    it "reports an undefined single model" do
+      expect(described_class.unresolved_return_models("Lti::Missing")).to eq(["Lti::Missing"])
+    end
+
+    it "reports an undefined Array<> model" do
+      expect(described_class.unresolved_return_models("Array<Missing>")).to eq(["Missing"])
+    end
+
+    it "reports only the undefined side of a union" do
+      expect(described_class.unresolved_return_models("User | Missing")).to eq(["Missing"])
+    end
+
+    it "does not report defined, namespaced or lib/schemas/docs models" do
+      expect(described_class.unresolved_return_models("[User]")).to be_empty
+      expect(described_class.unresolved_return_models("Lti::Deployment")).to be_empty
+      expect(described_class.unresolved_return_models("Schemas::Docs::User")).to be_empty
+    end
+
+    it "does not report prose, primitives or inline objects" do
+      expect(described_class.unresolved_return_models("the input arguments, with the user's id")).to be_empty
+      expect(described_class.unresolved_return_models("204 No Content")).to be_empty
+      expect(described_class.unresolved_return_models("String")).to be_empty
+      expect(described_class.unresolved_return_models("[Integer]")).to be_empty
+      expect(described_class.unresolved_return_models('{ "polls": [Missing] }')).to be_empty
+    end
+  end
+
+  describe ".warn_unresolved_returns" do
+    around do |example|
+      saved = [described_class.canvas_schemas, described_class.unresolved_returns]
+      described_class.canvas_schemas = { "User" => { "type" => "object" } }
+      described_class.unresolved_returns = []
+      example.run
+    ensure
+      described_class.canvas_schemas, described_class.unresolved_returns = saved
+    end
+
+    it "prints a warning naming the operation and model and records it" do
+      expect { described_class.warn_unresolved_returns("Rubrics-used_locations", "UsedLocations") }
+        .to output("[warn]: unresolved @returns model UsedLocations for Rubrics-used_locations\n").to_stdout
+      expect(described_class.unresolved_returns).to eq([%w[Rubrics-used_locations UsedLocations]])
+    end
+
+    it "prints nothing for a defined model" do
+      expect { described_class.warn_unresolved_returns("Users-show", "User") }.not_to output.to_stdout
+      expect(described_class.unresolved_returns).to be_empty
+    end
+  end
+
   describe ".convert_single_type" do
     it "converts datetime to string" do
       expect(described_class.convert_single_type("datetime")).to eq("string")

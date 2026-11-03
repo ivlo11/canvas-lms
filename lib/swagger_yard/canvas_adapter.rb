@@ -44,6 +44,10 @@ module SwaggerYard
     # Storage for operations typed from a { "<key>": [<Model>] } example response
     @wrapped_list_operations = []
 
+    # Storage for [operation id, model name] of @returns models that resolve to
+    # no collected schema
+    @unresolved_returns = []
+
     # Matches Canvas example responses of the form { "<key>": [<Model>] }
     WRAPPED_LIST_EXAMPLE = /\A\{\s*"?([a-z][a-z0-9_]*)"?\s*:\s*\[\s*([A-Z][A-Za-z0-9_:]*)\s*\]\s*\}\z/
 
@@ -55,8 +59,15 @@ module SwaggerYard
 
     INLINE_OBJECT_PRIMITIVES = %w[integer string boolean number].freeze
 
+    # A model reference in a @returns type: an identifier with optional ::
+    # segments. Prose ("the input arguments") and status lines don't match
+    RETURNS_MODEL_REFERENCE = /\A[A-Z][A-Za-z0-9_]*(::[A-Z][A-Za-z0-9_]*)*\z/
+
+    # @returns type names that are primitives, not models
+    RETURNS_PRIMITIVES = %w[string integer int float number numeric boolean bool array object hash].freeze
+
     class << self
-      attr_accessor :canvas_examples, :canvas_schemas, :operation_models, :wrapped_list_operations
+      attr_accessor :canvas_examples, :canvas_schemas, :operation_models, :wrapped_list_operations, :unresolved_returns
 
       # Single source of truth for controller patterns to scan
       # Used by both SwaggerYard config and model schema collection
@@ -117,6 +128,7 @@ module SwaggerYard
       @operation_models = {} # Reset operation model tracking
       @operation_ids = [] # Reset operation ids tracking
       @wrapped_list_operations = [] # Reset wrapped list operation tracking
+      @unresolved_returns = [] # Reset unresolved @returns model tracking
       load_routes_from_api_route_set!
     end
 
@@ -347,6 +359,29 @@ module SwaggerYard
     def self.resolve_schema_name(name)
       schema_name = sanitize_schema_name(name.to_s.delete_prefix("Schemas::Docs::"))
       schema_name if @canvas_schemas.key?(schema_name)
+    end
+
+    # The model names in a @returns type ("Model", "[Model]", "Array<Model>",
+    # "A | B") that resolve to no collected schema. Primitives and anything
+    # that isn't a model reference are skipped
+    def self.unresolved_return_models(type_text)
+      inner = type_text.to_s.strip
+      inner = $1 if inner =~ /\A\[(.+)\]\z/ || inner =~ /\AArray<(.+)>\z/i
+      inner.split("|").map(&:strip).select do |name|
+        name.match?(RETURNS_MODEL_REFERENCE) &&
+          !RETURNS_PRIMITIVES.include?(name.downcase) &&
+          resolve_schema_name(name).nil?
+      end
+    end
+
+    # Records and prints a warning for each unresolved model in a @returns type
+    def self.warn_unresolved_returns(operation_id, type_text)
+      unresolved_return_models(type_text).each do |name|
+        @unresolved_returns << [operation_id, name]
+        # rubocop:disable Rails/Output
+        puts "[warn]: unresolved @returns model #{name} for #{operation_id}"
+        # rubocop:enable Rails/Output
+      end
     end
 
     # Parses an example response of the form { "<key>": [<Model>] } whose model
@@ -1181,6 +1216,8 @@ module SwaggerYard
                 types = [tag.types.to_s.tr('"', "")]
               end
               return unless types
+
+              SwaggerYard::CanvasAdapter.warn_unresolved_returns(operation.operation_id, types.first)
 
               desc = tag.text.to_s.strip
 
