@@ -45,13 +45,13 @@
 #         },
 #         "student": {
 #           "description": "ID of the student associated with the event. will match the user_id in the associated submission.",
-#           "example": 2319,
-#           "type": "integer"
+#           "example": "2319",
+#           "type": "string"
 #         },
 #         "grader": {
 #           "description": "ID of the grader associated with the event. will match the grader_id in the associated submission.",
-#           "example": 2319,
-#           "type": "integer"
+#           "example": "2319",
+#           "type": "string"
 #         },
 #         "page_view": {
 #           "description": "ID of the page view during the event if it exists.",
@@ -108,8 +108,28 @@
 #         },
 #         "version_number": {
 #           "description": "Version Number of the grade change submission.",
-#           "example": "1",
+#           "example": 1,
+#           "type": "integer"
+#         },
+#         "points_possible_before": {
+#           "description": "The assignment's points possible before the change.",
+#           "example": 10.0,
+#           "type": "number"
+#         },
+#         "points_possible_after": {
+#           "description": "The assignment's points possible after the change.",
+#           "example": 10.0,
+#           "type": "number"
+#         },
+#         "grade_current": {
+#           "description": "The current grade of the submission. Only included when the request includes current_grade.",
+#           "example": "8",
 #           "type": "string"
+#         },
+#         "course_override_grade": {
+#           "description": "True if the event changed a course override grade. Only included for override grade events.",
+#           "example": true,
+#           "type": "boolean"
 #         },
 #         "request_id": {
 #           "description": "The unique request id of the request during the grade change.",
@@ -135,7 +155,7 @@ class GradeChangeAuditApiController < AuditorApiController
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
   #
-  # @returns [GradeChangeEvent]
+  # @returns { "links": object, "events": [GradeChangeEvent], "linked": object }
   #
   def for_assignment
     @assignment = api_find(Assignment.active, params[:assignment_id])
@@ -158,7 +178,7 @@ class GradeChangeAuditApiController < AuditorApiController
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
   #
-  # @returns [GradeChangeEvent]
+  # @returns { "links": object, "events": [GradeChangeEvent], "linked": object }
   #
   def for_course
     course = api_find(Course, params[:course_id])
@@ -178,7 +198,7 @@ class GradeChangeAuditApiController < AuditorApiController
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
   #
-  # @returns [GradeChangeEvent]
+  # @returns { "links": object, "events": [GradeChangeEvent], "linked": object }
   #
   def for_student
     return render_unauthorized_action unless admin_authorized?
@@ -202,7 +222,7 @@ class GradeChangeAuditApiController < AuditorApiController
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
   #
-  # @returns [GradeChangeEvent]
+  # @returns { "links": object, "events": [GradeChangeEvent], "linked": object }
   #
   def for_grader
     return render_unauthorized_action unless admin_authorized?
@@ -241,7 +261,7 @@ class GradeChangeAuditApiController < AuditorApiController
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
   #
-  # @returns [GradeChangeEvent]
+  # @returns { "links": object, "events": [GradeChangeEvent], "linked": object }
   #
   def query
     assignment = Auditors::GradeChange::COURSE_OVERRIDE_ASSIGNMENT if params[:assignment_id] == "override"

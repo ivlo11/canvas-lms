@@ -30,11 +30,44 @@
 #
 # Authentication logs are stored for one year.
 #
+# @model AuthenticationEventLinks
+#     {
+#       "id": "AuthenticationEventLinks",
+#       "description": "",
+#       "properties": {
+#         "login": {
+#           "description": "ID of the login (pseudonym) associated with the event",
+#           "example": 9478,
+#           "type": "integer"
+#         },
+#         "account": {
+#           "description": "ID of the account associated with the event. will match the account_id in the associated login.",
+#           "example": 2319,
+#           "type": "integer"
+#         },
+#         "user": {
+#           "description": "ID of the user associated with the event. will match the user_id in the associated login.",
+#           "example": 362,
+#           "type": "integer"
+#         },
+#         "page_view": {
+#           "description": "ID of the page view during the event if it exists.",
+#           "example": "e2b76430-27a5-0131-3ca1-48e0eb13f29b",
+#           "type": "string"
+#         }
+#       }
+#     }
+#
 # @model AuthenticationEvent
 #     {
 #       "id": "AuthenticationEvent",
 #       "description": "",
 #       "properties": {
+#         "id": {
+#           "description": "ID of the event.",
+#           "example": "e2b76430-27a5-0131-3ca1-48e0eb13f29b",
+#           "type": "string"
+#         },
 #         "created_at": {
 #           "description": "timestamp of the event",
 #           "example": "2012-07-19T15:00:00-06:00",
@@ -51,20 +84,8 @@
 #             ]
 #           }
 #         },
-#         "pseudonym_id": {
-#           "description": "ID of the pseudonym (login) associated with the event",
-#           "example": 9478,
-#           "type": "integer"
-#         },
-#         "account_id": {
-#           "description": "ID of the account associated with the event. will match the account_id in the associated pseudonym.",
-#           "example": 2319,
-#           "type": "integer"
-#         },
-#         "user_id": {
-#           "description": "ID of the user associated with the event will match the user_id in the associated pseudonym.",
-#           "example": 362,
-#           "type": "integer"
+#         "links": {
+#           "$ref": "AuthenticationEventLinks"
 #         }
 #       }
 #     }
@@ -82,6 +103,8 @@ class AuthenticationAuditApiController < AuditorApiController
   #
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
+  #
+  # @returns { "links": object, "events": [AuthenticationEvent], "linked": object }
   #
   def for_login
     @pseudonym = Pseudonym.active.find(params[:login_id])
@@ -104,6 +127,8 @@ class AuthenticationAuditApiController < AuditorApiController
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
   #
+  # @returns { "links": object, "events": [AuthenticationEvent], "linked": object }
+  #
   def for_account
     @account = api_find(Account.root_accounts.active, params[:account_id])
     if account_visible(@account) || account_visible(Account.site_admin)
@@ -124,6 +149,8 @@ class AuthenticationAuditApiController < AuditorApiController
   #
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
+  #
+  # @returns { "links": object, "events": [AuthenticationEvent], "linked": object }
   #
   def for_user
     @user = api_find(User.active, params[:user_id])

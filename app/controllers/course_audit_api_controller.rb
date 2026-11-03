@@ -35,17 +35,17 @@
 # @model CourseEventLink
 #     {
 #       "id": "CourseEventLink",
-#       "description": "",
+#       "description": "IDs related to the event. course, user, page_view and sis_batch are strings, and an empty string means none.",
 #       "properties": {
 #         "course": {
 #           "description": "ID of the course for the event.",
-#           "example": 12345,
-#           "type": "integer"
+#           "example": "12345",
+#           "type": "string"
 #         },
 #         "user": {
 #           "description": "ID of the user for the event (who made the change).",
-#           "example": 12345,
-#           "type": "integer"
+#           "example": "12345",
+#           "type": "string"
 #         },
 #         "page_view": {
 #           "description": "ID of the page view during the event if it exists.",
@@ -62,10 +62,20 @@
 #           "example": 12345,
 #           "type": "integer"
 #         },
-#         "sis_batch": {
-#           "description": "ID of the SIS batch that triggered the event.",
+#         "reset_from": {
+#           "description": "ID of the course that this course was reset from. This is only included if the event_type is reset_from.",
 #           "example": 12345,
 #           "type": "integer"
+#         },
+#         "reset_to": {
+#           "description": "ID of the course that this course was reset to. This is only included if the event_type is reset_to.",
+#           "example": 12345,
+#           "type": "integer"
+#         },
+#         "sis_batch": {
+#           "description": "ID of the SIS batch that triggered the event.",
+#           "example": "12345",
+#           "type": "string"
 #         }
 #       }
 #     }
@@ -92,8 +102,8 @@
 #         },
 #         "event_data": {
 #           "description": "Course event data depending on the event type.  This will return an object containing the relevant event data.  An updated event type will return an UpdatedEventData object.",
-#           "example": "{}",
-#           "type": "string"
+#           "example": {"name": ["Old Name", "New Name"]},
+#           "type": "object"
 #         },
 #         "event_source": {
 #           "description": "Course event source depending on the event type.  This will return a string containing the source of the event.",
@@ -182,7 +192,7 @@ class CourseAuditApiController < AuditorApiController
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
   #
-  # @returns [CourseEvent]
+  # @returns { "links": object, "events": [CourseEvent], "linked": object }
   #
   def for_course
     @course = api_find(@domain_root_account.all_courses, params[:course_id])
@@ -204,7 +214,7 @@ class CourseAuditApiController < AuditorApiController
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
   #
-  # @returns [CourseEvent]
+  # @returns { "links": object, "events": [CourseEvent], "linked": object }
   #
   def for_account
     @account = api_find(Account.active, params[:account_id])
