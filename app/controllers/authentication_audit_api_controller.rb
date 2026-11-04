@@ -58,6 +58,34 @@
 #       }
 #     }
 #
+# @model AuthenticationLinkedRecords
+#     {
+#       "id": "AuthenticationLinkedRecords",
+#       "description": "The records referenced by the events on a page of authentication events",
+#       "properties": {
+#         "logins": {
+#           "description": "The logins associated with the events",
+#           "type": "array",
+#           "items": { "$ref": "Login" }
+#         },
+#         "accounts": {
+#           "description": "The accounts associated with the events",
+#           "type": "array",
+#           "items": { "$ref": "Account" }
+#         },
+#         "users": {
+#           "description": "The users associated with the events",
+#           "type": "array",
+#           "items": { "$ref": "User" }
+#         },
+#         "page_views": {
+#           "description": "The page views during the events",
+#           "type": "array",
+#           "items": { "$ref": "PageView" }
+#         }
+#       }
+#     }
+#
 # @model AuthenticationEvent
 #     {
 #       "id": "AuthenticationEvent",
@@ -104,7 +132,7 @@ class AuthenticationAuditApiController < AuditorApiController
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
   #
-  # @returns { "links": object, "events": [AuthenticationEvent], "linked": object }
+  # @returns { "links": object, "events": [AuthenticationEvent], "linked": AuthenticationLinkedRecords }
   #
   def for_login
     @pseudonym = Pseudonym.active.find(params[:login_id])
@@ -127,7 +155,7 @@ class AuthenticationAuditApiController < AuditorApiController
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
   #
-  # @returns { "links": object, "events": [AuthenticationEvent], "linked": object }
+  # @returns { "links": object, "events": [AuthenticationEvent], "linked": AuthenticationLinkedRecords }
   #
   def for_account
     @account = api_find(Account.root_accounts.active, params[:account_id])
@@ -150,7 +178,7 @@ class AuthenticationAuditApiController < AuditorApiController
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
   #
-  # @returns { "links": object, "events": [AuthenticationEvent], "linked": object }
+  # @returns { "links": object, "events": [AuthenticationEvent], "linked": AuthenticationLinkedRecords }
   #
   def for_user
     @user = api_find(User.active, params[:user_id])

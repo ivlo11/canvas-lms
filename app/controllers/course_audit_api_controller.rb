@@ -184,7 +184,8 @@ class CourseAuditApiController < AuditorApiController
 
   # @API Query by course.
   #
-  # List course change events for a given course.
+  # List course change events for a given course. The related records in
+  # linked have string ids.
   #
   # @argument start_time [DateTime]
   #   The beginning of the time range from which you want events.
@@ -206,7 +207,8 @@ class CourseAuditApiController < AuditorApiController
 
   # @API Query by account.
   #
-  # List course change events for a given account.
+  # List course change events for a given account. The related records in
+  # linked have string ids.
   #
   # @argument start_time [DateTime]
   #   The beginning of the time range from which you want events.

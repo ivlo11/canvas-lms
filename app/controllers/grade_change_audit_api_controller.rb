@@ -61,6 +61,34 @@
 #       }
 #     }
 #
+# @model GradeChangeLinkedRecords
+#     {
+#       "id": "GradeChangeLinkedRecords",
+#       "description": "The records referenced by the events on a page of grade change events",
+#       "properties": {
+#         "page_views": {
+#           "description": "The page views during the events",
+#           "type": "array",
+#           "items": { "$ref": "PageView" }
+#         },
+#         "assignments": {
+#           "description": "The assignments associated with the events",
+#           "type": "array",
+#           "items": { "$ref": "Assignment" }
+#         },
+#         "courses": {
+#           "description": "The courses associated with the events",
+#           "type": "array",
+#           "items": { "$ref": "Course" }
+#         },
+#         "users": {
+#           "description": "The students and graders associated with the events",
+#           "type": "array",
+#           "items": { "$ref": "User" }
+#         }
+#       }
+#     }
+#
 # @model GradeChangeEvent
 #     {
 #       "id": "GradeChangeEvent",
@@ -155,7 +183,7 @@ class GradeChangeAuditApiController < AuditorApiController
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
   #
-  # @returns { "links": object, "events": [GradeChangeEvent], "linked": object }
+  # @returns { "links": object, "events": [GradeChangeEvent], "linked": GradeChangeLinkedRecords }
   #
   def for_assignment
     @assignment = api_find(Assignment.active, params[:assignment_id])
@@ -178,7 +206,7 @@ class GradeChangeAuditApiController < AuditorApiController
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
   #
-  # @returns { "links": object, "events": [GradeChangeEvent], "linked": object }
+  # @returns { "links": object, "events": [GradeChangeEvent], "linked": GradeChangeLinkedRecords }
   #
   def for_course
     course = api_find(Course, params[:course_id])
@@ -198,7 +226,7 @@ class GradeChangeAuditApiController < AuditorApiController
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
   #
-  # @returns { "links": object, "events": [GradeChangeEvent], "linked": object }
+  # @returns { "links": object, "events": [GradeChangeEvent], "linked": GradeChangeLinkedRecords }
   #
   def for_student
     return render_unauthorized_action unless admin_authorized?
@@ -222,7 +250,7 @@ class GradeChangeAuditApiController < AuditorApiController
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
   #
-  # @returns { "links": object, "events": [GradeChangeEvent], "linked": object }
+  # @returns { "links": object, "events": [GradeChangeEvent], "linked": GradeChangeLinkedRecords }
   #
   def for_grader
     return render_unauthorized_action unless admin_authorized?
@@ -261,7 +289,7 @@ class GradeChangeAuditApiController < AuditorApiController
   # @argument end_time [DateTime]
   #   The end of the time range from which you want events.
   #
-  # @returns { "links": object, "events": [GradeChangeEvent], "linked": object }
+  # @returns { "links": object, "events": [GradeChangeEvent], "linked": GradeChangeLinkedRecords }
   #
   def query
     assignment = Auditors::GradeChange::COURSE_OVERRIDE_ASSIGNMENT if params[:assignment_id] == "override"
