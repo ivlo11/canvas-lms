@@ -1,0 +1,112 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Audits every @API action's documentation against recorded responses, a trace
+# of its code, and column types. Writes one findings file, holding names and types
+# only, under tmp/. Needs no database.
+#
+#   script/api_docs_audit [--evidence DIR] [--docs-ref REF] [--openapi FILE]
+#                         [--routes FILE] [--output FILE] [--role ROLE]
+
+require "fileutils"
+require "json"
+require "optparse"
+require "yaml"
+
+root = File.expand_path("..", __dir__)
+Dir[File.join(root, "lib/api_docs_audit/*.rb")].each { |file| require file }
+
+options = {
+  evidence: File.join(root, "tmp/api_docs_audit/evidence"),
+  output: File.join(root, "tmp/api_docs_audit/findings.json"),
+  routes: File.join(root, "tmp/api_docs_audit/routes.json"),
+  openapi: File.join(root, "public/doc/openapi/canvas.openapi.yaml")
+}
+OptionParser.new do |parser|
+  parser.on("--evidence DIR", "recorded responses (default #{options[:evidence]})") { |value| options[:evidence] = value }
+  parser.on("--docs-ref REF", "read documentation from this git ref") { |value| options[:docs_ref] = value }
+  parser.on("--openapi FILE", "generated spec, for pagination") { |value| options[:openapi] = value }
+  parser.on("--routes FILE", "route map, for probes (see ApiDocsAudit::Routes)") { |value| options[:routes] = value }
+  parser.on("--output FILE", "findings file") { |value| options[:output] = value }
+  parser.on("--role ROLE", "list actions verified for this role") { |value| options[:role] = value }
+end.parse!
+
+def paginated_operations(path)
+  return nil unless File.exist?(path)
+
+  operations = Hash.new { |hash, group| hash[group] = {} }
+  YAML.safe_load_file(path, aliases: true, permitted_classes: [Date, Time]).fetch("paths").each_value do |item|
+    item.each_value do |operation|
+      next unless operation.is_a?(Hash) && operation["operationId"]
+
+      group, name = operation["operationId"].split("-", 2)
+      next unless name
+
+      operations[group][name] ||= false
+      operations[group][name] ||= operation["x-paginated"] == true
+    end
+  end
+  operations
+end
+
+docs = ApiDocsAudit::DocsParser.new(ApiDocsAudit::Source.new(root:, ref: options[:docs_ref])).parse
+index = ApiDocsAudit::CodeIndex.new(root:)
+tracer = ApiDocsAudit::Tracer.new(index)
+code = ApiDocsAudit::DocsParser.new(ApiDocsAudit::Source.new(root:)).parse
+locations = code.actions.to_h { |action| [action.key, action.file] }
+traces = {}
+paginates = {}
+docs.actions.each do |action|
+  file = locations[action.key]
+  next unless file
+
+  traces[action.key] = tracer.trace_action(file, action.name)
+  paginates[action.key] = tracer.paginates?(file, action.name)
+end
+
+evidence = ApiDocsAudit::Evidence.load(options[:evidence], routes: ApiDocsAudit::Routes.load(options[:routes]))
+structure = File.join(root, "db/structure.sql")
+columns = File.exist?(structure) ? ApiDocsAudit::ColumnTypes.new(File.read(structure)) : nil
+comparison = ApiDocsAudit::Comparison.new(
+  docs:,
+  evidence:,
+  traces:,
+  columns:,
+  paginated_operations: paginated_operations(options[:openapi]),
+  paginates:
+).run
+
+actions = docs.actions.map do |action|
+  trace = traces[action.key] || {}
+  {
+    action: action.key,
+    file: action.file,
+    line: action.line,
+    status: comparison.status_of(action.key),
+    roles: evidence.roles(action.key),
+    hit: evidence.hit?(action.key),
+    returns: action.response.text,
+    container: action.response.container,
+    trace: { kind: trace[:kind], root: trace[:root], complete: trace[:complete], mixed: trace[:mixed], reached: trace[:reached] }
+  }
+end
+
+summary = {
+  actions: actions.size,
+  status: actions.map { |action| action[:status] }.tally, # rubocop:disable Rails/Pluck
+  findings: comparison.findings.size,
+  by_kind: comparison.findings.map(&:kind).tally.sort.to_h,
+  by_apply: comparison.findings.map(&:apply).tally.sort.to_h,
+  by_kind_and_evidence: comparison.findings.map { |finding| "#{finding.kind}/#{finding.evidence}" }.tally.sort.to_h
+}
+
+FileUtils.mkdir_p(File.dirname(options[:output]))
+File.write(options[:output], JSON.pretty_generate(docs_ref: options[:docs_ref], summary:, actions:, findings: comparison.findings.map(&:to_h)))
+
+puts JSON.pretty_generate(summary)
+puts "findings written to #{options[:output]}"
+if options[:role]
+  verified = docs.actions.select { |action| evidence.responses(action.key, role: options[:role]).any? }
+  puts "#{verified.size} actions verified for #{options[:role]}:"
+  verified.each { |action| puts "  #{action.key}" }
+end
