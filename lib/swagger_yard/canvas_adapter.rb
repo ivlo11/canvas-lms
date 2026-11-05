@@ -24,6 +24,7 @@
 #
 # This adapter allows SwaggerYard to parse Canvas's existing YARD documentation
 # and generate OpenAPI 3.0 specifications from it.
+require "ripper"
 require "securerandom"
 
 module SwaggerYard
@@ -105,6 +106,60 @@ module SwaggerYard
     SPECIAL_PATH_VARIABLES = %w[full_path self latest all_quizzes].freeze
 
     # Public: call once before building the spec
+    PAGINATION_CALL = /Api\.paginate|Api::paginate|Api\.jsonapi_paginate|\.paginate\(/
+    API_HELPER_GLOB = "lib/api/v1/**/*.rb"
+
+    # Records each method definition with the lines it spans
+    class MethodDefinitionFinder < Ripper::SexpBuilder
+      def definitions
+        @definitions ||= []
+      end
+
+      def on_def(name, params, body)
+        definitions << [name[1], name[2][0], lineno]
+        super
+      end
+    end
+
+    # Names of calls with no receiver in a piece of Ruby source. Source that
+    # doesn't parse has none.
+    def self.receiverless_calls(source)
+      calls = []
+      walk = lambda do |node|
+        next unless node.is_a?(Array)
+
+        calls << node[1][1] if %i[vcall fcall command].include?(node[0]) && node[1].is_a?(Array) && node[1][0] == :@ident
+        node.each(&walk)
+      end
+      walk.call(Ripper.sexp(source))
+      calls.uniq
+    end
+
+    # Whether a lib/api/v1 helper paginates, by itself or through other helpers.
+    # The walk stays in lib/api/v1, so it can't come back through a controller.
+    def self.api_helper_paginates?(name, visited = Set.new)
+      source = api_helper_sources[name]
+      return false unless source && visited.add?("api:#{name}")
+      return true if source.match?(PAGINATION_CALL)
+
+      receiverless_calls(source).any? { |call| api_helper_paginates?(call, visited) }
+    end
+
+    # Source of the methods in lib/api/v1, by name. A name defined more than once
+    # can't be resolved statically, so it's left out.
+    def self.api_helper_sources
+      @api_helper_sources ||= begin
+        found = Hash.new { |hash, name| hash[name] = [] }
+        Rails.root.glob(API_HELPER_GLOB).each do |path|
+          lines = File.readlines(path)
+          finder = MethodDefinitionFinder.new(lines.join)
+          finder.parse
+          finder.definitions.each { |name, first, last| found[name] << lines[(first - 1)...last].join }
+        end
+        found.select { |_, sources| sources.one? }.transform_values(&:first)
+      end
+    end
+
     def self.install!
       define_canvas_tags
       load_canvas_routes!
@@ -1314,29 +1369,26 @@ module SwaggerYard
 
             source = yard_object.source.to_s
 
-            # Look for Api.paginate, Api::paginate, or just .paginate(
+            # Look for Api.paginate, Api::paginate, Api.jsonapi_paginate, or just .paginate(
             # (some methods use collection.paginate directly from WillPaginate)
-            return true if source.match?(/Api\.paginate|Api::paginate|\.paginate\(/)
+            return true if source.match?(SwaggerYard::CanvasAdapter::PAGINATION_CALL)
 
-            # General solution: Check all method calls in the source
-            # Extract method names being called (simple heuristic: word followed by parenthesis or space)
-            # This will catch: method_name(...), method_name {...}, self.method_name, etc.
             controller_class = yard_object.parent
             return false unless controller_class
 
-            # Find all potential method calls in the source
-            # Match patterns like: word( or word { or word. or word\s
-            method_calls = source.scan(/\b([a-z_][a-z0-9_]*)\s*[({]/).flatten.uniq
-
-            # For each method call, try to find it in the same controller and check recursively
-            method_calls.each do |method_name|
-              next if method_name == yard_object.name.to_s # Skip recursive self-calls
+            # Follow receiverless calls: the controller's own methods first, then
+            # lib/api/v1 helpers. A syntax tree keeps out words in strings, local
+            # variables and calls on other objects.
+            SwaggerYard::CanvasAdapter.receiverless_calls(source).any? do |method_name|
+              next false if method_name == yard_object.name.to_s # Skip recursive self-calls
 
               helper_method = controller_class.children.find { |m| m.name.to_s == method_name }
-              return true if helper_method.respond_to?(:source) && method_uses_pagination?(helper_method, visited)
+              if helper_method.respond_to?(:source)
+                method_uses_pagination?(helper_method, visited)
+              else
+                SwaggerYard::CanvasAdapter.api_helper_paginates?(method_name, visited)
+              end
             end
-
-            false
           rescue
             # If we can't get the source, fall back to conservative heuristic
             # Original check expected exact match and not ends with _index or _list as comment intended.
