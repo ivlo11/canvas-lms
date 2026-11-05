@@ -204,6 +204,16 @@ describe ApiDocsAudit::Comparison do
         expect(finding.to_h).to include(kind: "missing_returns_no_model", apply: "review")
       end
 
+      it "names the nearest model and the keys it lacks" do
+        finding = findings(record({ "[].id" => ["string"], "[].name" => ["string"], "[].mystery" => ["string"] })).first
+        expect(finding.to_h).to include(kind: "missing_returns_no_model", apply: "review", nearest_model: "Widget", undocumented: ["mystery"])
+      end
+
+      it "takes the nearest model from a single object root" do
+        finding = findings(record({ "widget" => ["object"], "widget.id" => ["string"] }, container: "object")).first
+        expect(finding.to_h).to include(kind: "missing_returns_no_model", nearest_model: "Widget", undocumented: [])
+      end
+
       it "has no finding for an empty response" do
         expect(kinds(record({}, container: "none"), trace: { kind: "none", keys: {} })).to be_empty
       end

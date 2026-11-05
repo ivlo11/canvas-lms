@@ -22,7 +22,7 @@ module ApiDocsAudit
   # Compares documentation with recorded responses, traces and column types, and
   # returns one finding per action and field. Findings hold names and types only.
   class Comparison
-    Finding = Struct.new(:action, :kind, :apply, :evidence, :model, :field, :documented, :observed, :roles, :trace_agrees) do
+    Finding = Struct.new(:action, :kind, :apply, :evidence, :model, :field, :documented, :observed, :roles, :trace_agrees, :nearest_model, :undocumented) do
       def to_h
         super.compact
       end
@@ -183,7 +183,27 @@ module ApiDocsAudit
       agrees = trace[:kind] == (list ? "list" : "object")
       kind = fit ? "missing_returns_model_fits" : "missing_returns_no_model"
       apply = (fit && agrees) ? "auto" : "review"
-      add(action, kind, apply, "response", model: fit, documented: action.response.text, observed: list ? "list" : "object", trace_agrees: agrees, roles: roles_of(records))
+      nearest, undocumented = fit ? nil : nearest_model(keys, fields)
+      add(action, kind, apply, "response", model: fit, documented: action.response.text, observed: list ? "list" : "object", trace_agrees: agrees, roles: roles_of(records), nearest_model: nearest, undocumented:)
+    end
+
+    # What a reviewer needs when no model fits: the model most of the keys belong
+    # to, and the keys it lacks. A single object key names its model by itself,
+    # as "late_policy" does.
+    def nearest_model(keys, fields)
+      if keys.size == 1 && fields[keys.first].to_a.include?("object")
+        name = keys.first.split("_").map(&:capitalize).join
+        return [name, []] if @docs.model_properties(name)
+      end
+      return nil if keys.size < MIN_FIT_KEYS
+
+      name, shared = @docs.definitions.keys.filter_map do |candidate|
+        properties = @docs.model_properties(candidate)
+        [candidate, (keys & properties.keys).size] if properties&.any?
+      end.max_by(&:last)
+      return nil unless name && shared >= keys.size * FIT_THRESHOLD
+
+      [name, keys - @docs.model_properties(name).keys]
     end
 
     # A model fits when it documents every key seen and the keys seen cover a
@@ -410,8 +430,8 @@ module ApiDocsAudit
       records.filter_map(&:role).uniq.sort
     end
 
-    def add(action, kind, apply, evidence, model: nil, field: nil, documented: nil, observed: nil, roles: nil, trace_agrees: nil)
-      @findings << Finding.new(action.key, kind, apply, evidence, model, field, documented, observed, roles, trace_agrees)
+    def add(action, kind, apply, evidence, model: nil, field: nil, documented: nil, observed: nil, roles: nil, trace_agrees: nil, nearest_model: nil, undocumented: nil)
+      @findings << Finding.new(action.key, kind, apply, evidence, model, field, documented, observed, roles, trace_agrees, nearest_model, undocumented)
     end
   end
 end
