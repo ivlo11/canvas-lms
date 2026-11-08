@@ -55,7 +55,7 @@
 #         "fix_issue_html_url": {
 #           "description": "HTML Url to the Canvas page to investigate the issue",
 #           "example": "https://example.com/courses/1/quizzes/2",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "issue_type": {
 #           "description": "Severity of the issue: todo, warning, error",

@@ -43,6 +43,14 @@
 #       }
 #     }
 #
+# @model FavoritesResetCourseFavoritesResponse
+#     {
+#       "id": "FavoritesResetCourseFavoritesResponse",
+#       "properties": {
+#         "status": { "type": "string" }
+#       }
+#     }
+#
 class FavoritesController < ApplicationController
   before_action :check_defaults, only: [:remove_favorite_course]
   after_action :touch_user, only: %i[add_favorite_course remove_favorite_course reset_course_favorites]
@@ -248,6 +256,7 @@ class FavoritesController < ApplicationController
   #       -X DELETE \
   #       -H 'Authorization: Bearer <ACCESS_TOKEN>'
   #
+  # @returns FavoritesResetCourseFavoritesResponse
   def reset_course_favorites
     @current_user.favorites.by("Course").destroy_all
     render json: { status: "ok" }
@@ -262,6 +271,7 @@ class FavoritesController < ApplicationController
   #       -X DELETE \
   #       -H 'Authorization: Bearer <ACCESS_TOKEN>'
   #
+  # @returns FavoritesResetCourseFavoritesResponse
   def reset_groups_favorites
     @current_user.favorites.by("Group").destroy_all
     render json: { status: "ok" }

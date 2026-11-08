@@ -56,7 +56,8 @@
 #           "description": "The identifier for the scope",
 #           "example": "url:GET|/api/v1/courses",
 #           "type": "string"
-#         }
+#         },
+#         "path": { "type": "string" }
 #       }
 #     }
 #

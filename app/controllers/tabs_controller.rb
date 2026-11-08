@@ -54,7 +54,10 @@
 #           "description": "1 based",
 #           "example": 2,
 #           "type": "integer"
-#         }
+#         },
+#         "full_url": { "type": "string" },
+#         "url": { "type": ["string", "null"] },
+#         "unused": { "type": "boolean" }
 #       }
 #     }
 #
@@ -121,6 +124,7 @@ class TabsController < ApplicationController
   #         "type": "internal"
   #       }
   #     ]
+  # @returns [Tab]
   def index
     GuardRail.activate(:secondary) do
       if @context.grants_right?(@current_user, session, :read)

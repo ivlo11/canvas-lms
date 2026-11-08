@@ -42,13 +42,13 @@
 #         "user_id": {
 #           "description": "The ID of the Student that made the quiz submission.",
 #           "example": 3,
-#           "type": "integer",
+#           "type": ["integer", "null"],
 #           "format": "int64"
 #         },
 #         "submission_id": {
 #           "description": "The ID of the Submission the quiz submission represents.",
 #           "example": 1,
-#           "type": "integer",
+#           "type": ["integer", "null"],
 #           "format": "int64"
 #         },
 #         "started_at": {
@@ -60,13 +60,13 @@
 #         "finished_at": {
 #           "description": "The time at which the student submitted the quiz submission.",
 #           "example": "2013-11-07T13:16:18Z",
-#           "type": "string",
+#           "type": ["string", "null"],
 #           "format": "date-time"
 #         },
 #         "end_at": {
 #           "description": "The time at which the quiz submission will be overdue, and be flagged as a late submission.",
 #           "example": "2013-11-07T13:16:18Z",
-#           "type": "string",
+#           "type": ["string", "null"],
 #           "format": "date-time"
 #         },
 #         "attempt": {
@@ -78,50 +78,50 @@
 #         "extra_attempts": {
 #           "description": "Number of times the student was allowed to re-take the quiz over the multiple-attempt limit.",
 #           "example": 1,
-#           "type": "integer",
+#           "type": ["integer", "null"],
 #           "format": "int64"
 #         },
 #         "extra_time": {
 #           "description": "Amount of extra time allowed for the quiz submission, in minutes.",
 #           "example": 60,
-#           "type": "integer",
+#           "type": ["integer", "null"],
 #           "format": "int64"
 #         },
 #         "manually_unlocked": {
 #           "description": "The student can take the quiz even if it's locked for everyone else",
 #           "example": true,
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "time_spent": {
 #           "description": "Amount of time spent, in seconds.",
 #           "example": 300,
-#           "type": "integer",
+#           "type": ["integer", "null"],
 #           "format": "int64"
 #         },
 #         "score": {
 #           "description": "The score of the quiz submission, if graded.",
 #           "example": 3,
-#           "type": "number"
+#           "type": ["number", "null"]
 #         },
 #         "score_before_regrade": {
 #           "description": "The original score of the quiz submission prior to any re-grading.",
 #           "example": 2,
-#           "type": "number"
+#           "type": ["number", "null"]
 #         },
 #         "kept_score": {
 #           "description": "For quizzes that allow multiple attempts, this is the score that will be used, which might be the score of the latest, or the highest, quiz submission.",
 #           "example": 5,
-#           "type": "number"
+#           "type": ["number", "null"]
 #         },
 #         "fudge_points": {
 #           "description": "Number of points the quiz submission's score was fudged by.",
 #           "example": 1,
-#           "type": "number"
+#           "type": ["number", "null"]
 #         },
 #         "has_seen_results": {
 #           "description": "Whether the student has viewed their results to the quiz.",
 #           "example": true,
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "workflow_state": {
 #           "description": "The current state of the quiz submission. Possible values: ['untaken'|'pending_review'|'complete'|'settings_only'|'preview'].",
@@ -132,7 +132,30 @@
 #           "description": "Indicates whether the quiz submission is overdue and needs submission",
 #           "example": "false",
 #           "type": "boolean"
-#         }
+#         },
+#         "attempts_left": { "type": "integer" },
+#         "html_url": { "type": "string" },
+#         "quiz_points_possible": { "type": "number" },
+#         "quiz_version": { "type": "integer" },
+#         "result_url": { "type": "string" },
+#         "validation_token": { "type": "string" }
+#       }
+#     }
+#
+# @model QuizzesQuizSubmissionsUpdateResponse
+#     {
+#       "id": "QuizzesQuizSubmissionsUpdateResponse",
+#       "properties": {
+#         "quiz_submissions": { "type": "array", "items": { "$ref": "QuizSubmission" } }
+#       }
+#     }
+#
+# @model QuizzesQuizSubmissionsTimeResponse
+#     {
+#       "id": "QuizzesQuizSubmissionsTimeResponse",
+#       "properties": {
+#         "end_at": { "type": ["string", "null"] },
+#         "time_left": { "type": ["integer", "null"] }
 #       }
 #     }
 #
@@ -165,6 +188,7 @@ class Quizzes::QuizSubmissionsApiController < ApplicationController
   #  {
   #    "quiz_submissions": [QuizSubmission]
   #  }
+  # @returns { quiz_submissions: [QuizSubmission], quizzes: [Quiz], submissions: [Submission], users: [User], meta: object }
   def index
     quiz_submissions = if @context.grants_any_right?(@current_user, session, :manage_grades, :view_all_grades)
                          # teachers have access to all student submissions
@@ -209,6 +233,7 @@ class Quizzes::QuizSubmissionsApiController < ApplicationController
   #  {
   #    "quiz_submissions": [QuizSubmission]
   #  }
+  # @returns { quiz_submissions: [QuizSubmission], quizzes: [Quiz], submissions: [Submission], users: [User], meta: object }
   def submission
     unless @quiz.grants_right?(@current_user, session, :submit)
       return render_unauthorized_action
@@ -231,6 +256,7 @@ class Quizzes::QuizSubmissionsApiController < ApplicationController
   #  {
   #    "quiz_submissions": [QuizSubmission]
   #  }
+  # @returns { quiz_submissions: [QuizSubmission], quizzes: [Quiz], submissions: [Submission], users: [User], meta: object }
   def show
     if authorized_action(@quiz_submission, @current_user, :read)
       if params.key?(:attempt)
@@ -335,6 +361,7 @@ class Quizzes::QuizSubmissionsApiController < ApplicationController
   # @!appendix Manual Scoring
   #
   #   {include:file:doc/examples/quiz_submission_manual_scoring.md}
+  # @returns QuizzesQuizSubmissionsUpdateResponse
   def update
     resource_params = params[:quiz_submissions]
 
@@ -406,6 +433,7 @@ class Quizzes::QuizSubmissionsApiController < ApplicationController
   #    "end_at": [DateTime],
   #    "time_left": [Integer]
   #  }
+  # @returns QuizzesQuizSubmissionsTimeResponse
   def time
     if authorized_action(@quiz_submission, @current_user, :record_events)
       render json: {

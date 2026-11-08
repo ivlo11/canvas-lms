@@ -71,7 +71,7 @@
 #         "content_export_id": {
 #           "description": "The ID of the content export used in the offline export",
 #           "example": 5,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "workflow_state": {
 #           "description": "Current state of the web zip export: created exporting exported generating generated failed",

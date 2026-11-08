@@ -70,7 +70,7 @@
 #         "last_bounce_at": {
 #           "description": "The time the last bounce occurred.",
 #           "example": "2012-05-30T17:00:00Z",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "workflow_state": {
 #           "description": "The current state of the communication channel. Possible values are: 'unconfirmed' or 'active'.",
@@ -82,7 +82,12 @@
 #               "active"
 #             ]
 #           }
-#         }
+#         },
+#         "created_at": { "type": "string" },
+#         "last_bounce_summary": {},
+#         "last_suppression_bounce_at": { "type": ["string", "null"] },
+#         "last_transient_bounce_at": { "type": ["string", "null"] },
+#         "last_transient_bounce_summary": {}
 #       }
 #     }
 #

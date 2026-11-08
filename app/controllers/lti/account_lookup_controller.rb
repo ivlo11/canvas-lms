@@ -38,7 +38,7 @@ module Lti
   #         "name": {
   #           "description": "The display name of the account",
   #           "example": "Canvas Account",
-  #           "type": "string"
+  #           "type": ["string", "null"]
   #         },
   #         "uuid": {
   #           "description": "The UUID of the account",
@@ -48,18 +48,33 @@ module Lti
   #         "parent_account_id": {
   #           "description": "The account's parent ID, or null if this is the root account",
   #           "example": 1,
-  #           "type": "integer"
+  #           "type": ["integer", "null"]
   #         },
   #         "root_account_id": {
   #           "description": "The ID of the root account, or null if this is the root account",
   #           "example": 1,
-  #           "type": "integer"
+  #           "type": ["integer", "null"]
   #         },
   #         "workflow_state": {
   #           "description": "The state of the account. Can be 'active' or 'deleted'.",
   #           "example": "active",
   #           "type": "string"
-  #         }
+  #         },
+  #         "course_count": { "type": "integer" },
+  #         "course_template_id": { "type": ["integer", "null"] },
+  #         "default_group_storage_quota_mb": { "type": "integer" },
+  #         "default_storage_quota_mb": { "type": "integer" },
+  #         "default_time_zone": { "type": "string" },
+  #         "default_user_storage_quota_mb": { "type": "integer" },
+  #         "global_id": { "type": "integer" },
+  #         "horizon_account": { "type": "boolean" },
+  #         "integration_id": { "type": ["string", "null"] },
+  #         "lti_guid": { "type": "string" },
+  #         "sis_account_id": { "type": ["string", "null"] },
+  #         "sis_import_id": { "type": ["integer", "null"] },
+  #         "sub_account_count": { "type": "integer" },
+  #         "site_admin": { "type": "boolean" },
+  #         "services": { "type": "object" }
   #       }
   #     }
   #

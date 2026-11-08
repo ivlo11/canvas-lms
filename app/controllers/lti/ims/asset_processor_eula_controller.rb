@@ -23,6 +23,24 @@ module Lti::IMS
   #
   # 1EdTech Asset Processor services: Eula Service and Eula Acceptance Service.
   #
+  # @model LtiImsAssetProcessorEulaUpdateToolEulaResponse
+  #     {
+  #       "id": "LtiImsAssetProcessorEulaUpdateToolEulaResponse",
+  #       "properties": {
+  #         "eulaRequired": { "type": "boolean" }
+  #       }
+  #     }
+  #
+  # @model LtiImsAssetProcessorEulaCreateAcceptanceResponse
+  #     {
+  #       "id": "LtiImsAssetProcessorEulaCreateAcceptanceResponse",
+  #       "properties": {
+  #         "accepted": { "type": "boolean" },
+  #         "timestamp": { "type": "string" },
+  #         "userId": { "type": "string" }
+  #       }
+  #     }
+  #
   class AssetProcessorEulaController < ApplicationController
     before_action :validate_tool_id
     before_action { require_feature_enabled :lti_asset_processor }
@@ -69,7 +87,7 @@ module Lti::IMS
     # @argument eulaRequired [Boolean]
     #  A boolean value representing whether or not the EULA is required for the deployment.
     #
-    # @returns the input arguments as accepted and stored in the database
+    # @returns LtiImsAssetProcessorEulaUpdateToolEulaResponse the input arguments as accepted and stored in the database
     # @returns 200 Ok
     #
     # @example_request
@@ -103,7 +121,7 @@ module Lti::IMS
     #   The timestamp represents the time at which the user accepted or declined the EULA.
     #   This timestamp must be formatted as an ISO 8601 date time.
     #
-    # @returns the input arguments as accepted and stored in the database
+    # @returns LtiImsAssetProcessorEulaCreateAcceptanceResponse the input arguments as accepted and stored in the database
     # @returns 201 Created
     #
     # @example_request

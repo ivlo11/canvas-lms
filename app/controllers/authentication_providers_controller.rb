@@ -28,7 +28,7 @@
 #         "identifier_format": {
 #           "description": "Valid for SAML providers.",
 #           "example": "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "auth_type": {
 #           "description": "Valid for all providers.",
@@ -48,7 +48,7 @@
 #         "log_in_url": {
 #           "description": "Valid for SAML and CAS providers.",
 #           "example": "http://example.com/saml1/sli",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "certificate_fingerprint": {
 #           "description": "Valid for SAML providers.",
@@ -57,7 +57,7 @@
 #         },
 #         "requested_authn_context": {
 #           "description": "Valid for SAML providers.",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "auth_host": {
 #           "description": "Valid for LDAP providers.",
@@ -71,11 +71,11 @@
 #         },
 #         "auth_over_tls": {
 #           "description": "Valid for LDAP providers.",
-#           "type": "integer"
+#           "type": ["string", "integer"]
 #         },
 #         "auth_base": {
 #           "description": "Valid for LDAP and CAS providers.",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "auth_username": {
 #           "description": "Valid for LDAP providers.",
@@ -84,7 +84,7 @@
 #         },
 #         "auth_port": {
 #           "description": "Valid for LDAP providers.",
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "position": {
 #           "description": "Valid for all providers.",
@@ -116,7 +116,20 @@
 #         "mfa_required": {
 #           "description": "If multi-factor authentication is required when logging in with this authentication provider. The account must not have MFA disabled.",
 #           "type": "boolean"
-#         }
+#         },
+#         "change_password_url": {},
+#         "enable_captcha": { "type": "boolean" },
+#         "login_handle_name": {},
+#         "metadata_uri": { "type": ["string", "null"] },
+#         "otp_via_sms": { "type": "boolean" },
+#         "parent_registration": { "type": "boolean" },
+#         "self_registration": { "type": "string" },
+#         "skip_internal_mfa": { "type": "boolean" },
+#         "strip_domain_from_login_attribute": { "type": "boolean" },
+#         "unknown_user_url": {},
+#         "internal_ca": { "type": ["string", "null"] },
+#         "verify_tls_cert_opt_in": { "type": "boolean" },
+#         "app_id": {}
 #       }
 #     }
 #
@@ -128,27 +141,27 @@
 #        "login_handle_name": {
 #           "description": "The label used for unique login identifiers.",
 #           "example": "Username",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #        "change_password_url": {
 #           "description": "The url to redirect users to for password resets. Leave blank for default Canvas behavior",
 #           "example": "https://example.com/reset_password",
-#           "type": "string"
+#           "type": ["string", "null"]
 #        },
 #        "auth_discovery_url": {
 #           "description": "If a discovery url is set, canvas will forward all users to that URL when they need to be authenticated. That page will need to then help the user figure out where they need to go to log in. If no discovery url is configured, the first configuration will be used to attempt to authenticate the user.",
 #           "example": "https://example.com/which_account",
-#           "type": "string"
+#           "type": ["string", "null"]
 #        },
 #        "unknown_user_url": {
 #           "description": "If an unknown user url is set, Canvas will forward to that url when a service authenticates a user, but that user does not exist in Canvas. The default behavior is to present an error.",
 #           "example": "https://example.com/register_for_canvas",
-#           "type": "string"
+#           "type": ["string", "null"]
 #        },
 #        "login_help_url": {
 #           "description": "A login help URL shown as a 'Trouble logging in?' link on the login page and in failed login messages. Falls back to the global setting if not set.",
 #           "example": "https://example.com/login-help",
-#           "type": "string"
+#           "type": ["string", "null"]
 #        }
 #       }
 #     }
@@ -804,6 +817,7 @@ class AuthenticationProvidersController < ApplicationController
   # @example_request
   #   curl -X DELETE 'https://<canvas>/api/v1/accounts/<account_id>/authentication_providers/<id>' \
   #        -H 'Authorization: Bearer <token>'
+  # @returns AuthenticationProvider
   def destroy
     aac = load_aac(params[:id])
 
@@ -870,7 +884,7 @@ class AuthenticationProvidersController < ApplicationController
   #   curl -XGET 'https://<canvas>/api/v1/accounts/<account_id>/sso_settings' \
   #        -H 'Authorization: Bearer <token>'
   #
-  # @returns SSOSettings
+  # @returns { sso_settings: SSOSettings }
   def show_sso_settings
     render json: sso_settings_json(@account)
   end
@@ -895,7 +909,7 @@ class AuthenticationProvidersController < ApplicationController
   #        -F 'sso_settings[login_handle_name]=<new_handle>' \
   #        -H 'Authorization: Bearer <token>'
   #
-  # @returns SSOSettings
+  # @returns { sso_settings: SSOSettings }
   def update_sso_settings
     permitted_params = %i[
       login_handle_name

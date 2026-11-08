@@ -53,7 +53,7 @@
 #         "page_view": {
 #           "description": "ID of the page view during the event if it exists.",
 #           "example": "e2b76430-27a5-0131-3ca1-48e0eb13f29b",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         }
 #       }
 #     }

@@ -77,7 +77,8 @@ module Lti
   #           "example": [{ "type": "Lti::ContextControl" }],
   #           "type": "array",
   #           "items": { "$ref": "Lti::ContextControl" }
-  #         }
+  #         },
+  #         "root_account_deployment": { "type": "boolean" }
   #       }
   #     }
   #

@@ -42,7 +42,7 @@
 #         },
 #         "data": {
 #           "example": { "active_tab": 1 },
-#           "type": "object"
+#           "type": ["object", "null"]
 #         }
 #       }
 #     }
@@ -149,6 +149,7 @@ class Bookmarks::BookmarksController < ApplicationController
   # @example_request
   #   curl -X DELETE 'https://<canvas>/api/v1/users/self/bookmarks/1' \
   #        -H 'Authorization: Bearer <token>'
+  # @returns Bookmark
   def destroy
     if @bookmark.destroy
       show

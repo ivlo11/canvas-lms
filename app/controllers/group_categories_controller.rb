@@ -42,11 +42,11 @@
 #         "role": {
 #           "description": "Certain types of group categories have special role designations. Currently, these include: 'communities', 'student_organized', and 'imported'. Regular course/account group categories have a role of null.",
 #           "example": "communities",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "self_signup": {
 #           "description": "If the group category allows users to join a group themselves, thought they may only be a member of one group per group category at a time. Values include 'restricted', 'enabled', and null 'enabled' allows students to assign themselves to a group 'restricted' restricts them to only joining a group in their section null disallows students from joining groups",
-#           "type": "string",
+#           "type": ["string", "null"],
 #           "allowableValues": {
 #             "values": [
 #               "restricted",
@@ -56,7 +56,7 @@
 #         },
 #         "auto_leader": {
 #           "description": "Gives instructors the ability to automatically have group leaders assigned.  Values include 'random', 'first', and null; 'random' picks a student from the group at random as the leader, 'first' sets the first student to be assigned to the group as the leader",
-#           "type": "string",
+#           "type": ["string", "null"],
 #           "allowableValues": {
 #             "values": [
 #               "first",
@@ -75,15 +75,15 @@
 #         },
 #         "group_limit": {
 #           "description": "If self-signup is enabled, group_limit can be set to cap the number of users in each group. If null, there is no limit.",
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "sis_group_category_id": {
 #           "description": "The SIS identifier for the group category. This field is only included if the user has permission to manage or view SIS information.",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "sis_import_id": {
 #           "description": "The unique identifier for the SIS import. This field is only included if the user has permission to manage SIS information.",
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "progress": {
 #           "description": "If the group category has not yet finished a randomly student assignment request, a progress object will be attached, which will contain information related to the progress of the assignment request. Refer to the Progress API for more information",
@@ -92,7 +92,32 @@
 #         "non_collaborative": {
 #           "description": "Indicates whether this group category is non-collaborative. A value of true means these group categories rely on the manage_tags permissions and do not have collaborative features",
 #           "type": "boolean"
-#         }
+#         },
+#         "allows_multiple_memberships": { "type": "boolean" },
+#         "course_id": { "type": "integer" },
+#         "created_at": { "type": "string" },
+#         "is_member": { "type": "boolean" },
+#         "protected": { "type": "boolean" },
+#         "self_signup_end_at": {},
+#         "groups_count": { "type": "integer" },
+#         "unassigned_users_count": { "type": "integer" },
+#         "context_id": { "type": "integer" },
+#         "deleted_at": { "type": ["string", "null"] },
+#         "root_account_id": { "type": "integer" },
+#         "sis_batch_id": { "type": ["integer", "null"] },
+#         "sis_source_id": { "type": ["string", "null"] },
+#         "updated_at": { "type": "string" }
+#       }
+#     }
+#
+# @model GroupCategoriesBulkManageDifferentiationTagResponse
+#     {
+#       "id": "GroupCategoriesBulkManageDifferentiationTagResponse",
+#       "properties": {
+#         "created": { "type": "array", "items": { "type": "object" } },
+#         "deleted": { "type": "array", "items": { "type": "object" } },
+#         "group_category": { "$ref": "GroupCategory" },
+#         "updated": { "type": "array", "items": { "type": "object" } }
 #       }
 #     }
 #
@@ -335,7 +360,7 @@ class GroupCategoriesController < ApplicationController
   #                "group_category": {"id": 1, "name": "New Category Name"}
   #              }'
   #
-  # @returns GroupCategory and groups operation results
+  # @returns GroupCategoriesBulkManageDifferentiationTagResponse GroupCategory and groups operation results
   def bulk_manage_differentiation_tag
     operations = params.require(:operations)
     create_ops = operations[:create] || []
@@ -646,6 +671,7 @@ class GroupCategoriesController < ApplicationController
   #           -X DELETE \
   #           -H 'Authorization: Bearer <token>'
   #
+  # @returns GroupCategory
   def destroy
     if check_group_authorization(
       context: @context,

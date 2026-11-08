@@ -49,7 +49,7 @@
 #         },
 #         "description": {
 #           "description": "A description of the group. This is plain text.",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "is_public": {
 #           "description": "Whether or not the group is public.  Currently only community groups can be made public.  Also, once a group has been set to public, it cannot be changed back to private.",
@@ -81,7 +81,7 @@
 #         "avatar_url": {
 #           "description": "The url of the group's avatar",
 #           "example": "https://<canvas>/files/avatar_image.png",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "context_type": {
 #           "description": "The course or account that the group belongs to. The pattern here is that whatever the context_type is, there will be an _id field named after that type. So if instead context_type was 'account', the course_id field would be replaced by an account_id field.",
@@ -99,7 +99,7 @@
 #         },
 #         "role": {
 #           "description": "Certain types of groups have special role designations. Currently, these include: 'communities', 'student_organized', and 'imported'. Regular course/account groups have a role of null.",
-#           "type": "string",
+#           "type": ["string", "null"],
 #           "allowableValues": {
 #             "values": [
 #               "communities",
@@ -111,17 +111,17 @@
 #         "group_category_id": {
 #           "description": "The ID of the group's category.",
 #           "example": 4,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "sis_group_id": {
 #           "description": "The SIS ID of the group. Only included if the user has permission to view SIS information.",
 #           "example": "group4a",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "sis_import_id": {
 #           "description": "The id of the SIS import if created through SIS. Only included if the user has permission to manage SIS information.",
 #           "example": 14,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "storage_quota_mb": {
 #           "description": "the storage quota for the group, in megabytes",
@@ -143,7 +143,113 @@
 #         "non_collaborative": {
 #           "description": "Indicates whether this group category is non-collaborative. A value of true means these group categories rely on the manage_tags permissions and do not have collaborative features",
 #           "type": "boolean"
-#         }
+#         },
+#         "concluded": { "type": "boolean" },
+#         "created_at": { "type": "string" },
+#         "has_submission": { "type": "boolean" },
+#         "leader": {},
+#         "max_membership": { "type": ["integer", "null"] },
+#         "account_id": { "type": "integer" },
+#         "group_category": { "type": ["object", "null"] },
+#         "is_favorite": { "type": "boolean" },
+#         "tabs": { "type": "array", "items": { "type": "object" } }
+#       }
+#     }
+#
+# @model GroupsCreateFileResponse
+#     {
+#       "id": "GroupsCreateFileResponse",
+#       "properties": {
+#         "file_param": { "type": "string" },
+#         "progress": { "type": "object" },
+#         "upload_params": { "type": "object" },
+#         "upload_url": { "type": "string" }
+#       }
+#     }
+#
+# @model GroupsPreviewHtmlResponse
+#     {
+#       "id": "GroupsPreviewHtmlResponse",
+#       "properties": {
+#         "html": { "type": "string" }
+#       }
+#     }
+#
+# @model GroupsActivityStreamResponse
+#     {
+#       "id": "GroupsActivityStreamResponse",
+#       "properties": {
+#         "context_type": { "type": "string" },
+#         "created_at": { "type": "string" },
+#         "discussion_topic_id": { "type": "integer" },
+#         "group_id": { "type": "integer" },
+#         "html_url": { "type": "string" },
+#         "id": { "type": "integer" },
+#         "message": { "type": "string" },
+#         "read_state": { "type": "boolean" },
+#         "require_initial_post": { "type": "boolean" },
+#         "root_discussion_entries": { "type": "array" },
+#         "title": { "type": "string" },
+#         "total_root_discussion_entries": { "type": "integer" },
+#         "type": { "type": "string" },
+#         "updated_at": { "type": "string" },
+#         "user_has_posted": {}
+#       }
+#     }
+#
+# @model GroupsActivityStreamSummaryResponse
+#     {
+#       "id": "GroupsActivityStreamSummaryResponse",
+#       "properties": {
+#         "count": { "type": "integer" },
+#         "notification_category": {},
+#         "type": { "type": "string" },
+#         "unread_count": { "type": "integer" }
+#       }
+#     }
+#
+# @model GroupsPermissionsResponse
+#     {
+#       "id": "GroupsPermissionsResponse",
+#       "properties": {
+#         "allow_course_admin_actions": { "type": "boolean" },
+#         "create": { "type": "boolean" },
+#         "create_collaborations": { "type": "boolean" },
+#         "create_conferences": { "type": "boolean" },
+#         "create_forum": { "type": "boolean" },
+#         "delete": { "type": "boolean" },
+#         "join": { "type": "boolean" },
+#         "leave": { "type": "boolean" },
+#         "manage": { "type": "boolean" },
+#         "manage_blarghs": { "type": "boolean" },
+#         "manage_calendar": { "type": "boolean" },
+#         "manage_course_content_add": { "type": "boolean" },
+#         "manage_course_content_delete": { "type": "boolean" },
+#         "manage_course_content_edit": { "type": "boolean" },
+#         "manage_files_add": { "type": "boolean" },
+#         "manage_files_delete": { "type": "boolean" },
+#         "manage_files_edit": { "type": "boolean" },
+#         "manage_students": { "type": "boolean" },
+#         "manage_wiki_create": { "type": "boolean" },
+#         "manage_wiki_delete": { "type": "boolean" },
+#         "manage_wiki_update": { "type": "boolean" },
+#         "moderate_forum": { "type": "boolean" },
+#         "participate": { "type": "boolean" },
+#         "participate_as_student": { "type": "boolean" },
+#         "post_to_forum": { "type": "boolean" },
+#         "read": { "type": "boolean" },
+#         "read_announcements": { "type": "boolean" },
+#         "read_as_admin": { "type": "boolean" },
+#         "read_email_addresses": { "type": "boolean" },
+#         "read_files": { "type": "boolean" },
+#         "read_forum": { "type": "boolean" },
+#         "read_roster": { "type": "boolean" },
+#         "read_sis": { "type": "boolean" },
+#         "send_messages": { "type": "boolean" },
+#         "send_messages_all": { "type": "boolean" },
+#         "update": { "type": "boolean" },
+#         "view_unpublished_items": { "type": "boolean" },
+#         "view_user_logins": { "type": "boolean" }
 #       }
 #     }
 #
@@ -473,7 +579,7 @@ class GroupsController < ApplicationController
   #     curl "https://<canvas>/api/v1/courses/1/bulk_user_tags?user_ids[]=35&user_ids[]=79" \
   #          -H 'Authorization: Bearer <token>'
   #
-  # @returns [Hash]
+  # @returns Hash
   #   A mapping of user IDs to arrays of tag (group) IDs.
   #   Example:
   #     {
@@ -881,6 +987,7 @@ class GroupsController < ApplicationController
   #          -F 'invitees[]=leonard@example.com' \
   #          -F 'invitees[]=sheldon@example.com' \
   #          -H 'Authorization: Bearer <token>'
+  # @returns [GroupMembership]
   def invite
     find_group
     if authorized_action(@group, @current_user, :manage)
@@ -1040,6 +1147,7 @@ class GroupsController < ApplicationController
   # Only those with the "Manage Files" permission on a group can upload files
   # to the group. By default, this is anybody participating in the
   # group, or any admin over the group.
+  # @returns GroupsCreateFileResponse
   def create_file
     @attachment = Attachment.new(context: @context)
 
@@ -1080,6 +1188,7 @@ class GroupsController < ApplicationController
   #   {
   #     "html": "<p>processed html</p>"
   #   }
+  # @returns GroupsPreviewHtmlResponse
   def preview_html
     get_context
     if @context && authorized_action(@context, @current_user, :read)
@@ -1094,6 +1203,7 @@ class GroupsController < ApplicationController
   #
   # For full documentation, see the API documentation for the user activity
   # stream, in the user api.
+  # @returns [GroupsActivityStreamResponse]
   def activity_stream
     get_context
     if @context.non_collaborative?
@@ -1109,6 +1219,7 @@ class GroupsController < ApplicationController
   #
   # For full documentation, see the API documentation for the user activity
   # stream summary, in the user api.
+  # @returns [GroupsActivityStreamSummaryResponse]
   def activity_stream_summary
     get_context
     if @context.non_collaborative?
@@ -1136,6 +1247,7 @@ class GroupsController < ApplicationController
   #
   # @example_response
   #   {'read_roster': 'true', 'send_messages_all': 'false'}
+  # @returns GroupsPermissionsResponse
   def permissions
     get_context
     return unless authorized_action(@context, @current_user, :read)

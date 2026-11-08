@@ -18,6 +18,20 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
 module SupportHelpers
+  # @model SupportHelpersAssetProcessorSubmissionDetailsResponse
+  #     {
+  #       "id": "SupportHelpersAssetProcessorSubmissionDetailsResponse",
+  #       "properties": {
+  #         "asset_processors": { "type": "array", "items": { "type": "object" } },
+  #         "asset_reports": { "type": "array", "items": { "type": "object" } },
+  #         "assets": { "type": "array", "items": { "type": "object" } },
+  #         "assignment": { "type": "object" },
+  #         "context_external_tools": { "type": "array", "items": { "type": "object" } },
+  #         "notice_handlers": { "type": "array" },
+  #         "submission": { "type": "object" }
+  #       }
+  #     }
+  #
   class AssetProcessorController < ApplicationController
     include SupportHelpers::ControllerHelpers
 
@@ -81,6 +95,7 @@ module SupportHelpers
     #   The ID of the student (user) who owns the submission
     # @argument graph [Optional, Boolean]
     #   If set to true, it returns a DOT graph representation of the asset processor relationships
+    # @returns SupportHelpersAssetProcessorSubmissionDetailsResponse
     def submission_details
       assignment_id = params.require(:assignment_id)
       student_id = params.require(:student_id)

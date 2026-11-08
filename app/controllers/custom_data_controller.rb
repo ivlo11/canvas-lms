@@ -20,6 +20,14 @@
 
 # @API Users
 # @subtopic Custom Data
+# @model CustomDataSetDataResponse
+#     {
+#       "id": "CustomDataSetDataResponse",
+#       "properties": {
+#         "data": { "type": ["string", "object"] }
+#       }
+#     }
+#
 class CustomDataController < ApplicationController
   before_action :require_namespace, :get_scope, :get_context
   before_action :require_custom_data, except: :set_data
@@ -199,6 +207,7 @@ class CustomDataController < ApplicationController
   #       }
   #     }
   #   }
+  # @returns CustomDataSetDataResponse
   def set_data
     return unless authorized_action(@context, @current_user, [:manage, :manage_user_details])
 
@@ -256,6 +265,7 @@ class CustomDataController < ApplicationController
   #   {
   #     "data": "pistachio ice cream"
   #   }
+  # @returns CustomDataSetDataResponse
   def get_data
     return unless authorized_action(@context, @current_user, :read)
 
@@ -387,6 +397,7 @@ class CustomDataController < ApplicationController
   #   {
   #     "data": "a bit sour"
   #   }
+  # @returns CustomDataSetDataResponse
   def delete_data
     return unless authorized_action(@context, @current_user, [:manage, :manage_user_details])
 

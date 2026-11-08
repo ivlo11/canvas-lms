@@ -129,7 +129,7 @@
 #         "student_entered_score": {
 #           "description": "The score the student wants to test",
 #           "example": "20.0",
-#           "type": "string"
+#           "type": ["number", "string", "null"]
 #         }
 #       }
 #     }

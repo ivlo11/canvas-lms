@@ -44,7 +44,7 @@ module Polling
   #       "course_section_id": {
   #         "description": "The id of the Course Section this poll session is associated with",
   #         "example": "444",
-  #         "type": "string"
+  #         "type": ["string", "null"]
   #       },
   #       "is_published": {
   #         "description": "Specifies whether or not this poll session has been published for students to participate in.",
@@ -71,7 +71,8 @@ module Polling
   #         "description": "If the poll session has public results, this will return an array of all submissions, viewable by both students and teachers. If the results are not public, for students it will return their submission only.",
   #         "type": "array",
   #         "items": { "$ref": "PollSubmission" }
-  #       }
+  #       },
+  #       "has_submitted": { "type": "boolean" }
   #     }
   #   }
   #
@@ -89,6 +90,7 @@ module Polling
     #     "poll_sessions": [PollSession]
     #   }
     #
+    # @returns { poll_sessions: [PollSession], meta: object }
     def index
       if authorized_action(@poll, @current_user, :update)
         @poll_sessions = @poll.poll_sessions
@@ -107,6 +109,7 @@ module Polling
     #     "poll_sessions": [PollSession]
     #   }
     #
+    # @returns { poll_sessions: [PollSession], meta: object }
     def show
       @poll_session = @poll.poll_sessions.find(params[:id])
 
@@ -133,6 +136,7 @@ module Polling
     #     "poll_sessions": [PollSession]
     #   }
     #
+    # @returns { poll_sessions: [PollSession], meta: object }
     def create
       poll_session_params = get_poll_session_params
 
@@ -178,6 +182,7 @@ module Polling
     #     "poll_sessions": [PollSession]
     #   }
     #
+    # @returns { poll_sessions: [PollSession], meta: object }
     def update
       @poll_session = @poll.poll_sessions.find(params[:id])
       if authorized_action(@poll, @current_user, :update)
@@ -208,6 +213,7 @@ module Polling
     #     "poll_sessions": [PollSession]
     #   }
     #
+    # @returns { poll_sessions: [PollSession], meta: object }
     def open
       @poll_session = @poll.poll_sessions.find(params[:id])
 
@@ -224,6 +230,7 @@ module Polling
     #     "poll_sessions": [PollSession]
     #   }
     #
+    # @returns { poll_sessions: [PollSession], meta: object }
     def close
       @poll_session = @poll.poll_sessions.find(params[:id])
 
@@ -242,6 +249,7 @@ module Polling
     #     "poll_sessions": [PollSession]
     #   }
     #
+    # @returns { poll_sessions: [PollSession], meta: object }
     def opened
       @poll_sessions = Polling::PollSession.available_for(@current_user).where(is_published: true)
       json, meta = paginate_for(@poll_sessions, api_v1_poll_sessions_opened_url)
@@ -257,6 +265,7 @@ module Polling
     #     "poll_sessions": [PollSession]
     #   }
     #
+    # @returns { poll_sessions: [PollSession], meta: object }
     def closed
       @poll_sessions = Polling::PollSession.available_for(@current_user).where(is_published: false)
       json, meta = paginate_for(@poll_sessions, api_v1_poll_sessions_closed_url)

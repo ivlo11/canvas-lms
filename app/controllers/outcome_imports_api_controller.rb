@@ -58,7 +58,7 @@
 #         "ended_at": {
 #           "description": "The date the outcome import finished. Returns null if not finished.",
 #           "example": "2013-12-02T00:03:21-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "updated_at": {
 #           "description": "The date the outcome import was last updated.",
@@ -85,7 +85,7 @@
 #         "progress": {
 #           "description": "The progress of the outcome import.",
 #           "example": "100",
-#           "type": "string"
+#           "type": ["integer", "string", "null"]
 #         },
 #         "user": {
 #           "description": "The user that initiated the outcome_import. See the Users API for details.",
@@ -94,9 +94,9 @@
 #         "processing_errors": {
 #           "description": "An array of row number / error message pairs. Returns the first 25 errors.",
 #           "example": [[1, "Missing required fields: title"]],
-#           "type": "array",
+#           "type": ["array", "null"],
 #           "items": {
-#             "type": "array",
+#             "type": ["string", "array", "null"],
 #             "items": {"type": "object"}
 #           }
 #         }

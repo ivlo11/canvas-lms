@@ -20,6 +20,15 @@
 # @API Study Assist
 # Student-facing AI-powered study tools (Summarize, Quiz me, Flashcards)
 # backed by Cedar. Scoped to a single course; requires a student enrollment.
+# @model AssistResponse
+#     {
+#       "id": "AssistResponse",
+#       "properties": {
+#         "chips": { "type": "array", "items": { "type": "object" } },
+#         "response": { "type": "string" }
+#       }
+#     }
+#
 class StudyAssistController < ApplicationController
   MAX_PROMPT_BYTES = 2.kilobytes
 

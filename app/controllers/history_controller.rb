@@ -74,7 +74,7 @@
 #         },
 #         "interaction_seconds": {
 #           "description": "The estimated time spent on the page in seconds",
-#           "type": "integer",
+#           "type": "number",
 #           "format": "int64",
 #           "example": 400
 #         }

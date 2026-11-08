@@ -52,13 +52,18 @@ module Lti
   #         "TransportMetadata": {
   #           "description": "An object with a single key: 'Url'.",
   #           "example": "{\n\t\"Url\":\"sqs.example\"}",
-  #           "type": "string"
+  #           "type": ["object", "string"]
   #         },
   #         "TransportType": {
   #           "description": "The type of transport for the event. Must be either 'sqs' or 'https'.",
   #           "example": "sqs",
   #           "type": "string"
-  #         }
+  #         },
+  #         "Id": { "type": "string" },
+  #         "OwnerId": { "type": "string" },
+  #         "OwnerType": { "type": "string" },
+  #         "UpdatedBy": { "type": "string" },
+  #         "UpdatedByType": { "type": "string" }
   #       }
   #     }
   #

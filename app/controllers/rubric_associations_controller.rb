@@ -47,7 +47,7 @@ class RubricAssociationsController < ApplicationController
   # @argument rubric_association[bookmarked] [Boolean]
   #   Whether or not the associated rubric appears in its context
   #
-  # @returns RubricAssociation
+  # @returns { rubric: Rubric, rubric_association: RubricAssociation }
   def create
     update
   end
@@ -77,7 +77,7 @@ class RubricAssociationsController < ApplicationController
   # @argument rubric_association[bookmarked] [Boolean]
   #   Whether or not the associated rubric appears in its context
   #
-  # @returns RubricAssociation
+  # @returns { rubric: Rubric, rubric_association: RubricAssociation }
   def update
     enhanced_rubric_assignments_enabled = Rubric.enhanced_rubrics_assignments_enabled?(@context)
     association_params = if params[:rubric_association] && !enhanced_rubric_assignments_enabled
@@ -133,7 +133,7 @@ class RubricAssociationsController < ApplicationController
   #
   # Delete the RubricAssociation with the given ID
   #
-  # @returns RubricAssociation
+  # @returns { rubric_association: RubricAssociation }
   def destroy
     @association = @context.rubric_associations.find(params[:id])
     @rubric = @association.rubric

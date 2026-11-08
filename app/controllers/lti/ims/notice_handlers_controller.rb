@@ -39,7 +39,7 @@ module Lti::IMS
   #          "client_id": {
   #            "description": "The LTI tool's client ID (global developer key ID)",
   #            "example": "10000000000001",
-  #            "type": "string"
+  #            "type": ["integer", "string"]
   #          },
   #          "deployment_id": {
   #            "description": "String that identifies the Platform-Tool integration governing the notices",
@@ -78,7 +78,7 @@ module Lti::IMS
   #         "max_batch_size": {
   #           "description": "The maximum number of notices to include in a single batch, or 'null' if not set.",
   #           "example": 100,
-  #           "type": "integer"
+  #           "type": ["string", "integer"]
   #         }
   #       }
   #     }

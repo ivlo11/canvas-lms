@@ -41,12 +41,12 @@
 #         "associated_section_count": {
 #           "description": "The number of sections in the course. Null for sections and enrollments.",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "associated_student_count": {
 #           "description": "The number of students in the course or section. Null for enrollments.",
 #           "example": 25,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "applied_pace": {
 #           "description": "The course pace that applies to this context, or null.",
@@ -55,7 +55,7 @@
 #         "on_pace": {
 #           "description": "Whether the student is on pace. Null for courses and sections.",
 #           "example": true,
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         }
 #       }
 #     }

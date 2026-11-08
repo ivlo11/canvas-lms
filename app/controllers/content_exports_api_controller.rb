@@ -40,7 +40,7 @@
 #         "export_type": {
 #           "description": "the type of content migration: 'common_cartridge' or 'qti'",
 #           "example": "common_cartridge",
-#           "type": "string",
+#           "type": ["string", "null"],
 #           "allowableValues": {
 #             "values": [
 #               "common_cartridge",
@@ -61,7 +61,7 @@
 #         "user_id": {
 #           "description": "The ID of the user who started the export",
 #           "example": 4,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "workflow_state": {
 #           "description": "Current state of the content migration: created exporting exported failed",
@@ -75,7 +75,10 @@
 #               "failed"
 #             ]
 #           }
-#         }
+#         },
+#         "course_id": { "type": "integer" },
+#         "migrated_assignment": { "type": "array", "items": { "type": "object" } },
+#         "migrated_quiz": { "type": "array", "items": { "type": "object" } }
 #       }
 #     }
 #

@@ -61,7 +61,7 @@
 #         },
 #         "weight": {
 #           "description": "A weight value that contributes to the overall weight of a grading period set which is used to calculate how much assignments in this period contribute to the total grade",
-#           "type": "number",
+#           "type": ["number", "null"],
 #           "example": 33.33
 #         },
 #         "is_closed": {
@@ -89,6 +89,7 @@ class GradingPeriodsController < ApplicationController
   #     "grading_periods": [GradingPeriod]
   #   }
   #
+  # @returns { grading_periods: [GradingPeriod], can_create_grading_periods: boolean, grading_periods_read_only: boolean, meta: object }
   def index
     if authorized_action(@context, @current_user, :read)
       if @context.is_a? Account
@@ -118,6 +119,7 @@ class GradingPeriodsController < ApplicationController
   #     "grading_periods": [GradingPeriod]
   #   }
   #
+  # @returns { grading_periods: [GradingPeriod], meta: object }
   def show
     if authorized_action(grading_period, @current_user, :read)
       respond_to do |format|
@@ -143,6 +145,7 @@ class GradingPeriodsController < ApplicationController
   #     "grading_periods": [GradingPeriod]
   #   }
   #
+  # @returns { grading_periods: [GradingPeriod], meta: object }
   def update
     grading_period_params = params.require(:grading_periods).first.permit(:weight, :start_date, :end_date, :close_date, :title)
 
@@ -211,6 +214,7 @@ class GradingPeriodsController < ApplicationController
   #     "grading_periods": [GradingPeriod]
   #   }
   #
+  # @returns { grading_periods: [GradingPeriod], meta: object }
   def batch_update
     if authorized_action(@context, @current_user, :manage_grades)
       SubmissionLifecycleManager.with_executing_user(@current_user) do

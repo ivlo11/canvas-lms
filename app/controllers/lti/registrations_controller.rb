@@ -49,17 +49,17 @@
 #         "admin_nickname": {
 #           "description": "Admin-configured friendly display name",
 #           "example": "My LTI Tool (Campus A)",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "icon_url": {
 #           "description": "Tool-provided URL to the tool's icon",
 #           "example": "https://mytool.com/icon.png",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "vendor": {
 #           "description": "Tool-provided name of the tool vendor",
 #           "example": "My Tool LLC",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "account_id": {
 #           "description": "The Canvas id of the account that owns this registration",
@@ -84,7 +84,7 @@
 #         "template_registration_id": {
 #           "description": "The Canvas ID of the template registration, if this registration is inherited from a template",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "lti_version": {
 #           "description": "LTI version of the registration, either 1.1 or 1.3",
@@ -142,7 +142,17 @@
 #           "description": "The Canvas-style tool configuration for this registration",
 #           "example": { "type": "Lti::ToolConfiguration" },
 #           "$ref": "Lti::ToolConfiguration"
-#         }
+#         },
+#         "description": { "type": ["string", "null"] },
+#         "developer_key_id": { "type": ["integer", "null"] },
+#         "dynamic_registration_url": {},
+#         "ims_registration_id": { "type": ["integer", "null"] },
+#         "manual_configuration_id": { "type": ["integer", "null"] },
+#         "overlay": { "type": "object" },
+#         "pending_update": { "type": ["string", "null"] },
+#         "reinstall_disabled": { "type": ["boolean", "null"] },
+#         "overlaid_configuration": { "type": "object" },
+#         "overlaid_legacy_configuration": { "type": "object" }
 #       }
 #     }
 #
@@ -447,12 +457,12 @@
 #         "domain": {
 #           "description": "The tool's main domain. Highly recommended for deep linking, used to match links to the tool.",
 #           "example": "mytool.com",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "tool_id": {
 #           "description": "Tool-provided identifier, can be anything",
 #           "example": "MyTool",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "privacy_level": {
 #           "description": "Canvas-defined privacy level for the tool",
@@ -479,7 +489,7 @@
 #         "public_jwk": {
 #           "description": "1.3 specific. The tool's public JWK in JSON format. Discouraged in favor of a url hosting a JWK set.",
 #           "example": { "e": "AQAB", "etc": "etc" },
-#           "type": "object"
+#           "type": ["object", "null"]
 #         },
 #         "public_jwk_url": {
 #           "description": "1.3 specific. The tool-hosted URL containing its public JWK keyset. Canvas may cache JWKs up to 5 minutes.",
@@ -508,7 +518,8 @@
 #           "example": [{ "type": "Lti::Placement" }],
 #           "type": "array",
 #           "items": { "$ref": "Lti::Placement" }
-#         }
+#         },
+#         "extensions": { "type": "array", "items": { "type": "object" } }
 #       }
 #     }
 #
@@ -828,7 +839,8 @@
 #           "description": "If true, the tool will be launched in the tray. Only used by the editor_button placement.",
 #           "example": true,
 #           "type": "boolean"
-#         }
+#         },
+#         "title": { "type": "string" }
 #       }
 #     }
 #
@@ -949,7 +961,8 @@
 #           "description": "The id of the account this version is for",
 #           "example": 1,
 #           "type": "integer"
-#         }
+#         },
+#         "id": { "type": "integer" }
 #       }
 #     }
 #
@@ -966,16 +979,17 @@
 #         "diff": {
 #           "description": "The changes made, keyed by the changed part of the registration",
 #           "example": { "context_controls": [["+", [2], { "id": 2, "available": true }]] },
-#           "type": "object"
+#           "type": ["object", "array"],
+#           "items": { "type": "array" }
 #         },
 #         "update_type": {
 #           "description": "What caused the change: manual_edit, registration_update, bulk_control_create or control_edit",
 #           "example": "control_edit",
 #           "type": "string"
 #         },
-#         "comment": { "description": "A comment entered with the change, if any", "example": "Enabled for the course", "type": "string" },
-#         "old_configuration": { "description": "The registration's configuration before the change, for configuration changes", "example": {}, "type": "object" },
-#         "new_configuration": { "description": "The registration's configuration after the change, for configuration changes", "example": {}, "type": "object" },
+#         "comment": { "description": "A comment entered with the change, if any", "example": "Enabled for the course", "type": ["string", "null"] },
+#         "old_configuration": { "description": "The registration's configuration before the change, for configuration changes", "example": {}, "type": ["object", "null"] },
+#         "new_configuration": { "description": "The registration's configuration after the change, for configuration changes", "example": {}, "type": ["object", "null"] },
 #         "created_by": {
 #           "description": "The user that made the change. If a string, the change was made by Instructure.",
 #           "example": "Instructure",
@@ -991,7 +1005,14 @@
 #           "description": "The affected deployments and their context controls after the change, for control changes",
 #           "type": "array",
 #           "items": { "$ref": "Lti::Deployment" }
-#         }
+#         },
+#         "accepted_at": { "type": ["string", "null"] },
+#         "internal_lti_configuration": { "type": "object" },
+#         "reinstall": { "type": "boolean" },
+#         "rejected_at": { "type": ["string", "null"] },
+#         "status": { "type": "string" },
+#         "tool_initiated": { "type": "boolean" },
+#         "uuid": { "type": "string" }
 #       }
 #     }
 #
@@ -1104,7 +1125,7 @@
 #         "sis_id": {
 #           "description": "The SIS ID of the account, if any. Only present if user can read or manage SIS.",
 #           "example": "sis-account-1",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "display_path": {
 #           "description": "Names of the accounts in this account's hierarchy, excluding the root and this account.",
@@ -1135,7 +1156,7 @@
 #         "sis_id": {
 #           "description": "The SIS ID of the course, if any. Only present if user can read or manage SIS.",
 #           "example": "sis-course-1",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "display_path": {
 #           "description": "Names of the accounts in this course's account hierarchy, excluding the root.",
@@ -1150,6 +1171,27 @@
 #           "example": "COURSE-101",
 #           "type": "string"
 #         }
+#       }
+#     }
+#
+# @model Lti::RegistrationUpdateRequest
+#     {
+#       "id": "Lti::RegistrationUpdateRequest",
+#       "properties": {
+#         "accepted_at": { "type": ["string", "null"] },
+#         "comment": {},
+#         "created_at": { "type": "string" },
+#         "created_by": { "type": "object" },
+#         "id": { "type": "integer" },
+#         "internal_lti_configuration": { "type": "object" },
+#         "lti_registration_id": { "type": "integer" },
+#         "reinstall": { "type": "boolean" },
+#         "rejected_at": { "type": ["string", "null"] },
+#         "root_account_id": { "type": "integer" },
+#         "status": { "type": "string" },
+#         "tool_initiated": { "type": "boolean" },
+#         "updated_at": { "type": "string" },
+#         "uuid": { "type": "string" }
 #       }
 #     }
 #
@@ -2093,7 +2135,7 @@ class Lti::RegistrationsController < ApplicationController
   # Returns 404 if there are no update requests for this registration.
   #
   # @argument id [Integer] The id of the registration.
-  # @returns Lti::RegistrationUpdateRequest
+  # @returns Lti::RegistrationHistoryEntry
   #
   # @example_request
   #

@@ -23,6 +23,26 @@ module Lti
     # @internal
     # Implements the 1EdTech LTI 1.3 Dynamic Registration <a href="file.registration.html">spec</a>.
     # See the <a href="file.registration.html">Registration guide</a> for how to use this API.
+    # @model LtiImsDynamicRegistrationCreateResponse
+    #     {
+    #       "id": "LtiImsDynamicRegistrationCreateResponse",
+    #       "properties": {
+    #         "application_type": { "type": "string" },
+    #         "client_id": { "type": "string" },
+    #         "client_name": { "type": "string" },
+    #         "deployment_id": { "type": "string" },
+    #         "grant_types": { "type": "array", "items": { "type": "string" } },
+    #         "initiate_login_uri": { "type": "string" },
+    #         "jwks_uri": { "type": "string" },
+    #         "logo_uri": { "type": "string" },
+    #         "redirect_uris": { "type": "array", "items": { "type": "string" } },
+    #         "registration_client_uri": { "type": "string" },
+    #         "response_types": { "type": "array", "items": { "type": "string" } },
+    #         "scope": { "type": "string" },
+    #         "token_endpoint_auth_method": { "type": "string" }
+    #       }
+    #     }
+    #
     class DynamicRegistrationController < ApplicationController
       REGISTRATION_TOKEN_EXPIRATION = 1.hour
 
@@ -248,6 +268,7 @@ module Lti
       # The final step of the Dynamic Registration process.
       # Refer to the Registration guide linked at the top of this page for usage of this endpoint.
       # Requires special Dynamic Registration token and is not for out-of-band use.
+      # @returns LtiImsDynamicRegistrationCreateResponse
       def create
         access_token = AuthenticationMethods.access_token(request)
         jwt = Canvas::Security.decode_jwt(access_token)

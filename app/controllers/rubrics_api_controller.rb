@@ -48,7 +48,7 @@
 #         },
 #         "points_possible": {
 #           "example": "10.0",
-#           "type": "number"
+#           "type": ["number", "null"]
 #         },
 #         "reusable": {
 #           "example": "false",
@@ -61,15 +61,15 @@
 #         "free_form_criterion_comments": {
 #           "description": "whether or not free-form comments are used",
 #           "example": "true",
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "hide_score_total": {
 #           "example": "true",
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "data": {
 #           "description": "An array with all of this Rubric's grading Criteria",
-#           "type": "array",
+#           "type": ["array", "null"],
 #           "items": { "$ref": "RubricCriterion" }
 #         },
 #         "assessments": {
@@ -81,7 +81,24 @@
 #           "description": "If an association type is included in the 'include' parameter, includes an array of rubric association objects for a given rubric, based on the association type requested. If the user does not request an association type this key will be absent.",
 #           "type": "array",
 #           "items": { "$ref": "RubricAssociation" }
-#         }
+#         },
+#         "association_count": { "type": "integer" },
+#         "button_display": { "type": "string" },
+#         "context_code": { "type": "string" },
+#         "created_at": { "type": "string" },
+#         "description": { "type": ["string", "null"] },
+#         "hide_points": { "type": "boolean" },
+#         "migration_id": { "type": ["string", "null"] },
+#         "public": { "type": "boolean" },
+#         "rating_order": { "type": "string" },
+#         "root_account_id": { "type": "integer" },
+#         "rubric_id": { "type": ["integer", "null"] },
+#         "rubric_imports_id": { "type": ["integer", "null"] },
+#         "updated_at": { "type": "string" },
+#         "user_id": { "type": ["integer", "null"] },
+#         "workflow_state": { "type": "string" },
+#         "criteria": { "type": ["array", "null"], "items": { "type": "object" } },
+#         "permissions": { "type": "object" }
 #       }
 #     }
 #
@@ -137,8 +154,10 @@
 #         },
 #         "points": {
 #           "example": "5",
-#           "type": "integer"
-#         }
+#           "type": "number"
+#         },
+#         "color": { "type": "string" },
+#         "mastery": { "type": "boolean" }
 #       }
 #     }
 #
@@ -163,7 +182,7 @@
 #         },
 #         "score": {
 #           "example": "5.0",
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "artifact_type": {
 #           "description": "the object of the assessment",
@@ -178,7 +197,7 @@
 #         "artifact_attempt": {
 #           "description": "the current number of attempts made on the object of the assessment",
 #           "example": "2",
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "assessment_type": {
 #           "description": "the type of assessment. values will be either 'grading', 'peer_review', or 'provisional_grade'",
@@ -199,7 +218,13 @@
 #           "description": "(Optional) If 'comments_only' is included in the 'style' parameter, returned assessments will include only the comments portion of their data hash. If the user does not request a style, this key will be absent.",
 #           "type": "array",
 #           "items": { "type": "string" }
-#         }
+#         },
+#         "created_at": { "type": "string" },
+#         "hide_points": { "type": "boolean" },
+#         "root_account_id": { "type": "integer" },
+#         "rubric_assessment_imports_id": { "type": ["integer", "null"] },
+#         "updated_at": { "type": "string" },
+#         "user_id": { "type": "integer" }
 #       }
 #     }
 #
@@ -231,11 +256,11 @@
 #         "use_for_grading": {
 #           "description": "Whether or not the associated rubric is used for grade calculation",
 #           "example": "true",
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "summary_data": {
 #           "example": "",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "purpose": {
 #           "description": "Whether or not the association is for grading (and thus linked to an assignment) or if it's to indicate the rubric should appear in its context. Values will be grading or bookmark.",
@@ -245,7 +270,7 @@
 #         "hide_score_total": {
 #           "description": "Whether or not the score total is displayed within the rubric. This option is only available if the rubric is not used for grading.",
 #           "example": "true",
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "hide_points": {
 #           "example": "true",
@@ -254,7 +279,21 @@
 #         "hide_outcome_results": {
 #           "example": "true",
 #           "type": "boolean"
-#         }
+#         },
+#         "bookmarked": { "type": "boolean" },
+#         "context_code": { "type": "string" },
+#         "context_id": { "type": "integer" },
+#         "context_type": { "type": "string" },
+#         "created_at": { "type": "string" },
+#         "root_account_id": { "type": "integer" },
+#         "title": { "type": "string" },
+#         "updated_at": { "type": "string" },
+#         "url": { "type": ["string", "null"] },
+#         "workflow_state": { "type": "string" },
+#         "assessment_requests": { "type": "array" },
+#         "association_count": { "type": "integer" },
+#         "permissions": { "type": "object" },
+#         "rubric_assessments": { "type": "array" }
 #       }
 #     }
 #
@@ -277,6 +316,26 @@
 #             }
 #           }
 #         }
+#       }
+#     }
+#
+# @model RubricImport
+#     {
+#       "id": "RubricImport",
+#       "properties": {
+#         "account_id": { "type": ["integer", "null"] },
+#         "attachment_id": {},
+#         "course_id": { "type": ["integer", "null"] },
+#         "created_at": { "type": "string" },
+#         "error_count": { "type": "integer" },
+#         "error_data": {},
+#         "id": { "type": "integer" },
+#         "progress": { "type": "integer" },
+#         "root_account_id": { "type": "integer" },
+#         "updated_at": { "type": "string" },
+#         "user": { "type": "object" },
+#         "user_id": { "type": "integer" },
+#         "workflow_state": { "type": "string" }
 #       }
 #     }
 #

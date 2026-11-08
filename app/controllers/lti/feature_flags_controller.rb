@@ -37,7 +37,20 @@ module Lti
   #           "description": "The name of the feature flag",
   #           "example": "New Feature",
   #           "type": "string"
-  #         }
+  #         },
+  #         "context_id": { "type": "integer" },
+  #         "context_type": { "type": "string" },
+  #         "feature": { "type": "string" },
+  #         "hidden": { "type": "boolean" },
+  #         "locked": { "type": "boolean" },
+  #         "locking_account_id": {},
+  #         "parent_state": { "type": ["string", "null"] },
+  #         "transitions": { "type": "object" },
+  #         "applies_to": { "type": "string" },
+  #         "autoexpand": { "type": "boolean" },
+  #         "beta": { "type": "boolean" },
+  #         "description": { "type": "object" },
+  #         "display_name": { "type": "object" }
   #       }
   #     }
   #

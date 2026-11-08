@@ -43,7 +43,7 @@
 #           "description": "the assignment groups for all submissions in this response that were graded by this user.  The details are not nested inside here, but the fact that an assignment is present here means that the grader did grade submissions for this assignment on the contextual date. You can use the id of a grader and of an assignment to make another API call to find all submissions for a grader/assignment combination on a given date.",
 #           "example": [1,2,3],
 #           "type": "array",
-#           "items": {"type": "integer"}
+#           "items": {"type": ["object", "integer"]}
 #         }
 #       }
 #     }
@@ -60,9 +60,9 @@
 #         },
 #         "graders": {
 #           "description": "an array of the graders who were responsible for the submissions in this response. the submissions are grouped according to the person who graded them and the assignment they were submitted for.",
-#           "example": "[]",
+#           "example": [],
 #           "type": "array",
-#           "type": "integer"
+#           "items": { "type": "object" }
 #         }
 #       }
 #     }
@@ -85,17 +85,17 @@
 #         "body": {
 #           "description": "the body text of the submission",
 #           "example": "text from the submission",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "current_grade": {
 #           "description": "the most up to date grade for the current version of this submission",
 #           "example": "100",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "current_graded_at": {
 #           "description": "the latest time stamp for the grading of this submission",
 #           "example": "2013-01-31T18:16:31Z",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "current_grader": {
 #           "description": "the name of the most recent grader for this submission",
@@ -110,7 +110,7 @@
 #         "graded_at": {
 #           "description": "time stamp for the grading of this version of the submission",
 #           "example": "2013-01-31T18:16:31Z",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "grader": {
 #           "description": "the name of the user who graded this version of the submission",
@@ -120,7 +120,7 @@
 #         "grader_id": {
 #           "description": "the user id of the user who graded this version of the submission",
 #           "example": 67379,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "id": {
 #           "description": "the id of the submission of which this is a version",
@@ -145,22 +145,22 @@
 #         "previous_grade": {
 #           "description": "the grade for the submission version immediately preceding this one",
 #           "example": "90",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "previous_graded_at": {
 #           "description": "the timestamp for the grading of the submission version immediately preceding this one",
 #           "example": "2013-01-29T12:12:12Z",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "previous_grader": {
 #           "description": "the name of the grader who graded the version of this submission immediately preceding this one",
 #           "example": "Graded on submission",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "score": {
 #           "description": "the score for this version of the submission",
 #           "example": 100,
-#           "type": "integer"
+#           "type": ["number", "null"]
 #         },
 #         "user_name": {
 #           "description": "the name of the student who created this submission",
@@ -170,11 +170,11 @@
 #         "submission_type": {
 #           "description": "the type of submission",
 #           "example": "online",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "url": {
 #           "description": "the url of the submission, if there is one",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "user_id": {
 #           "description": "the user ID of the student who created this submission",
@@ -185,7 +185,27 @@
 #           "description": "the state of the submission at this version",
 #           "example": "unsubmitted",
 #           "type": "string"
-#         }
+#         },
+#         "attempt": { "type": ["integer", "null"] },
+#         "cached_due_date": { "type": ["string", "null"] },
+#         "custom_grade_status_id": {},
+#         "entered_grade": { "type": ["string", "null"] },
+#         "entered_score": { "type": ["number", "null"] },
+#         "excused": { "type": ["boolean", "null"] },
+#         "extra_attempts": {},
+#         "grade": { "type": ["string", "null"] },
+#         "grading_period_id": { "type": ["integer", "null"] },
+#         "late": { "type": "boolean" },
+#         "late_policy_status": {},
+#         "missing": { "type": "boolean" },
+#         "new_score": { "type": "number" },
+#         "points_deducted": { "type": ["number", "null"] },
+#         "posted_at": { "type": ["string", "null"] },
+#         "preview_url": { "type": "string" },
+#         "redo_request": { "type": "boolean" },
+#         "seconds_late": { "type": "integer" },
+#         "sticker": {},
+#         "submitted_at": { "type": ["string", "null"] }
 #       }
 #     }
 # @model SubmissionHistory

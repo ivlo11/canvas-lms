@@ -21,6 +21,15 @@
 # @API Moderated Grading
 # @subtopic Anonymous Provisional Grades
 #
+# @model AnonymousProvisionalGradesStatusResponse
+#     {
+#       "id": "AnonymousProvisionalGradesStatusResponse",
+#       "properties": {
+#         "needs_provisional_grade": { "type": "boolean" },
+#         "provisional_grades": { "type": "array", "items": { "type": "object" } }
+#       }
+#     }
+#
 class AnonymousProvisionalGradesController < ProvisionalGradesBaseController
   # @API Show provisional grade status for a student
   #
@@ -37,6 +46,7 @@ class AnonymousProvisionalGradesController < ProvisionalGradesBaseController
   #
   #       { "needs_provisional_grade": false }
   #
+  # @returns AnonymousProvisionalGradesStatusResponse
   def status
     @student = @assignment.submissions.find_by!(anonymous_id: params.fetch(:anonymous_id)).user
     super

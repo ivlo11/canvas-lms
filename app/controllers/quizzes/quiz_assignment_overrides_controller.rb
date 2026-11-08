@@ -28,15 +28,17 @@
 #         "quiz_id": {
 #           "description": "ID of the quiz those dates are for.",
 #           "example": "1",
-#           "type": "string"
+#           "type": ["integer", "string"]
 #         },
 #         "due_dates": {
 #           "description": "An array of quiz assignment overrides. For students, this array will always contain a single item which is the set of dates that apply to that student. For teachers and staff, it may contain more.",
-#           "$ref": "QuizAssignmentOverride"
+#           "type": "array",
+#           "items": { "$ref": "QuizAssignmentOverride" }
 #         },
 #         "all_dates": {
 #           "description": "An array of all assignment overrides active for the quiz. This is visible only to teachers and staff.",
-#           "$ref": "QuizAssignmentOverride"
+#           "type": "array",
+#           "items": { "$ref": "QuizAssignmentOverride" }
 #         }
 #       }
 #     }
@@ -69,17 +71,17 @@
 #         "due_at": {
 #           "description": "The date after which any quiz submission is considered late.",
 #           "example": "2014-02-21T06:59:59Z",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "unlock_at": {
 #           "description": "Date when the quiz becomes available for taking.",
 #           "example": null,
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "lock_at": {
 #           "description": "When the quiz will stop being available for taking. A value of null means it can always be taken.",
 #           "example": "2014-02-21T06:59:59Z",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "title": {
 #           "description": "Title of the section this assignment override is for, if any.",
@@ -90,7 +92,9 @@
 #           "description": "If this property is present, it means that dates in this structure are not based on an assignment override, but are instead for all students.",
 #           "example": true,
 #           "type": "boolean"
-#         }
+#         },
+#         "set_id": { "type": "integer" },
+#         "set_type": { "type": "string" }
 #       }
 #     }
 class Quizzes::QuizAssignmentOverridesController < ApplicationController

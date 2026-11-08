@@ -31,7 +31,7 @@ class LmgbUserDetailsController < ApplicationController
   # @argument id [Required, String]
   #   The ID of the user to retrieve details for
   #
-  # @returns LmgbUserDetails
+  # @returns OutcomeRollupLinks
   #
   # @example_request
   #   curl https://<canvas>/api/v1/courses/1/users/2/lmgb_user_details \
@@ -56,6 +56,8 @@ class LmgbUserDetailsController < ApplicationController
   #       "last_login": "2024-06-01T12:00:00Z"
   #     }
   #   }
+  # @returns OutcomeRollupLinks
+  # @returns OutcomeRollupLinks
   def show
     user = User.find(params[:id])
 

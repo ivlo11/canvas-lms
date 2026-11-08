@@ -43,7 +43,7 @@ require "benchmark"
 #         "editor_id": {
 #           "description": "The unique identifier for the user who last edited or deleted the entry, if any.",
 #           "example": 7087,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "user_name": {
 #           "description": "The author's display name, or null for anonymous topics when the author is not an instructor. Not returned for deleted entries.",
@@ -53,7 +53,7 @@ require "benchmark"
 #         "message": {
 #           "description": "The content of the entry (HTML). Not returned for deleted entries.",
 #           "example": "Newer entry",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "deleted": {
 #           "description": "True if the entry has been deleted. user_id, user_name and message are not returned for deleted entries.",
@@ -63,7 +63,7 @@ require "benchmark"
 #         "parent_id": {
 #           "description": "The unique identifier of the parent entry, or null for a root entry.",
 #           "example": 1016,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "created_at": {
 #           "description": "The creation time of the entry, in ISO8601 format.",
@@ -78,12 +78,12 @@ require "benchmark"
 #         "rating_count": {
 #           "description": "The number of ratings the entry has, or null if it has none.",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "rating_sum": {
 #           "description": "The sum of the entry's ratings, or null if it has none.",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "read_state": {
 #           "description": "The read state of the entry, \"read\" or \"unread\".",
@@ -122,6 +122,59 @@ require "benchmark"
 #           "example": false,
 #           "type": "boolean"
 #         }
+#       }
+#     }
+#
+# @model DiscussionTopicsFindSummaryResponse
+#     {
+#       "id": "DiscussionTopicsFindSummaryResponse",
+#       "properties": {
+#         "id": { "type": "integer" },
+#         "obsolete": { "type": "boolean" },
+#         "text": { "type": "string" },
+#         "usage": { "type": "object" },
+#         "userInput": {}
+#       }
+#     }
+#
+# @model DiscussionTopicsFindOrCreateSummaryResponse
+#     {
+#       "id": "DiscussionTopicsFindOrCreateSummaryResponse",
+#       "properties": {
+#         "id": { "type": "integer" },
+#         "text": { "type": "string" },
+#         "usage": { "type": "object" }
+#       }
+#     }
+#
+# @model DiscussionTopicsDisableSummaryResponse
+#     {
+#       "id": "DiscussionTopicsDisableSummaryResponse",
+#       "properties": {
+#         "success": { "type": "boolean" }
+#       }
+#     }
+#
+# @model DiscussionTopicsSummaryFeedbackResponse
+#     {
+#       "id": "DiscussionTopicsSummaryFeedbackResponse",
+#       "properties": {
+#         "comment": { "type": ["string", "null"] },
+#         "disliked": { "type": "boolean" },
+#         "liked": { "type": "boolean" }
+#       }
+#     }
+#
+# @model DiscussionTopicsViewResponse
+#     {
+#       "id": "DiscussionTopicsViewResponse",
+#       "properties": {
+#         "entry_ratings": { "type": "object" },
+#         "forced_entries": { "type": "array" },
+#         "new_entries": { "type": "array", "items": { "type": "object" } },
+#         "participants": { "type": "array", "items": { "type": "object" } },
+#         "unread_entries": { "type": "array", "items": { "type": "integer" } },
+#         "view": { "type": "array", "items": { "type": "object" } }
 #       }
 #     }
 #
@@ -176,6 +229,7 @@ class DiscussionTopicsApiController < ApplicationController
   #
   #     curl https://<canvas>/api/v1/courses/<course_id>/discussion_topics/<topic_id> \
   #         -H 'Authorization: Bearer <token>'
+  # @returns DiscussionTopic
   def show
     return unless is_not_anonymous
 
@@ -211,6 +265,7 @@ class DiscussionTopicsApiController < ApplicationController
   #       "text": "This is a summary of the discussion topic.",
   #       "usage": { "currentCount": 1, "limit": 5 }
   #     }
+  # @returns DiscussionTopicsFindSummaryResponse
   def find_summary
     return render_unauthorized_action unless @topic.user_can_summarize?(@current_user)
 
@@ -261,6 +316,7 @@ class DiscussionTopicsApiController < ApplicationController
   #       "text": "This is a summary of the discussion topic.",
   #       "usage": { "currentCount": 1, "limit": 5 }
   #     }
+  # @returns DiscussionTopicsFindOrCreateSummaryResponse
   def find_or_create_summary
     return render_unauthorized_action unless @topic.user_can_summarize?(@current_user)
 
@@ -359,6 +415,7 @@ class DiscussionTopicsApiController < ApplicationController
   #     {
   #       "success": true
   #     }
+  # @returns DiscussionTopicsDisableSummaryResponse
   def disable_summary
     return render_unauthorized_action unless @topic.user_can_summarize?(@current_user)
 
@@ -397,6 +454,7 @@ class DiscussionTopicsApiController < ApplicationController
   #       "liked": true,
   #       "disliked": false
   #     }
+  # @returns DiscussionTopicsSummaryFeedbackResponse
   def summary_feedback
     return render_unauthorized_action unless @topic.user_can_summarize?(@current_user)
 
@@ -607,6 +665,7 @@ class DiscussionTopicsApiController < ApplicationController
   #       { "id": 4, "user_id": 10, "parent_id": null, "message": "...html..." }
   #     ]
   #   }
+  # @returns DiscussionTopicsViewResponse
   def view
     return unless authorized_action(@topic, @current_user, :read_replies)
     return unless is_not_anonymous
@@ -719,6 +778,7 @@ class DiscussionTopicsApiController < ApplicationController
   #        -F 'message=<message>' \
   #        -F 'attachment=@<filename>' \
   #        -H "Authorization: Bearer <token>"
+  # @returns DiscussionEntry
   def add_entry
     @entry = build_entry(@topic.discussion_entries)
     if authorized_action(@topic, @current_user, :read) && authorized_action(@entry, @current_user, :create)
@@ -894,6 +954,7 @@ class DiscussionTopicsApiController < ApplicationController
   #        -F 'message=<message>' \
   #        -F 'attachment=@<filename>' \
   #        -H "Authorization: Bearer <token>"
+  # @returns DiscussionEntry
   def add_reply
     @parent = all_entries(@topic).find(params[:entry_id])
     @entry = build_entry(@parent.discussion_subentries)

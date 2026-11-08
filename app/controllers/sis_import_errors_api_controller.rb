@@ -44,12 +44,12 @@
 #         "row_info": {
 #           "description": "The contents of the line that had the error.",
 #           "example": "account_1, Sub account 1,, active ",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "row": {
 #           "description": "The line number where the error occurred. Some Importers do not yet support this. This is a 1 based index starting with the header row.",
 #           "example": "34",
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         }
 #       }
 #     }
@@ -81,7 +81,7 @@ class SisImportErrorsApiController < ApplicationController
   #   curl 'https://<canvas>/api/v1/accounts/<account_id>/sis_import_errors' \
   #     -H "Authorization: Bearer <token>"
   #
-  # @returns [SisImportError]
+  # @returns { sis_import_errors: [SisImportError] }
   def index
     if authorized_action(@account, @current_user, %i[import_sis manage_sis])
       scope = @account.sis_batch_errors.order(created_at: :desc)

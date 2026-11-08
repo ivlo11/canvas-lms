@@ -24,6 +24,18 @@
 # API for enabling/disabling the use of Content Security Policy headers and
 # configuring allowed domains
 
+# @model CspSettingsGetCspSettingsResponse
+#     {
+#       "id": "CspSettingsGetCspSettingsResponse",
+#       "properties": {
+#         "current_account_whitelist": { "type": "array" },
+#         "enabled": { "type": "boolean" },
+#         "inherited": { "type": "boolean" },
+#         "settings_locked": { "type": "boolean" },
+#         "tools_whitelist": { "type": "object" }
+#       }
+#     }
+#
 class CspSettingsController < ApplicationController
   before_action :require_context, :require_user
   before_action :require_read_permissions, only: :get_csp_settings
@@ -46,6 +58,7 @@ class CspSettingsController < ApplicationController
   # @response_field current_account_whitelist (Account-only) Lists the current list of domains
   #   explicitly allowed by this account. (Note: this list will not take effect unless
   #   CSP is explicitly enabled on this account)
+  # @returns CspSettingsGetCspSettingsResponse
   def get_csp_settings # rubocop:disable Naming/AccessorMethodName
     render json: csp_settings_json
   end

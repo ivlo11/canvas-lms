@@ -116,7 +116,7 @@
 #         "name": {
 #           "description": "the name of the module",
 #           "example": "Module 1",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "position": {
 #           "description": "the position of the module",
@@ -143,7 +143,23 @@
 #           ],
 #           "example": "Course",
 #           "type": "string"
-#         }
+#         },
+#         "items_count": { "type": "integer" },
+#         "items_url": { "type": "string" },
+#         "prerequisite_module_ids": { "type": "array", "items": { "type": "integer" } },
+#         "publish_final_grade": { "type": "boolean" },
+#         "published": { "type": "boolean" },
+#         "require_sequential_progress": { "type": "boolean" },
+#         "requirement_type": { "type": "string" },
+#         "unlock_at": { "type": ["string", "null"] },
+#         "completed_at": { "type": ["string", "null"] },
+#         "estimated_duration": { "type": ["string", "null"] },
+#         "requirement_count": { "type": ["integer", "null"] },
+#         "state": { "type": "string" },
+#         "publish_warning": { "type": "boolean" },
+#         "publish_warning_items": { "type": "array", "items": { "type": "object" } },
+#         "relock_warning": { "type": "boolean" },
+#         "unpublish_warning": { "type": "boolean" }
 #       }
 #     }
 # @model ModuleItem
@@ -194,7 +210,7 @@
 #         "position": {
 #           "description": "the current position of the module item",
 #           "example": 5,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "module_item_type": {
 #           "description": "The module item type of the item assignment",
@@ -205,7 +221,26 @@
 #           "description": "published boolean value for course pace",
 #           "example": true,
 #           "type": "boolean"
-#         }
+#         },
+#         "completion_requirement": { "type": "object" },
+#         "content_details": { "type": "object" },
+#         "content_id": { "type": "integer" },
+#         "estimated_duration": { "type": ["string", "null"] },
+#         "external_url": { "type": ["string", "null"] },
+#         "html_url": { "type": "string" },
+#         "indent": { "type": "integer" },
+#         "mastery_paths": { "type": ["object", "null"] },
+#         "module_id": { "type": "integer" },
+#         "new_tab": { "type": ["boolean", "null"] },
+#         "page_url": { "type": "string" },
+#         "publish_at": {},
+#         "quiz_lti": { "type": "boolean" },
+#         "title": { "type": "string" },
+#         "type": { "type": "string" },
+#         "unpublishable": { "type": "boolean" },
+#         "url": { "type": "string" },
+#         "created": { "type": "array", "items": { "type": "object" } },
+#         "errors": { "type": "array", "items": { "type": "object" } }
 #       }
 #     }
 #
@@ -231,7 +266,7 @@
 #         "user_id": {
 #           "description": "the id of the user who started the job",
 #           "example": 123,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "tag": {
 #           "description": "the type of operation",
@@ -241,7 +276,7 @@
 #         "completion": {
 #           "description": "percent completed",
 #           "example": 100,
-#           "type": "integer"
+#           "type": ["number", "null"]
 #         },
 #         "workflow_state": {
 #           "description": "the state of the job one of 'queued', 'running', 'completed', 'failed'",
@@ -269,7 +304,7 @@
 #         "message": {
 #           "description": "optional details about the job",
 #           "example": "17 courses processed",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "results": {
 #           "description": "optional results of the job. omitted when job is still pending",

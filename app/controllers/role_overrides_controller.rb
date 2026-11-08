@@ -126,7 +126,8 @@
 #           "type": "object",
 #           "key": { "type": "string" },
 #           "value": { "$ref": "RolePermissions" }
-#         }
+#         },
+#         "base_role_type_label": { "type": "string" }
 #       }
 #     }
 #

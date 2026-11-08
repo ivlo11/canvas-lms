@@ -40,7 +40,7 @@
 #         },
 #         "position": {
 #           "example": 3,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "updated_at": {
 #           "example": "2012-07-06T14:58:50Z",
@@ -60,7 +60,7 @@
 #         },
 #         "lock_at": {
 #           "example": "2012-07-06T14:58:50Z",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "id": {
 #           "example": 2937,
@@ -76,18 +76,18 @@
 #         },
 #         "parent_folder_id": {
 #           "example": 2934,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "created_at": {
 #           "example": "2012-07-06T14:58:50Z",
 #           "type": "datetime"
 #         },
 #         "unlock_at": {
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "hidden": {
 #           "example": false,
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "hidden_for_user": {
 #           "example": false,
@@ -105,7 +105,21 @@
 #           "example": false,
 #           "type": "boolean",
 #           "description": "If true, indicates this is a read-only folder containing files submitted to assignments"
-#         }
+#         },
+#         "data": {},
+#         "url": { "type": "string" },
+#         "all_url": { "type": "string" },
+#         "can_upload": { "type": "boolean" }
+#       }
+#     }
+#
+# @model FoldersCreateFileResponse
+#     {
+#       "id": "FoldersCreateFileResponse",
+#       "properties": {
+#         "file_param": { "type": "string" },
+#         "upload_params": { "type": "object" },
+#         "upload_url": { "type": "string" }
 #       }
 #     }
 #
@@ -605,6 +619,7 @@ class FoldersController < ApplicationController
   #
   #   curl -X DELETE 'https://<canvas>/api/v1/folders/<folder_id>' \
   #        -H 'Authorization: Bearer <token>'
+  # @returns Folder
   def api_destroy
     @folder = Folder.find(params[:id])
     if authorized_action(@folder, @current_user, :delete)
@@ -634,6 +649,7 @@ class FoldersController < ApplicationController
   #
   # Only those with the "Manage Files" permission on a course or group can
   # upload files to a folder in that course or group.
+  # @returns FoldersCreateFileResponse
   def create_file
     @folder = Folder.find(params[:folder_id])
     params[:parent_folder_id] = @folder.id

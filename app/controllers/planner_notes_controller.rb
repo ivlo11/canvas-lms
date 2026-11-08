@@ -57,7 +57,7 @@
 #         "course_id": {
 #           "description": "The course that the note is in relation too, if applicable",
 #           "example": 1578941,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "todo_date": {
 #           "description": "The datetime of when the planner note should show up on their planner",
@@ -83,7 +83,10 @@
 #           "description": "the API URL of the linked learning object",
 #           "example": "https://canvas.example.com/api/v1/courses/1578941/assignments/131072",
 #           "type": "string"
-#         }
+#         },
+#         "created_at": { "type": "string" },
+#         "details": { "type": ["string", "null"] },
+#         "updated_at": { "type": "string" }
 #       }
 #     }
 #

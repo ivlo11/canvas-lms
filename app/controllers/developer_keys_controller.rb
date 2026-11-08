@@ -39,7 +39,7 @@
 #        "name": {
 #          "description": "The display name",
 #          "example": "Test Key",
-#          "type": "string"
+#          "type": ["string", "null"]
 #        },
 #        "created_at": {
 #          "description": "Timestamp of the key's creation",
@@ -69,27 +69,27 @@
 #        "email": {
 #          "description": "Contact email configured for key",
 #          "example": "test@example.com",
-#          "type": "string"
+#          "type": ["string", "null"]
 #        },
 #        "icon_url": {
 #          "description": "URL for a small icon to display in key list",
 #          "example": "https://example.com/icon.png",
-#          "type": "string"
+#          "type": ["string", "null"]
 #        },
 #        "notes": {
 #          "description": "User-provided notes about key",
 #          "example": "this key is for testing",
-#          "type": "string"
+#          "type": ["string", "null"]
 #        },
 #        "vendor_code": {
 #          "description": "User-specified code representing the vendor that uses the key",
 #          "example": "Google",
-#          "type": "string"
+#          "type": ["string", "null"]
 #        },
 #        "account_name": {
 #          "description": "The name of the account that owns the key",
 #          "example": "Test Account",
-#          "type": "string"
+#          "type": ["string", "null"]
 #        },
 #        "visible": {
 #          "description": "True for all keys except Site Admin-level keys, which default to false. Controls visibility in the Inherited tab.",
@@ -105,12 +105,12 @@
 #        "redirect_uri": {
 #          "description": "Deprecated in favor of redirect_uris. Do not use.",
 #          "example": "no",
-#          "type": "string"
+#          "type": ["string", "null"]
 #        },
 #        "redirect_uris": {
 #          "description": "List of URLs used during OAuth2 flow to validate given redirect URI (API keys), or to redirect to after login (LTI keys)",
 #          "example": ["https://mytool.com/oauth2/redirect", "https://mytool.com/1_3/launch"],
-#          "type": "array",
+#          "type": ["string", "array"],
 #          "items": { "type": "string" }
 #        },
 #        "access_token_count": {
@@ -121,7 +121,7 @@
 #        "last_used_at": {
 #          "description": "(API keys only) The last time an access token for this key was used in an API request",
 #          "example": "2025-05-30T17:09:18Z",
-#          "type": "datetime"
+#          "type": ["datetime", "null"]
 #        },
 #        "test_cluster_only": {
 #          "description": "(API keys only) If true, key is only usable in non-production environments (test, beta). Avoids problems with beta refresh.",
@@ -141,7 +141,7 @@
 #        "client_credentials_audience": {
 #          "description": "(API keys only) Used in OAuth2 client credentials flow to specify the audience for the access token",
 #          "example": "external",
-#          "type": "string"
+#          "type": ["string", "null"]
 #        },
 #        "api_key": {
 #          "description": "(API keys only) The client secret used in the OAuth authorization_code flow.",
@@ -156,17 +156,17 @@
 #        "public_jwk": {
 #          "description": "(LTI keys only) The tool's public JWK in JSON format. Discouraged in favor of a url hosting a JWK set.",
 #          "example": { "e": "AQAB", "etc": "etc" },
-#          "type": "object"
+#          "type": ["object", "null"]
 #        },
 #        "public_jwk_url": {
 #          "description": "(LTI keys only) The tool-hosted URL containing its public JWK keyset. Canvas may cache JWKs up to 5 minutes.",
 #          "example": "https://mytool.com/1_3/jwks",
-#          "type": "string"
+#          "type": ["string", "null"]
 #        },
 #        "lti_registration": {
 #          "description": "(LTI keys only) The LTI IMS Registration object for this key, if key was created via Dynamic Registration.",
 #          "example": { "type": "TODO Lti::IMS::Registration" },
-#          "type": "object"
+#          "type": ["object", "null"]
 #        },
 #        "is_lti_registration": {
 #          "description": "(LTI keys only) Returns true if key was created via Dynamic Registration.",
@@ -176,20 +176,38 @@
 #        "user_name": {
 #          "description": "Unused.",
 #          "example": "",
-#          "type": "string"
+#          "type": ["string", "null"]
 #        },
 #        "user_id": {
 #          "description": "Unused.",
 #          "example": "",
-#          "type": "string"
+#          "type": ["string", "null"]
 #        },
 #        "unified_tool_id": {
 #          "description": "Correlates an API key to a product configuration.",
 #          "example": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
-#          "type": "string"
-#        }
+#          "type": ["string", "null"]
+#        },
+#        "developer_key_account_binding": { "type": "object" },
+#        "inherited_from": { "type": "string" },
+#        "lti_registration_id": { "type": ["integer", "null"] },
+#        "lti_registration_workflow_state": { "type": "string" }
 #      }
 #    }
+# @model ApiRegistration
+#     {
+#       "id": "ApiRegistration",
+#       "properties": {
+#         "company_id": { "type": "integer" },
+#         "company_name": { "type": "string" },
+#         "global_product_id": { "type": "string" },
+#         "source": { "type": "string" },
+#         "tool_id": { "type": "integer" },
+#         "tool_name": { "type": "string" },
+#         "unified_tool_id": { "type": "string" }
+#       }
+#     }
+#
 class DeveloperKeysController < ApplicationController
   before_action :set_key, only: [:update, :destroy]
   before_action :require_manage_developer_keys
@@ -362,7 +380,7 @@ class DeveloperKeysController < ApplicationController
   #     "redirect_uris": ["https://example.com/redirect", "https://another.com/callback"]
   #   }
   #
-  # @returns [ApiRegistration]
+  # @returns { api_registrations: [ApiRegistration] }
   def lookup_utids
     redirect_uris = params.require(:redirect_uris)
     sources = params.permit(sources: [])[:sources]

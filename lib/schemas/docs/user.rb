@@ -59,18 +59,18 @@ module Schemas::Docs
           sis_user_id: {
             description: "The SIS ID associated with the user.  This field is only included if the user came from a SIS import and has permissions to view SIS information.",
             example: "SHEL93921",
-            type: "string"
+            type: ["string", "null"]
           },
           sis_import_id: {
             description: "The id of the SIS import.  This field is only included if the user came from a SIS import and has permissions to manage SIS information.",
             example: "18",
-            type: "integer",
+            type: ["integer", "null"],
             format: "int64"
           },
           integration_id: {
             description: "The integration_id associated with the user.  This field is only included if the user came from a SIS import and has permissions to view SIS information.",
             example: "ABC59802",
-            type: "string"
+            type: ["string", "null"]
           },
           login_id: {
             description: "The unique login id for the user.  This is what the user uses to log in to Canvas.",
@@ -80,7 +80,7 @@ module Schemas::Docs
           avatar_url: {
             description: "If avatars are enabled, this field will be included and contain a url to retrieve the user's avatar.",
             example: "https://en.gravatar.com/avatar/d8cb8c8cd40ddf0cd05241443a591868?s=80&r=g",
-            type: "string"
+            type: ["string", "null"]
           },
           avatar_state: {
             description: "Optional: If avatars are enabled and caller is admin, this field can be requested and will contain the current state of the user's avatar.",
@@ -95,33 +95,33 @@ module Schemas::Docs
           email: {
             description: "Optional: This field can be requested with certain API calls, and will return the users primary email address.",
             example: "sheldon@caltech.example.com",
-            type: "string"
+            type: ["string", "null"]
           },
           locale: {
             description: "Optional: This field can be requested with certain API calls, and will return the users locale in RFC 5646 format.",
             example: "tlh",
-            type: "string"
+            type: ["string", "null"]
           },
           last_login: {
             description: "Optional: This field is only returned in certain API calls, and will return a timestamp representing the last time the user logged in to canvas.",
             example: "2012-05-30T17:45:25Z",
-            type: "string",
+            type: ["string", "null"],
             format: "date-time"
           },
           time_zone: {
             description: "Optional: This field is only returned in certain API calls, and will return the IANA time zone name of the user's preferred timezone.",
             example: "America/Denver",
-            type: "string"
+            type: ["string", "null"]
           },
           bio: {
             description: "Optional: The user's bio.",
             example: "I like the Muppets.",
-            type: "string"
+            type: ["string", "null"]
           },
           pronouns: {
             description: "Optional: This field is only returned if pronouns are enabled, and will return the pronouns of the user.",
             example: "he/him",
-            type: "string"
+            type: ["string", "null"]
           },
           effective_locale: {
             description: "Optional: This field is only returned in certain API calls, and only for the current user. It will return the locale the user sees Canvas in, in RFC 5646 format.",
@@ -154,7 +154,52 @@ module Schemas::Docs
                 type: "boolean"
               }
             }
-          }
+          },
+          account_uuid: { type: "string" },
+          anonymous_id: { type: "string" },
+          avatar_image_source: { type: ["string", "null"] },
+          avatar_image_updated_at: { type: ["string", "null"] },
+          avatar_image_url: { type: ["string", "null"] },
+          browser_locale: { type: ["string", "null"] },
+          confirmation_url: { type: "string" },
+          created_at: { type: "string" },
+          crocodoc_id: { type: ["integer", "null"] },
+          custom_links: { type: "array", items: { type: "object" } },
+          deleted_at: { type: ["string", "null"] },
+          destination: { type: "string" },
+          display_name: { type: "string" },
+          group_ids: { type: "array", items: { type: "integer" } },
+          group_submissions: { type: ["array", "null"], items: { type: "integer" } },
+          has_non_collaborative_groups: { type: "boolean" },
+          html_url: { type: "string" },
+          initial_enrollment_type: { type: ["string", "null"] },
+          instructure_identity_id: { type: ["string", "null"] },
+          is_inactive: { type: "boolean" },
+          last_logged_out: { type: ["string", "null"] },
+          lti_context_id: { type: ["string", "null"] },
+          lti_id: { type: ["string", "null"] },
+          merged_into_user_id: { type: ["integer", "null"] },
+          observation_link_root_account_ids: { type: "array", items: { type: "integer" } },
+          preferences: { type: "object" },
+          pronunciation: { type: "string" },
+          public: { type: ["boolean", "null"] },
+          reminder_time_for_due_dates: { type: "integer" },
+          reminder_time_for_grading: { type: "integer" },
+          root_account_ids: { type: "array" },
+          school_name: { type: ["string", "null"] },
+          school_position: { type: ["string", "null"] },
+          sections: { type: "string" },
+          show_user_services: { type: "boolean" },
+          storage_quota: { type: ["integer", "null"] },
+          stuck_sis_fields: { type: "array", items: { type: "string" } },
+          subscribe_to_emails: { type: ["boolean", "null"] },
+          terms_of_use: { type: "boolean" },
+          title: { type: "string" },
+          turnitin_id: { type: ["integer", "null"] },
+          unread_conversations_count: { type: "integer" },
+          updated_at: { type: "string" },
+          visible_inbox_types: { type: ["string", "null"] },
+          workflow_state: { type: "string" }
         }
       }
     end

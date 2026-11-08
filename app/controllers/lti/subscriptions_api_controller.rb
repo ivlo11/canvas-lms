@@ -43,6 +43,15 @@ module Lti
   # We cannot guarantee the transmission order of webhooks. If order is important
   # to your application, you must check the "event_time" attribute in the
   # "metadata" hash to determine sequence.
+  # @model LtiSubscriptionsCreateResponse
+  #     {
+  #       "id": "LtiSubscriptionsCreateResponse",
+  #       "properties": {
+  #         "RootAccountId": { "type": "string" },
+  #         "foo": { "type": "string" }
+  #       }
+  #     }
+  #
   class SubscriptionsApiController < ApplicationController
     include Lti::IMS::AccessTokenHelper
 
@@ -96,6 +105,7 @@ module Lti
     #
     # @argument subscription[TransportType] [Required, String]
     #   Must be either 'sqs' or 'https'.
+    # @returns LtiSubscriptionsCreateResponse
     def create
       subscription_helper = SubscriptionsValidator.new(params.require(:subscription).to_unsafe_h, tool_proxy)
       subscription_helper.validate_subscription_request!
@@ -110,6 +120,7 @@ module Lti
     end
 
     # @API Show a single Webhook Subscription
+    # @returns DataServiceSubscription
     def show
       service_response = Services::LiveEventsSubscriptionService.tool_proxy_subscription(tool_proxy, params.require(:id))
       forward_service_response(service_response)
@@ -117,6 +128,7 @@ module Lti
 
     # @API Update a Webhook Subscription
     # This endpoint uses the same parameters as the create endpoint
+    # @returns DataServiceSubscription
     def update
       subscription = params.require(:subscription)
       subscription["Id"] = params.require(:id)
@@ -136,6 +148,7 @@ module Lti
     #
     # Example use of a 'StartKey' header object:
     #   { "Id":"71d6dfba-0547-477d-b41d-db8cb528c6d1","DeveloperKey":"10000000000001" }
+    # @returns [DataServiceSubscription]
     def index
       headers = request.headers["StartKey"] ? { "StartKey" => request.headers["StartKey"] } : {}
       service_response = Services::LiveEventsSubscriptionService.tool_proxy_subscriptions(tool_proxy, headers)

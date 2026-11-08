@@ -44,6 +44,35 @@
 #       }
 #     }
 #
+# @model PermissionsHelpGroupsResponse
+#     {
+#       "id": "PermissionsHelpGroupsResponse",
+#       "properties": {
+#         "manage_account_calendar": { "type": "object" },
+#         "manage_assignments_and_quizzes": { "type": "object" },
+#         "manage_course_content": { "type": "object" },
+#         "manage_course_designer_enrollments": { "type": "object" },
+#         "manage_course_observer_enrollments": { "type": "object" },
+#         "manage_course_student_enrollments": { "type": "object" },
+#         "manage_course_ta_enrollments": { "type": "object" },
+#         "manage_course_teacher_enrollments": { "type": "object" },
+#         "manage_course_templates": { "type": "object" },
+#         "manage_courses": { "type": "object" },
+#         "manage_differentiation_tags": { "type": "object" },
+#         "manage_files": { "type": "object" },
+#         "manage_groups": { "type": "object" },
+#         "manage_institutional_tags": { "type": "object" },
+#         "manage_lti": { "type": "object" },
+#         "manage_rate_limiting": { "type": "object" },
+#         "manage_rules": { "type": "object" },
+#         "manage_sections": { "type": "object" },
+#         "manage_temporary_enrollments": { "type": "object" },
+#         "manage_wiki": { "type": "object" },
+#         "users_manage_access_tokens": { "type": "object" },
+#         "view_advanced_analytics": { "type": "object" }
+#       }
+#     }
+#
 class PermissionsHelpController < ApplicationController
   # these actions access only static (but localized) information about permissions,
   # but require a logged-in user to mitigate possible abuse
@@ -78,6 +107,7 @@ class PermissionsHelpController < ApplicationController
   #
   # The return value is a dictionary of permission group keys to objects
   # containing +label+ and +subtitle+ keys.
+  # @returns PermissionsHelpGroupsResponse
   def groups
     h = Permissions.permission_groups.transform_values do |info|
       {

@@ -88,7 +88,13 @@
 #               "failed"
 #             ]
 #           }
-#         }
+#         },
+#         "name": { "type": "string" },
+#         "content_export_id": { "type": ["integer", "null"] },
+#         "course_id": { "type": "integer" },
+#         "permissions": { "type": "object" },
+#         "progress_id": { "type": "integer" },
+#         "updated_at": { "type": "string" }
 #       }
 #     }
 
@@ -116,7 +122,7 @@ class EpubExportsController < ApplicationController
   # A paginated list of all courses a user is actively participating in, and
   # the latest ePub export associated with the user & course.
   #
-  # @returns [CourseEpubExport]
+  # @returns { courses: [CourseEpubExport] }
   def index
     @presenter = EpubExports::CourseEpubExportsPresenter.new(@current_user)
     @courses = @presenter.courses
@@ -142,7 +148,7 @@ class EpubExportsController < ApplicationController
   # When the export completes, use the {api:EpubExportsController#show Show content export} endpoint
   # to retrieve a download URL for the exported content.
   #
-  # @returns EpubExport
+  # @returns CourseEpubExport
   def create
     if authorized_action(EpubExport.new(course: @context), @current_user, :create)
       @course = Course.find(params[:course_id])
@@ -163,7 +169,7 @@ class EpubExportsController < ApplicationController
   #
   # Get information about a single ePub export.
   #
-  # @returns EpubExport
+  # @returns CourseEpubExport
   def show
     @course = Course.find(params[:course_id])
     @epub_export = @course.epub_exports.where(id: params[:id]).first

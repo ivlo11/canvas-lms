@@ -23,6 +23,21 @@ module Lti::IMS
   #
   # 1EdTech Asset Processor services: Asset Service and Asset Report Service.
   #
+  # @model LtiImsAssetProcessorCreateReportResponse
+  #     {
+  #       "id": "LtiImsAssetProcessorCreateReportResponse",
+  #       "properties": {
+  #         "assetId": { "type": "string" },
+  #         "priority": { "type": "integer" },
+  #         "processingProgress": { "type": "string" },
+  #         "result": { "type": "string" },
+  #         "timestamp": { "type": "string" },
+  #         "title": { "type": "string" },
+  #         "type": { "type": "string" },
+  #         "visibleToOwner": { "type": "boolean" }
+  #       }
+  #     }
+  #
   class AssetProcessorController < ApplicationController
     include Concerns::AdvantageServices
     include AttachmentHelper
@@ -125,7 +140,7 @@ module Lti::IMS
     #   should be visible to the user who owns the asset being reported on.
     #   If no value is provided, the platform should assume a default value of false
     #
-    # @returns the input arguments, as accepted and stored in the database.
+    # @returns LtiImsAssetProcessorCreateReportResponse the input arguments, as accepted and stored in the database.
     # Returns an HTTP 201 (Created) on success.
     #
     # @example_request

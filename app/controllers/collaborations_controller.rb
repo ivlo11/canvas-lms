@@ -71,7 +71,7 @@
 #           "type": "datetime"
 #         },
 #         "description": {
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "title": {
 #           "type": "string"
@@ -83,13 +83,14 @@
 #         },
 #         "update_url": {
 #           "description": "The LTI launch url to edit the collaboration",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "user_name": {
 #           "description": "The name of the user who owns the collaboration",
 #           "example": "John Danger",
 #           "type": "string"
-#         }
+#         },
+#         "permissions": { "type": "object" }
 #       }
 #     }
 #
@@ -119,7 +120,10 @@
 #           "description": "The name of the collaborator.",
 #           "example": "Don Draper",
 #           "type": "string"
-#         }
+#         },
+#         "avatar_image_url": { "type": "string" },
+#         "collaborator_id": { "type": "integer" },
+#         "collaborator_lti_id": { "type": "string" }
 #       }
 #     }
 #

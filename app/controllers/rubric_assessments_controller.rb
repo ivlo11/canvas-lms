@@ -22,6 +22,63 @@
 # @subtopic RubricAssessments
 #
 
+# @model RubricAssessmentsCreateResponse
+#     {
+#       "id": "RubricAssessmentsCreateResponse",
+#       "properties": {
+#         "artifact": { "type": "object" },
+#         "artifact_attempt": { "type": ["integer", "null"] },
+#         "artifact_id": { "type": "integer" },
+#         "artifact_type": { "type": "string" },
+#         "assessment_type": { "type": "string" },
+#         "assessor_id": { "type": "integer" },
+#         "assessor_name": { "type": "string" },
+#         "created_at": { "type": "string" },
+#         "data": { "type": ["array", "null"], "items": { "type": "object" } },
+#         "hide_points": { "type": "boolean" },
+#         "id": { "type": "integer" },
+#         "ratings": { "type": ["array", "null"], "items": { "type": "object" } },
+#         "related_group_submissions_and_assessments": { "type": "array", "items": { "type": "object" } },
+#         "root_account_id": { "type": "integer" },
+#         "rubric_assessment_imports_id": {},
+#         "rubric_association": { "type": "object" },
+#         "rubric_association_id": { "type": "integer" },
+#         "rubric_id": { "type": "integer" },
+#         "score": {},
+#         "updated_at": { "type": "string" },
+#         "user_id": { "type": "integer" }
+#       }
+#     }
+#
+# @model RubricAssessmentsUpdateResponse
+#     {
+#       "id": "RubricAssessmentsUpdateResponse",
+#       "properties": {
+#         "anonymous_assessor_id": { "type": "string" },
+#         "artifact": { "type": "object" },
+#         "artifact_attempt": {},
+#         "artifact_id": { "type": "integer" },
+#         "artifact_type": { "type": "string" },
+#         "assessment_type": { "type": "string" },
+#         "assessor_id": { "type": "integer" },
+#         "assessor_name": { "type": "string" },
+#         "created_at": { "type": "string" },
+#         "data": { "type": ["array", "null"], "items": { "type": "object" } },
+#         "hide_points": { "type": "boolean" },
+#         "id": { "type": "integer" },
+#         "ratings": { "type": ["array", "null"], "items": { "type": "object" } },
+#         "related_group_submissions_and_assessments": { "type": "array", "items": { "type": "object" } },
+#         "root_account_id": { "type": "integer" },
+#         "rubric_assessment_imports_id": {},
+#         "rubric_association": { "type": "object" },
+#         "rubric_association_id": { "type": "integer" },
+#         "rubric_id": { "type": "integer" },
+#         "score": {},
+#         "updated_at": { "type": "string" },
+#         "user_id": { "type": "integer" }
+#       }
+#     }
+#
 class RubricAssessmentsController < ApplicationController
   before_action :require_context
   include Api::V1::SubmissionComment
@@ -55,6 +112,7 @@ class RubricAssessmentsController < ApplicationController
   #     rubric_assessment[criterion_id][comments]
   #   For each criterion_id, change the id by the criterion number, ex: criterion_123
   #   If the criterion_id is not specified it defaults to false, and nothing is updated.
+  # @returns RubricAssessmentsCreateResponse
   def create
     update
   end
@@ -100,6 +158,7 @@ class RubricAssessmentsController < ApplicationController
   #     rubric_assessment[criterion_id][comments]
   #   For each criterion_id, change the id by the criterion number, ex: criterion_123
   #   If the criterion_id is not specified it defaults to false, and nothing is updated.
+  # @returns RubricAssessmentsUpdateResponse
   def update
     @association = @context.rubric_associations.find(params[:rubric_association_id])
     @assessment = @association.rubric_assessments.where(id: params[:id]).first
@@ -195,7 +254,7 @@ class RubricAssessmentsController < ApplicationController
   #
   # Deletes a rubric assessment
   #
-  # @returns RubricAssessment
+  # @returns { rubric_assessment: RubricAssessment }
   def destroy
     @association = @context.rubric_associations.find(params[:rubric_association_id])
     @rubric = @association.rubric

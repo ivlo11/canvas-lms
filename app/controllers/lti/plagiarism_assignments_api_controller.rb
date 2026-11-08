@@ -40,7 +40,7 @@ module Lti
   #         },
   #         "points_possible": {
   #           "example": 10,
-  #           "type": "integer"
+  #           "type": "number"
   #         },
   #         "due_at": {
   #           "description": "The due date for the assignment. If a user id is supplied and an assignment override is in place this field will reflect the due date as it applies to the user.",

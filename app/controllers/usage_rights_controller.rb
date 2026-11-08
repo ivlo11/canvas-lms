@@ -26,7 +26,7 @@
 #       "description": "Describes the copyright and license information for a File",
 #       "properties": {
 #         "legal_copyright" : {
-#           "type": "string",
+#           "type": ["string", "null"],
 #           "description": "Copyright line for the file",
 #           "example": "(C) 2014 Incom Corporation Ltd"
 #         },
@@ -81,6 +81,15 @@
 #       }
 #     }
 #
+# @model UsageRightsRemoveUsageRightsResponse
+#     {
+#       "id": "UsageRightsRemoveUsageRightsResponse",
+#       "properties": {
+#         "file_ids": { "type": "array", "items": { "type": "integer" } },
+#         "message": { "type": "string" }
+#       }
+#     }
+#
 class UsageRightsController < ApplicationController
   include Api::V1::UsageRights
 
@@ -132,6 +141,7 @@ class UsageRightsController < ApplicationController
   # @argument folder_ids[] [Optional]
   #   List of ids of folders. Usage rights will be removed from all files in these folders.
   #
+  # @returns UsageRightsRemoveUsageRightsResponse
   def remove_usage_rights
     if authorized_action(@context, @current_user, :manage_files_delete)
       return render json: { message: I18n.t("Must supply 'file_ids' and/or 'folder_ids' parameter") }, status: :bad_request unless params[:file_ids].present? || params[:folder_ids].present?

@@ -93,7 +93,9 @@
 #         "progress": {
 #           "description": "if the report is being generated, a Progress object that represents the operation. Refer to the Progress API for more information about the format. (Note: available only in JSON-API format)",
 #           "$ref": "Progress"
-#         }
+#         },
+#         "includes_sis_ids": { "type": "boolean" },
+#         "quiz_reports": { "type": "array", "items": { "type": "object" } }
 #       }
 #     }
 #

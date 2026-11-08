@@ -176,7 +176,8 @@ module Lti::IMS
   #                }
   #              }
   #            ]
-  #          }
+  #          },
+  #          "lti11_legacy_user_id": { "type": "string" }
   #        }
   #     }
   #

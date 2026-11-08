@@ -31,7 +31,7 @@
 #         },
 #         "display_name": {
 #           "example": "something",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "media_id": {
 #           "example": "3232",
@@ -59,7 +59,7 @@
 #         },
 #         "author_id": {
 #           "example": 134,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "author_name": {
 #           "example": "Toph Beifong",
@@ -68,7 +68,7 @@
 #         "author": {
 #           "description": "Abbreviated user object UserDisplay (see users API).",
 #           "example": "{}",
-#           "type": "string"
+#           "type": ["object", "string"]
 #         },
 #         "comment": {
 #           "example": "Well here's the thing...",
@@ -80,11 +80,19 @@
 #         },
 #         "edited_at" : {
 #           "example": "2012-01-02T01:00:00Z",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "media_comment": {
 #           "$ref": "MediaComment"
-#         }
+#         },
+#         "attempt": { "type": ["integer", "null"] },
+#         "cached_attachments": { "type": "array" },
+#         "draft": { "type": "boolean" },
+#         "group_comment_id": { "type": ["string", "null"] },
+#         "media_comment_id": { "type": ["string", "null"] },
+#         "media_comment_type": { "type": ["string", "null"] },
+#         "publishable": { "type": "boolean" },
+#         "attachments": { "type": "array", "items": { "type": "object" } }
 #       }
 #     }
 #

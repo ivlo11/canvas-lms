@@ -56,7 +56,7 @@ module Lti
   #          "resource_url": {
   #            "description": "a URL that may be used to override the launch URL inferred by the specified resource_type_code. If used a 'resource_type_code' must also be specified.",
   #            "example": "http://www.test.com/originality_report",
-  #            "type": "string"
+  #            "type": ["string", "null"]
   #          }
   #       }
   #     }
@@ -74,22 +74,22 @@ module Lti
   #         "file_id": {
   #           "description": "The id of the file receiving the originality score",
   #           "example": "8",
-  #           "type": "integer"
+  #           "type": ["integer", "null"]
   #         },
   #         "originality_score": {
   #           "description": "A number between 0 and 100 representing the originality score",
   #           "example": "0.16",
-  #           "type": "number"
+  #           "type": ["number", "null"]
   #         },
   #         "originality_report_file_id": {
   #           "description": "The ID of the file within Canvas containing the originality report document (if provided)",
   #           "example": "23",
-  #           "type": "integer"
+  #           "type": ["integer", "null"]
   #         },
   #         "originality_report_url": {
   #           "description": "A non-LTI launch URL where the originality score of the file may be found.",
   #           "example": "http://www.example.com/report",
-  #           "type": "string"
+  #           "type": ["string", "null"]
   #         },
   #         "tool_setting": {
   #            "description": "A ToolSetting object containing optional 'resource_type_code' and 'resource_url'",
@@ -101,13 +101,20 @@ module Lti
   #         },
   #         "submission_time": {
   #            "description": "The submitted_at date time of the submission.",
-  #            "type": "datetime"
+  #            "type": ["datetime", "null"]
   #         },
   #         "root_account_id": {
   #            "description": "The id of the root Account associated with the OriginalityReport",
   #            "example": "1",
   #            "type": "integer"
-  #         }
+  #         },
+  #         "created_at": { "type": "string" },
+  #         "error_message": { "type": ["string", "null"] },
+  #         "link_id": { "type": ["string", "null"] },
+  #         "originality_report_lti_url": { "type": ["string", "null"] },
+  #         "submission_id": { "type": "integer" },
+  #         "updated_at": { "type": "string" },
+  #         "workflow_state": { "type": "string" }
   #       }
   #     }
   class OriginalityReportsApiController < ApplicationController

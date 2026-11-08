@@ -56,7 +56,7 @@
 #         "name": {
 #           "description": "the name of this module",
 #           "example": "Imaginary Numbers and You",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "unlock_at": {
 #           "description": "(Optional) the date this module will unlock",
@@ -119,7 +119,13 @@
 #           "description": "(Optional) Whether this module is published. This field is present only if the caller has permission to view unpublished modules.",
 #           "type": "boolean",
 #           "example": true
-#         }
+#         },
+#         "estimated_duration": { "type": ["string", "null"] },
+#         "requirement_count": { "type": ["integer", "null"] },
+#         "publish_warning": { "type": "boolean" },
+#         "publish_warning_items": { "type": "array", "items": { "type": "object" } },
+#         "relock_warning": { "type": "boolean" },
+#         "unpublish_warning": { "type": "boolean" }
 #       }
 #     }
 #

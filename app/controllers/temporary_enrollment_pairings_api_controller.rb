@@ -28,13 +28,19 @@
 #         "id": {
 #           "description": "the ID of the temporary enrollment pairing",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "workflow_state": {
 #           "description": "The current status of the temporary enrollment pairing",
 #           "example": "active",
 #           "type": "string"
-#         }
+#         },
+#         "created_at": { "type": ["string", "null"] },
+#         "created_by_id": { "type": ["integer", "null"] },
+#         "deleted_by_id": { "type": ["integer", "null"] },
+#         "ending_enrollment_state": { "type": ["string", "null"] },
+#         "root_account_id": { "type": "integer" },
+#         "updated_at": { "type": ["string", "null"] }
 #       }
 #     }
 #
@@ -58,7 +64,7 @@ class TemporaryEnrollmentPairingsApiController < ApplicationController
   # @API Get a single temporary enrollment pairing
   # Returns the temporary enrollment pairing with the given id.
   #
-  # @returns TemporaryEnrollmentPairing
+  # @returns { temporary_enrollment_pairing: TemporaryEnrollmentPairing }
   #
   def show
     render json: @temporary_enrollment_pairing.as_json
@@ -67,7 +73,7 @@ class TemporaryEnrollmentPairingsApiController < ApplicationController
   # @API New TemporaryEnrollmentPairing
   # Initialize an unsaved Temporary Enrollment Pairing.
   #
-  # @returns TemporaryEnrollmentPairing
+  # @returns { temporary_enrollment_pairing: TemporaryEnrollmentPairing }
   #
   def new
     @temporary_enrollment_pairing = TemporaryEnrollmentPairing.new(root_account: @domain_root_account)
@@ -85,7 +91,7 @@ class TemporaryEnrollmentPairingsApiController < ApplicationController
   #   when the enrollment period has been reached. Defaults to "deleted" if no value is given.
   #   Accepted values are "deleted", "completed", and "inactive".
   #
-  # @returns TemporaryEnrollmentPairing
+  # @returns { temporary_enrollment_pairing: TemporaryEnrollmentPairing }
   #
   def create
     @temporary_enrollment_pairing = @domain_root_account.temporary_enrollment_pairings

@@ -42,7 +42,7 @@
 #         "pronouns": {
 #           "description": "Only set for users. The user's pronouns, if any.",
 #           "example": "he/him",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "avatar_url": {
 #           "description": "Avatar image url for the user/context.",
@@ -84,7 +84,15 @@
 #       }
 #     }
 #
-
+#
+# @model SearchAllCoursesResponse
+#     {
+#       "id": "SearchAllCoursesResponse",
+#       "properties": {
+#         "course": { "type": "object" }
+#       }
+#     }
+#
 class SearchController < ApplicationController
   include SearchHelper
   include Api::V1::Conversation
@@ -235,6 +243,7 @@ class SearchController < ApplicationController
   # @argument open_enrollment_only [Optional, Boolean]
   #   Only return courses that allow self enrollment. Defaults to false.
   #
+  # @returns [SearchAllCoursesResponse]
   def all_courses
     return render_unauthorized_action unless @domain_root_account.enable_course_catalog?
 

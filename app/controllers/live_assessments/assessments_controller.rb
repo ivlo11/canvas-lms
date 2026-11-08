@@ -44,7 +44,26 @@ module LiveAssessments
   #         }
   #       }
   #     }
-
+  #
+  # @model LiveAssessmentsAssessmentsCreateResponse
+  #     {
+  #       "id": "LiveAssessmentsAssessmentsCreateResponse",
+  #       "properties": {
+  #         "assessments": { "type": "array", "items": { "$ref": "Assessment" } },
+  #         "links": { "type": "object" }
+  #       }
+  #     }
+  #
+  # @model LiveAssessmentsAssessmentsIndexResponse
+  #     {
+  #       "id": "LiveAssessmentsAssessmentsIndexResponse",
+  #       "properties": {
+  #         "assessments": { "type": "array", "items": { "$ref": "Assessment" } },
+  #         "links": { "type": "object" },
+  #         "meta": { "type": "object" }
+  #       }
+  #     }
+  #
   class AssessmentsController < ApplicationController
     before_action :require_context
 
@@ -72,6 +91,7 @@ module LiveAssessments
     #    "assessments": [Assessment]
     #  }
     #
+    # @returns LiveAssessmentsAssessmentsCreateResponse
     def create
       return unless authorized_action(Assessment.new(context: @context), @current_user, :create)
 
@@ -119,6 +139,7 @@ module LiveAssessments
     #    "assessments": [Assessment]
     #  }
     #
+    # @returns LiveAssessmentsAssessmentsIndexResponse
     def index
       return unless authorized_action(Assessment.new(context: @context), @current_user, :read)
 

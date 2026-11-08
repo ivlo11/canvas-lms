@@ -30,18 +30,23 @@
 #         "url": {
 #           "description": "URL to the external tool",
 #           "example": "http://instructure.com",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "new_tab": {
 #           "description": "Whether or not there is a new tab for the external tool",
 #           "example": false,
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "resource_link_id": {
 #           "description": "the identifier for this tool_tag",
 #           "example": "ab81173af98b8c33e66a",
 #           "type": "string"
-#         }
+#         },
+#         "content_id": { "type": "integer" },
+#         "content_type": { "type": "string" },
+#         "custom_params": { "type": ["object", "null"] },
+#         "external_data": { "type": ["string", "null"] },
+#         "resource_link_title": {}
 #       }
 #     }
 #
@@ -68,12 +73,14 @@
 #         "context_module": {
 #           "description": "(Optional) Context module causing the lock.",
 #           "example": "{}",
-#           "type": "string"
+#           "type": ["object", "string"]
 #         },
 #         "manually_locked": {
 #           "example": true,
 #           "type": "boolean"
-#         }
+#         },
+#         "can_view": { "type": "boolean" },
+#         "missing_permission": { "type": "string" }
 #       }
 #     }
 #
@@ -84,7 +91,7 @@
 #       "properties": {
 #         "points": {
 #           "example": 10,
-#           "type": "integer"
+#           "type": "number"
 #         },
 #         "id": {
 #           "example": "rat1",
@@ -97,7 +104,9 @@
 #        "long_description": {
 #           "example": "Student completed the assignment flawlessly.",
 #           "type": "string"
-#         }
+#         },
+#        "color": { "type": "string" },
+#        "mastery": { "type": "boolean" }
 #       }
 #     }
 #
@@ -113,7 +122,7 @@
 #         "id": {
 #           "description": "The id of rubric criteria.",
 #           "example": "crit1",
-#           "type": "string"
+#           "type": ["string", "integer"]
 #         },
 #         "learning_outcome_id": {
 #           "description": "(Optional) The id of the learning outcome this criteria uses, if any.",
@@ -144,7 +153,8 @@
 #         "ignore_for_scoring": {
 #           "type": "boolean",
 #           "example": true
-#         }
+#         },
+#         "outcome_id": { "type": "integer" }
 #       }
 #     }
 #
@@ -170,18 +180,23 @@
 #         "due_at": {
 #          "description": "The due date for the assignment. Must be between the unlock date and the lock date if there are lock dates",
 #           "example": "2013-08-28T23:59:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "unlock_at": {
 #           "description": "The unlock date for the assignment. Must be before the due date if there is a due date.",
 #           "example": "2013-08-01T00:00:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "lock_at": {
 #           "description": "The lock date for the assignment. Must be after the due date if there is a due date.",
 #           "example": "2013-08-31T23:59:00-06:00",
-#           "type": "datetime"
-#         }
+#           "type": ["datetime", "null"]
+#         },
+#         "availability_status": { "type": "object" },
+#         "can_edit": { "type": "boolean" },
+#         "in_closed_grading_period": { "type": "boolean" },
+#         "set_id": { "type": ["integer", "null"] },
+#         "set_type": { "type": "string" }
 #       }
 #     }
 #
@@ -216,12 +231,13 @@
 #         },
 #         "exclude_small_matches_type": {
 #           "example": "percent",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "exclude_small_matches_value": {
 #           "example": 50,
-#           "type": "integer"
-#         }
+#           "type": ["integer", "null"]
+#         },
+#         "submit_papers_to": { "type": "boolean" }
 #       }
 #     }
 #
@@ -251,32 +267,32 @@
 #         "min": {
 #           "description": "Min score",
 #           "example": 1,
-#           "type": "integer"
+#           "type": "number"
 #         },
 #         "max": {
 #           "description": "Max score",
 #           "example": 10,
-#           "type": "integer"
+#           "type": "number"
 #         },
 #         "mean": {
 #           "description": "Mean score",
 #           "example": 6,
-#           "type": "integer"
+#           "type": "number"
 #         },
 #         "upper_q": {
 #           "description": "Upper quartile score",
 #           "example": 10,
-#           "type": "integer"
+#           "type": "number"
 #         },
 #         "median": {
 #           "description": "Median score",
 #           "example": 6,
-#           "type": "integer"
+#           "type": "number"
 #         },
 #         "lower_q": {
 #           "description": "Lower quartile score",
 #           "example": 1,
-#           "type": "integer"
+#           "type": "number"
 #         }
 #       }
 #     }
@@ -299,32 +315,32 @@
 #         "description": {
 #           "description": "the assignment description, in an HTML fragment",
 #           "example": "<p>Do the following:</p>...",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "created_at": {
 #           "description": "The time at which this assignment was originally created",
 #           "example": "2012-07-01T23:59:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "updated_at": {
 #           "description": "The time at which this assignment was last modified in any way",
 #           "example": "2012-07-01T23:59:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "due_at": {
 #           "description": "the due date for the assignment. returns null if not present. NOTE: If this assignment has assignment overrides, this field will be the due date as it applies to the user requesting information from the API.",
 #           "example": "2012-07-01T23:59:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "lock_at": {
 #           "description": "the lock date (assignment is locked after this date). returns null if not present. NOTE: If this assignment has assignment overrides, this field will be the lock date as it applies to the user requesting information from the API.",
 #           "example": "2012-07-01T23:59:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "unlock_at": {
 #           "description": "the unlock date (assignment is unlocked after this date) returns null if not present NOTE: If this assignment has assignment overrides, this field will be the unlock date as it applies to the user requesting information from the API.",
 #           "example": "2012-07-01T23:59:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "has_overrides": {
 #           "description": "whether this assignment has overrides",
@@ -354,7 +370,7 @@
 #         "assignment_group_id": {
 #           "description": "the ID of the assignment's group",
 #           "example": 2,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "due_date_required": {
 #           "description": "Boolean flag indicating whether the assignment requires a due date based on the account level setting",
@@ -423,7 +439,7 @@
 #         "group_category_id": {
 #           "description": "The ID of the assignment’s group set, if this is a group assignment. For group discussions, set group_category_id on the discussion topic, not the linked assignment.",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "needs_grading_count": {
 #           "description": "if the requesting user has grading rights, the number of submissions that need grading.",
@@ -442,7 +458,7 @@
 #         "position": {
 #           "description": "the sorting order of the assignment in the group",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "post_to_sis": {
 #           "example": true,
@@ -451,7 +467,7 @@
 #         },
 #         "integration_id": {
 #           "example": "12341234",
-#           "type" : "string",
+#           "type" : ["string", "null"],
 #           "description" : "(optional, Third Party unique identifier for Assignment)"
 #         },
 #         "integration_data": {
@@ -462,7 +478,7 @@
 #         "points_possible": {
 #           "description": "the maximum points possible for the assignment",
 #           "example": 12.0,
-#           "type": "number"
+#           "type": ["number", "null"]
 #         },
 #         "submission_types": {
 #           "description": "the types of submissions allowed for this assignment list containing one or more of the following: 'discussion_topic', 'online_quiz', 'on_paper', 'none', 'external_tool', 'online_text_entry', 'online_url', 'online_upload', 'media_recording', 'student_annotation'",
@@ -493,7 +509,7 @@
 #         "grading_type": {
 #           "description": "The type of grading the assignment receives; one of 'pass_fail', 'percent', 'letter_grade', 'gpa_scale', 'points'",
 #           "example": "points",
-#           "type": "string",
+#           "type": ["string", "null"],
 #           "allowableValues": {
 #             "values": [
 #               "pass_fail",
@@ -506,7 +522,7 @@
 #         },
 #         "grading_standard_id": {
 #           "description": "The id of the grading standard being applied to this assignment. Valid if grading_type is 'letter_grade' or 'gpa_scale'.",
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "published": {
 #           "description": "Whether the assignment is published",
@@ -590,7 +606,7 @@
 #           "description": "(Optional) If 'assignment_visibility' is included in the 'include' parameter, includes an array of student IDs who can see this assignment.",
 #           "example": [137,381,572],
 #           "type": "array",
-#           "items": {"type": "integer"}
+#           "items": {"type": ["string", "integer"]}
 #         },
 #         "overrides": {
 #           "description": "(Optional) If 'overrides' is included in the 'include' parameter, includes an array of assignment override objects.",
@@ -620,7 +636,7 @@
 #         "final_grader_id": {
 #           "description": "The user ID of the grader responsible for choosing final grades for this assignment. Only relevant for moderated assignments.",
 #           "example": 3,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "grader_comments_visible_to_graders": {
 #           "description": "Boolean indicating if provisional graders' comments are visible to other provisional graders. Only relevant for moderated assignments.",
@@ -645,7 +661,7 @@
 #         "allowed_attempts": {
 #           "description": "The number of submission attempts a student can make for this assignment. -1 is considered unlimited.",
 #           "example": 2,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "post_manually": {
 #           "description": "Whether the assignment has manual posting enabled. Only relevant for courses using New Gradebook.",
@@ -669,7 +685,7 @@
 #         },
 #         "annotatable_attachment_id": {
 #           "description": "The id of the attachment to be annotated by students. Relevant only if submission_types includes 'student_annotation'.",
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "anonymize_students": {
 #           "description": "(Optional) Boolean indicating whether student names are anonymized",
@@ -724,33 +740,73 @@
 #         "original_course_id": {
 #           "description": "If this assignment is a duplicate, it is the original assignment's course_id",
 #           "example": 4,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "original_assignment_id": {
 #           "description": "If this assignment is a duplicate, it is the original assignment's id",
 #           "example": 4,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "original_lti_resource_link_id": {
 #           "description": "If this assignment is a duplicate, it is the original assignment's lti_resource_link_id",
 #           "example": 4,
-#           "type": "integer"
+#           "type": ["string", "integer", "null"]
 #         },
 #         "original_assignment_name": {
 #           "description": "If this assignment is a duplicate, it is the original assignment's name",
 #           "example": "some assignment",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "original_quiz_id": {
 #           "description": "If this assignment is a duplicate, it is the original assignment's quiz_id",
 #           "example": 4,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "workflow_state": {
 #           "description": "String indicating what state this assignment is in.",
 #           "example": "unpublished",
 #           "type": "string"
-#         }
+#         },
+#         "all_dates_count": { "type": "integer" },
+#         "availability_status": { "type": "object" },
+#         "bucket": { "type": "string" },
+#         "can_edit": { "type": "boolean" },
+#         "checkpoints": { "type": "array", "items": { "type": "object" } },
+#         "free_form_criterion_comments": { "type": "boolean" },
+#         "has_peer_review_submissions": { "type": "boolean" },
+#         "has_sub_assignments": { "type": "boolean" },
+#         "in_paced_course": { "type": "boolean" },
+#         "is_quiz_lti_assignment": { "type": "boolean" },
+#         "lti_context_id": { "type": ["string", "null"] },
+#         "new_quizzes_anonymous_participants": { "type": "boolean" },
+#         "peer_review_across_sections": { "type": "boolean" },
+#         "peer_review_submission_required": { "type": "boolean" },
+#         "restrict_quantitative_data": { "type": "boolean" },
+#         "secure_params": { "type": "string" },
+#         "settings": {},
+#         "sis_assignment_id": {},
+#         "speed_grader_url": { "type": "string" },
+#         "suppress_assignment": { "type": "boolean" },
+#         "url": { "type": "string" },
+#         "visible_to_everyone": { "type": "boolean" },
+#         "access_code": {},
+#         "assignment_id": { "type": "integer" },
+#         "can_update": { "type": "boolean" },
+#         "lockdown_browser_monitor_data": {},
+#         "migration_id": { "type": ["string", "null"] },
+#         "mobile_url": { "type": "string" },
+#         "new_positions": { "type": "object" },
+#         "permissions": { "type": "object" },
+#         "question_count": { "type": "integer" },
+#         "quiz_type": { "type": "string" },
+#         "require_lockdown_browser_for_results": { "type": "boolean" },
+#         "require_lockdown_browser_monitor": { "type": "boolean" },
+#         "title": { "type": "string" },
+#         "webhook_info": { "type": "object" },
+#         "peer_review_sub_assignment": { "type": ["object", "null"] },
+#         "vericite_settings": { "type": "object" },
+#         "sub_assignment_tag": { "type": "string" },
+#         "course": { "type": "object" }
 #       }
 #     }
 #

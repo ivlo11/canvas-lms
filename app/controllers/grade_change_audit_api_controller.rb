@@ -46,17 +46,17 @@
 #         "student": {
 #           "description": "ID of the student associated with the event. will match the user_id in the associated submission.",
 #           "example": "2319",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "grader": {
 #           "description": "ID of the grader associated with the event. will match the grader_id in the associated submission.",
 #           "example": "2319",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "page_view": {
 #           "description": "ID of the page view during the event if it exists.",
 #           "example": "e2b76430-27a5-0131-3ca1-48e0eb13f29b",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         }
 #       }
 #     }
@@ -122,12 +122,12 @@
 #         "grade_after": {
 #           "description": "The grade after the change.",
 #           "example": "8",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "grade_before": {
 #           "description": "The grade before the change.",
 #           "example": "8",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "graded_anonymously": {
 #           "description": "Boolean indicating whether the student name was visible when the grade was given. Could be null if the grade change record was created before this feature existed.",
@@ -142,12 +142,12 @@
 #         "points_possible_before": {
 #           "description": "The assignment's points possible before the change.",
 #           "example": 10.0,
-#           "type": "number"
+#           "type": ["number", "null"]
 #         },
 #         "points_possible_after": {
 #           "description": "The assignment's points possible after the change.",
 #           "example": 10.0,
-#           "type": "number"
+#           "type": ["number", "null"]
 #         },
 #         "grade_current": {
 #           "description": "The current grade of the submission. Only included when the request includes current_grade.",

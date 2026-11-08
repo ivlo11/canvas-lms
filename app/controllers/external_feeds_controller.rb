@@ -47,7 +47,7 @@
 #         "header_match": {
 #           "description": "If not null, only feed entries whose title contains this string will trigger new posts in Canvas",
 #           "example": "pattern",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "created_at": {
 #           "description": "When this external feed was added to Canvas",
@@ -65,7 +65,8 @@
 #               "full"
 #             ]
 #           }
-#         }
+#         },
+#         "external_feed_entries_count": { "type": "integer" }
 #       }
 #     }
 #

@@ -41,7 +41,7 @@
 #         "sent_at": {
 #           "description": "The date and time this message was sent",
 #           "example": "2013-03-20T22:42:00Z",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "workflow_state": {
 #           "description": "The workflow state of the message. Possible values: 'created' : The message has been created, but not yet processed. 'staged' : The message is queued for sending. 'sending' : The message is being sent currently. 'sent' : The message has been successfully sent. 'bounced' : An error occurred during the sending of the message.'dashboard' : The message has been sent to the dashboard. 'closed' :  The message has been sent and closed, typically for dashboard messages or messages sent to deleted users. 'cancelled' : The message was cancelled before it could be sent.",
@@ -73,7 +73,7 @@
 #         "to": {
 #           "description": "The address the message was sent to:",
 #           "example": "someone@example.com",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "reply_to": {
 #           "description": "The reply_to header of the message",
@@ -83,7 +83,7 @@
 #         "subject": {
 #           "description": "The message subject",
 #           "example": "example subject line",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "body": {
 #           "description": "The plain text body of the message",
@@ -93,7 +93,7 @@
 #         "html_body": {
 #           "description": "The HTML body of the message.",
 #           "example": "<html><body>This is the body of the message</body></html>",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         }
 #       }
 #     }

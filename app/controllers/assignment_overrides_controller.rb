@@ -85,7 +85,7 @@
 #         "due_at": {
 #           "description": "the overridden due at (present if due_at is overridden)",
 #           "example": "2012-07-01T23:59:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "all_day": {
 #           "description": "the overridden all day flag (present if due_at is overridden)",
@@ -95,18 +95,28 @@
 #         "all_day_date": {
 #           "description": "the overridden all day date (present if due_at is overridden)",
 #           "example": "2012-07-01",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "unlock_at": {
 #           "description": "the overridden unlock at (present if unlock_at is overridden)",
 #           "example": "2012-07-01T23:59:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "lock_at": {
 #           "description": "the overridden lock at, if any (present if lock_at is overridden)",
 #           "example": "2012-07-01T23:59:00-06:00",
-#           "type": "datetime"
-#         }
+#           "type": ["datetime", "null"]
+#         },
+#         "unassign_item": { "type": "boolean" },
+#         "group_category_id": { "type": "integer" },
+#         "non_collaborative": { "type": "boolean" },
+#         "noop_id": {},
+#         "course_id": { "type": "integer" },
+#         "parent_override_id": { "type": "integer" },
+#         "context_module_name": { "type": "string" },
+#         "peer_review_dates": { "type": ["object", "null"] },
+#         "students": { "type": "array", "items": { "type": "object" } },
+#         "sub_assignment_due_dates": { "type": "array", "items": { "type": "object" } }
 #       }
 #     }
 #

@@ -33,7 +33,7 @@ class LearningMasteryGradebookSettingsApiController < ApplicationController
   #
   # Get the current user's Learning Mastery Gradebook settings for the current context.
   #
-  # @returns [Hash] The Learning Mastery Gradebook settings.
+  # @returns { learning_mastery_gradebook_settings: object } The Learning Mastery Gradebook settings.
   def show
     return unless outcome_gradebook_enabled?
 
@@ -47,7 +47,7 @@ class LearningMasteryGradebookSettingsApiController < ApplicationController
   #
   # @param [Hash] learning_mastery_gradebook_settings The Learning Mastery Gradebook settings to update.
   #
-  # @returns [Hash] The updated Learning Mastery Gradebook settings.
+  # @returns { learning_mastery_gradebook_settings: object } The updated Learning Mastery Gradebook settings.
   def update
     return unless outcome_gradebook_enabled?
 

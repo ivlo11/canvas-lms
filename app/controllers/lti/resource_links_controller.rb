@@ -97,7 +97,7 @@
 #           "example": "c522554a-d4be-49ef-b163-9c87fdc6ad6f"
 #         },
 #         "title": {
-#           "type": "string",
+#           "type": ["string", "null"],
 #           "description": "The title of the LTI Resource Link. Usually tool-provided, or matches the assignment name",
 #           "example": "Assignment 1"
 #         },
@@ -107,7 +107,7 @@
 #           "example": "https://example.com/lti/launch/content_item/123"
 #         },
 #         "lti_1_1_id": {
-#           "type": "string",
+#           "type": ["string", "null"],
 #           "description": "The LTI 1.1 identifier for the LTI Resource Link, included in lti1p1 migration claim when launched. Only present if tool was migrated from 1.1 to 1.3.",
 #           "example": "6a8aaca162bfc4393804afd4cd53cd94413c48bb"
 #         },
@@ -144,7 +144,9 @@
 #           "description": "The Canvas identifier of the associated content, e.g. ModuleItem related to this link. Present if associated_content_type is present",
 #           "example": 1,
 #           "type": "integer"
-#         }
+#         },
+#         "custom": { "type": ["object", "null"] },
+#         "root_account_id": { "type": "integer" }
 #       }
 #     }
 class Lti::ResourceLinksController < ApplicationController

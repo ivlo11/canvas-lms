@@ -27,7 +27,7 @@
 #         "created_at": { "type": "string", "format": "date-time", "description": "The time the token was created." },
 #         "expires_at": { "type": ["string", "null"], "format": "date-time", "description": "The time the token will permanently expire, or null if it does not permanently expire." },
 #         "workflow_state": { "type": "string", "description": "The current state of the token. One of 'active', 'pending', 'disabled', or 'deleted'." },
-#         "remember_access": { "type": "boolean", "description": "Whether the token should be remembered across sessions. Only applicable for OAuth tokens." },
+#         "remember_access": { "type": ["boolean", "null"], "description": "Whether the token should be remembered across sessions. Only applicable for OAuth tokens." },
 #         "scopes": { "type": "array", "items": { "type": "string" }, "description": "The scopes associated with the token. If empty, there are no scope limitations." },
 #         "real_user_id": { "type": ["integer", "null"], "description": "If the token was created while masquerading, this is the ID of the real user. Otherwise, null." },
 #         "token": { "type": "string", "description": "The actual access token. Only included when the token is first created." },
@@ -35,7 +35,10 @@
 #         "user_id": { "type": "integer", "description": "The ID of the user the token belongs to." },
 #         "purpose": { "type": "string", "description": "The purpose of the token." },
 #         "app_name": { "type": ["string", "null"], "description": "If the token was created by an OAuth application, this is the name of that application. Otherwise, null." },
-#         "can_manually_regenerate": { "type": "boolean", "description": "Whether the current user can manually regenerate this token." }
+#         "can_manually_regenerate": { "type": "boolean", "description": "Whether the current user can manually regenerate this token." },
+#         "last_used_at": {},
+#         "updated_at": { "type": "string" },
+#         "visible_token": { "type": ["string", "null"] }
 #       }
 #     }
 class TokensController < ApplicationController
@@ -84,6 +87,7 @@ class TokensController < ApplicationController
   #
   # The ID can be the actual database ID of the token, or the 'token_hint' value.
   #
+  # @returns Token
   def show
     unless @token.grants_right?(@current_user, session, :read)
       return render_unauthorized_action
@@ -105,6 +109,7 @@ class TokensController < ApplicationController
   #   Ignored if the default developer key does not have the "enable scopes" option enabled.
   #   In such cases, the token will inherit the user's permissions instead.
   #
+  # @returns Token
   def create
     token_params = access_token_params
 
@@ -156,6 +161,7 @@ class TokensController < ApplicationController
   # @argument token[scopes][] [Array] The scopes to associate with the token.
   # @argument token[regenerate] [Boolean] Regenerate the actual token.
   #
+  # @returns Token
   def update
     unless @token.grants_right?(logged_in_user, AccessToken.account_session_for_permissions(@domain_root_account), :update)
       if @current_user.id == @token.user_id
@@ -188,6 +194,7 @@ class TokensController < ApplicationController
   #
   # The ID can be the actual database ID of the token, or the 'token_hint' value.
   #
+  # @returns Token
   def destroy
     unless @token.grants_right?(logged_in_user, session, :delete)
       if @current_user.id == @token.user_id

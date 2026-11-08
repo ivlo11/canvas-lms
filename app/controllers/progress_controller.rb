@@ -44,7 +44,7 @@
 #         "user_id": {
 #           "description": "the id of the user who started the job",
 #           "example": 123,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "tag": {
 #           "description": "the type of operation",
@@ -54,7 +54,7 @@
 #         "completion": {
 #           "description": "percent completed",
 #           "example": 100,
-#           "type": "integer"
+#           "type": ["number", "null"]
 #         },
 #         "workflow_state": {
 #           "description": "the state of the job one of 'queued', 'running', 'completed', 'failed'",
@@ -82,7 +82,7 @@
 #         "message": {
 #           "description": "optional details about the job",
 #           "example": "17 courses processed",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "results": {
 #           "description": "optional results of the job. omitted when job is still pending",
