@@ -86,16 +86,36 @@ def render_value(prop)
     return JSON.generate(value)
   end
 
-  case prop["type"]
+  case example_type(prop["type"], value)
   when "array"
     "[#{value.map { |v| render_value(prop["items"].merge("example" => v)) }.join(", ")}]"
-  when "object"
+  when "object", nil
+    # An untyped value may be anything, so it renders as JSON
     JSON.generate(value)
   when "integer", "number", "boolean" then value.to_s
   when "string", "datetime" then %("#{value}")
   else
     raise ArgumentError, %(invalid or missing "type" in API property: #{prop.inspect})
   end
+end
+
+EXAMPLE_CLASSES = {
+  "array" => [Array],
+  "object" => [Hash],
+  "integer" => [Integer],
+  "number" => [Numeric],
+  "boolean" => [TrueClass, FalseClass],
+  "string" => [String],
+  "datetime" => [String]
+}.freeze
+
+# A list of types, such as ["integer", "null"], renders as the type its example
+# has, or else as its first type
+def example_type(type, value)
+  return type unless type.is_a?(Array)
+
+  types = type - ["null"]
+  types.find { |name| EXAMPLE_CLASSES.fetch(name, []).any? { |klass| value.is_a?(klass) } } || types.first
 end
 
 def render_properties(json)

@@ -788,11 +788,30 @@ module SwaggerYard
     def self.convert_array_items(items)
       if items["$ref"]
         { "$ref" => "#/components/schemas/#{sanitize_schema_name(items["$ref"])}" }
+      elsif items["type"].is_a?(Array)
+        # A list of item types converts like a property's: its first type, nullable
+        convert_single_property(items)
+      elsif items["properties"].is_a?(Hash)
+        items.merge("properties" => items["properties"].transform_values { |field| normalize_type_lists(field) })
       elsif items["type"]
         convert_item_type(items["type"], items)
       else
         items
       end
+    end
+
+    # Item fields are kept as written, except that a list of types, which
+    # OpenAPI 3.0 doesn't allow, becomes its first type, nullable
+    def self.normalize_type_lists(schema)
+      return schema unless schema.is_a?(Hash)
+
+      normalized = schema.transform_values { |value| value.is_a?(Hash) ? normalize_type_lists(value) : value }
+      normalized["properties"] = schema["properties"].transform_values { |field| normalize_type_lists(field) } if schema["properties"].is_a?(Hash)
+      return normalized unless schema["type"].is_a?(Array)
+
+      converted = {}
+      handle_array_types(converted, schema["type"])
+      normalized.merge(converted)
     end
 
     def self.convert_item_type(item_type, items)
@@ -1816,6 +1835,10 @@ module SwaggerYard
           def handle_array_response(type_str)
             type_str =~ /^\[(.+)\]$/ || type_str =~ /^Array<(.+)>$/i
             model_name = $1
+            # A list of a primitive, such as [String], keeps its item type
+            item = handle_primitive_or_model_response(model_name.to_s.strip)
+            return "array<#{item}>" if %w[string integer number boolean].include?(item)
+
             track_model_usage(model_name) if model_schema_exists?(model_name)
             "array<object>"
           end

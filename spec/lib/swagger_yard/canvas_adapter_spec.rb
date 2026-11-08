@@ -601,6 +601,18 @@ describe SwaggerYard::CanvasAdapter do
       expect(result["items"]).to eq({ "type" => "string" })
     end
 
+    it "converts a list of item types to the first one" do
+      prop_def = { "type" => "array", "items" => { "type" => %w[object integer null] } }
+      result = described_class.convert_single_property(prop_def)
+      expect(result["items"]).to eql({ "type" => "object", "nullable" => true })
+    end
+
+    it "converts the fields of array items" do
+      prop_def = { "type" => "array", "items" => { "type" => "object", "properties" => { "rate" => { "type" => %w[integer string] } } } }
+      result = described_class.convert_single_property(prop_def)
+      expect(result.dig("items", "properties", "rate")).to eql({ "type" => "integer" })
+    end
+
     it "adds default items for array without items" do
       prop_def = { "type" => "array" }
       result = described_class.convert_single_property(prop_def)
@@ -1625,6 +1637,13 @@ describe SwaggerYard::CanvasAdapter do
 
         expect(operations["Foo-index"].default_response.type.source).to eql "array<object>"
         expect(described_class.operation_models["Foo-index"]["200"]).to eql(model: "Poll", is_array: true)
+      end
+
+      it "keeps the item type of a list of a primitive" do
+        operations = operations_for("@returns [String]")
+
+        expect(operations["Foo-index"].default_response.type.source).to eql "array<string>"
+        expect(described_class.operation_models).not_to have_key("Foo-index")
       end
 
       it "gives two actions with the same shape their own wrappers" do
