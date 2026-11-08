@@ -24,7 +24,6 @@
 # @model LatePolicy
 #   {
 #     "id": "LatePolicy",
-#     "required": "course_id",
 #     "properties": {
 #       "id": {
 #         "description": "the unique identifier for the late policy",

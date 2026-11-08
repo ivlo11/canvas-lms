@@ -36,7 +36,7 @@
 # @model QuizStatistics
 #     {
 #       "id": "QuizStatistics",
-#       "required": [ "id", "quiz_id" ],
+#       "required": [ "id" ],
 #       "properties": {
 #         "id": {
 #           "description": "The ID of the quiz statistics report.",
