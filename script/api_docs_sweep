@@ -1,0 +1,37 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Applies the automatic fixes from script/api_docs_audit's findings to the
+# controller comments, or with --review the review decisions in design D4.
+# Prints what it would change unless --apply is passed.
+#
+#   script/api_docs_sweep [--findings FILE] [--root DIR] [--review] [--apply]
+
+require "json"
+require "optparse"
+
+root = File.expand_path("..", __dir__)
+Dir[File.join(root, "lib/api_docs_audit/*.rb")].each { |file| require file }
+
+options = { findings: File.join(root, "tmp/api_docs_audit/findings.json"), root: }
+OptionParser.new do |parser|
+  parser.on("--findings FILE", "findings file") { |value| options[:findings] = value }
+  parser.on("--root DIR", "tree to edit, such as a scratch copy") { |value| options[:root] = value }
+  parser.on("--review", "apply the review decisions instead") { options[:review] = true }
+  parser.on("--apply", "write the changes") { options[:apply] = true }
+end.parse!
+
+findings = JSON.parse(File.read(options[:findings]), symbolize_names: true)[:findings].map do |finding|
+  finding[:observed] = finding[:observed].transform_keys(&:to_s) if finding[:observed].is_a?(Hash)
+  finding
+end
+source = ApiDocsAudit::Source.new(root: options[:root])
+codemod = ApiDocsAudit::Codemod.new(source, ApiDocsAudit::DocsParser.new(source).parse)
+options[:review] ? codemod.apply_review(findings) : codemod.apply_findings(findings)
+result = codemod.result
+
+puts "applied: #{result.applied.size}, by kind: #{result.applied.map { |item| item[:kind] }.tally}" # rubocop:disable Rails/Pluck
+puts "skipped: #{result.skipped.size}, by reason: #{result.skipped.map { |item| "#{item[:kind]}: #{item[:outcome]}" }.tally}"
+puts "#{codemod.changed_files.size} files changed"
+codemod.write!(options[:root]) if options[:apply]
+puts options[:apply] ? "written" : "dry run: pass --apply to write"

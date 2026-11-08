@@ -106,6 +106,11 @@ describe ApiDocsAudit::DocsParser do # rubocop:disable RSpec/MultipleDescribes
       expect(response.models).to eql(["Widget"])
     end
 
+    it "reads a model name that starts with one lowercase letter" do
+      controller("# @API Show\n  # @returns [ePortfolio]\n  def show; end", widget_model.gsub("Widget", "ePortfolio"))
+      expect(docs.actions.first.response.models).to eql(["ePortfolio"])
+    end
+
     it "treats an unknown model as prose" do
       expect(response_of("Gadget").container).to be(:prose)
     end

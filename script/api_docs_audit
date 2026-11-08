@@ -6,7 +6,11 @@
 # only, under tmp/. Needs no database.
 #
 #   script/api_docs_audit [--evidence DIR] [--docs-ref REF] [--openapi FILE]
-#                         [--routes FILE] [--output FILE] [--role ROLE]
+#                         [--routes FILE] [--structure FILE] [--output FILE]
+#                         [--role ROLE]
+#
+# Column types come from a schema-only dump, such as pg_dump --schema-only, and
+# default to db/structure.sql.
 
 require "fileutils"
 require "json"
@@ -20,13 +24,15 @@ options = {
   evidence: File.join(root, "tmp/api_docs_audit/evidence"),
   output: File.join(root, "tmp/api_docs_audit/findings.json"),
   routes: File.join(root, "tmp/api_docs_audit/routes.json"),
-  openapi: File.join(root, "public/doc/openapi/canvas.openapi.yaml")
+  openapi: File.join(root, "public/doc/openapi/canvas.openapi.yaml"),
+  structure: File.join(root, "db/structure.sql")
 }
 OptionParser.new do |parser|
   parser.on("--evidence DIR", "recorded responses (default #{options[:evidence]})") { |value| options[:evidence] = value }
   parser.on("--docs-ref REF", "read documentation from this git ref") { |value| options[:docs_ref] = value }
   parser.on("--openapi FILE", "generated spec, for pagination") { |value| options[:openapi] = value }
   parser.on("--routes FILE", "route map, for probes (see ApiDocsAudit::Routes)") { |value| options[:routes] = value }
+  parser.on("--structure FILE", "schema dump, for column types") { |value| options[:structure] = value }
   parser.on("--output FILE", "findings file") { |value| options[:output] = value }
   parser.on("--role ROLE", "list actions verified for this role") { |value| options[:role] = value }
 end.parse!
@@ -65,8 +71,9 @@ docs.actions.each do |action|
 end
 
 evidence = ApiDocsAudit::Evidence.load(options[:evidence], routes: ApiDocsAudit::Routes.load(options[:routes]))
-structure = File.join(root, "db/structure.sql")
-columns = File.exist?(structure) ? ApiDocsAudit::ColumnTypes.new(File.read(structure)) : nil
+structure = options[:structure]
+columns = (File.exist?(structure) && !File.empty?(structure)) ? ApiDocsAudit::ColumnTypes.new(File.read(structure)) : nil
+warn "no column types: #{structure} is missing or empty" unless columns
 comparison = ApiDocsAudit::Comparison.new(
   docs:,
   evidence:,

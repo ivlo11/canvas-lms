@@ -123,6 +123,20 @@ describe ApiDocsAudit::Comparison do
       expect(finding.to_h).to include(kind: "type_conflict", apply: "review", documented: "string", observed: ["integer"])
     end
 
+    it "gives the item types when a field turns out to be a list" do
+      finding = findings(record({ "[].name" => ["array"], "[].name[]" => ["string"] })).first
+      expect(finding.to_h).to include(kind: "type_conflict", observed: ["array"], items: ["string"])
+    end
+
+    context "with a list of primitives" do
+      let(:model) { "# @model Widget\n#     { \"properties\": { \"tags\": { \"type\": \"array\", \"items\": { \"type\": \"integer\" } } } }\n" }
+
+      it "names the items when the conflict is in a list's items" do
+        finding = findings(record({ "[].tags" => ["array"], "[].tags[]" => ["string"] })).first
+        expect(finding.to_h).to include(kind: "type_conflict", field: "tags[]", observed: ["string"])
+      end
+    end
+
     it "never narrows a number seen only as whole numbers" do
       expect(kinds(record({ "[].ratio" => ["integer"] }))).to be_empty
     end
@@ -204,9 +218,20 @@ describe ApiDocsAudit::Comparison do
         expect(finding.to_h).to include(kind: "missing_returns_no_model", apply: "review")
       end
 
+      it "gives the shape of each key when no model fits, for a new model" do
+        finding = findings(record({ "[].mystery" => ["string"], "[].tags" => ["array"], "[].tags[]" => ["integer"] })).first
+        expect(finding.fields).to eql({ "mystery" => { types: ["string"] }, "tags" => { types: ["array"], items: ["integer"] } })
+      end
+
       it "names the nearest model and the keys it lacks" do
-        finding = findings(record({ "[].id" => ["string"], "[].name" => ["string"], "[].mystery" => ["string"] })).first
+        keys = %w[weight ratio note never_seen settings mystery]
+        finding = findings(record(keys.to_h { |key| ["[].#{key}", ["string"]] })).first
         expect(finding.to_h).to include(kind: "missing_returns_no_model", apply: "review", nearest_model: "Widget", undocumented: ["mystery"])
+      end
+
+      it "doesn't take a nearest model from generic keys or a small part of it" do
+        expect(findings(record({ "[].id" => ["string"], "[].name" => ["string"], "[].mystery" => ["string"] })).first.nearest_model).to be_nil
+        expect(findings(record({ "[].weight" => ["string"], "[].ratio" => ["string"], "[].mystery" => ["string"] })).first.nearest_model).to be_nil
       end
 
       it "takes the nearest model from a single object root" do
@@ -224,6 +249,16 @@ describe ApiDocsAudit::Comparison do
     it "sends a new field to review, naming the model" do
       finding = findings(record({ "[].surprise" => ["string"] })).first
       expect(finding.to_h).to include(kind: "new_field", apply: "review", model: "Widget", field: "surprise")
+    end
+
+    it "gives the item types of a new list field" do
+      finding = findings(record({ "[].surprise" => ["array"], "[].surprise[]" => ["string"] })).first
+      expect(finding.items).to eql(["string"])
+    end
+
+    it "gives the column type of a new field seen only as null" do
+      columns = ApiDocsAudit::ColumnTypes.new("CREATE TABLE public.widgets (\n    surprise boolean\n);\n")
+      expect(findings(record({ "[].surprise" => ["null"] }), columns:).first.column_type).to eql("boolean")
     end
 
     it "reports only the top of a new nested field" do
