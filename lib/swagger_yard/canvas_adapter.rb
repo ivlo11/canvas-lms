@@ -658,6 +658,12 @@ module SwaggerYard
         return ref
       end
 
+      union = union_schema(prop_def)
+      if union
+        copy_basic_property_fields(union, prop_def)
+        return union
+      end
+
       converted_prop = {}
       convert_property_type(converted_prop, prop_def)
       copy_basic_property_fields(converted_prop, prop_def)
@@ -686,6 +692,34 @@ module SwaggerYard
       converted_prop["properties"] = convert_properties(prop_def["properties"])
       required = prop_def["required"]
       converted_prop["required"] = required.is_a?(String) ? [required] : required if required
+    end
+
+    # A list of several types becomes anyOf, so clients accept each of them.
+    # An array branch takes the items and an object branch the properties.
+    # Returns nil for a single type, with or without null.
+    def self.union_schema(prop_def)
+      return unless prop_def["type"].is_a?(Array)
+
+      types = prop_def["type"].map { |type| type.to_s.downcase }
+      branches = types.reject { |type| type == "null" }.map { |type| union_branch(type, prop_def) }.uniq
+      return if branches.size < 2
+
+      union = { "anyOf" => branches }
+      union["nullable"] = true if types.include?("null")
+      union
+    end
+
+    def self.union_branch(type, prop_def)
+      case type
+      when "array"
+        { "type" => "array", "items" => prop_def["items"] ? convert_array_items(prop_def["items"]) : {} }
+      when "object"
+        branch = { "type" => "object" }
+        branch["properties"] = convert_properties(prop_def["properties"]) if prop_def["properties"].is_a?(Hash)
+        branch
+      else
+        {}.tap { |branch| handle_single_type(branch, type) }
+      end
     end
 
     def self.convert_property_type(converted_prop, prop_def)
@@ -789,7 +823,7 @@ module SwaggerYard
       if items["$ref"]
         { "$ref" => "#/components/schemas/#{sanitize_schema_name(items["$ref"])}" }
       elsif items["type"].is_a?(Array)
-        # A list of item types converts like a property's: its first type, nullable
+        # A list of item types converts like a property's
         convert_single_property(items)
       elsif items["properties"].is_a?(Hash)
         items.merge("properties" => items["properties"].transform_values { |field| normalize_type_lists(field) })
@@ -801,13 +835,16 @@ module SwaggerYard
     end
 
     # Item fields are kept as written, except that a list of types, which
-    # OpenAPI 3.0 doesn't allow, becomes its first type, nullable
+    # OpenAPI 3.0 doesn't allow, becomes anyOf, or its one type, nullable
     def self.normalize_type_lists(schema)
       return schema unless schema.is_a?(Hash)
 
       normalized = schema.transform_values { |value| value.is_a?(Hash) ? normalize_type_lists(value) : value }
       normalized["properties"] = schema["properties"].transform_values { |field| normalize_type_lists(field) } if schema["properties"].is_a?(Hash)
       return normalized unless schema["type"].is_a?(Array)
+
+      union = union_schema(schema)
+      return normalized.except("type", "items", "properties").merge(union) if union
 
       converted = {}
       handle_array_types(converted, schema["type"])
@@ -820,6 +857,9 @@ module SwaggerYard
         { "type" => "string", "format" => "date-time" }
       when "date"
         { "type" => "string", "format" => "date" }
+      when "array"
+        # OpenAPI requires items on every array; a nested list of anything
+        items.key?("items") ? items : items.merge("items" => {})
       else
         items
       end

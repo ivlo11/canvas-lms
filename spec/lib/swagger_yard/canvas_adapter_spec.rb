@@ -492,6 +492,44 @@ describe SwaggerYard::CanvasAdapter do
     end
   end
 
+  describe ".union_schema" do
+    it "returns nil for one type" do
+      expect(described_class.union_schema({ "type" => "string" })).to be_nil
+    end
+
+    it "returns nil for one type and null" do
+      expect(described_class.union_schema({ "type" => %w[string null] })).to be_nil
+    end
+
+    it "makes anyOf from several types" do
+      expect(described_class.union_schema({ "type" => %w[string integer] })).to eql({ "anyOf" => [{ "type" => "string" }, { "type" => "integer" }] })
+    end
+
+    it "marks the union nullable when the list includes null" do
+      expect(described_class.union_schema({ "type" => %w[integer string null] })["nullable"]).to be(true)
+    end
+
+    it "keeps the format of a special type" do
+      result = described_class.union_schema({ "type" => %w[datetime boolean] })
+      expect(result["anyOf"]).to eql([{ "type" => "string", "format" => "date-time" }, { "type" => "boolean" }])
+    end
+
+    it "gives the items to the array branch" do
+      result = described_class.union_schema({ "type" => %w[string array], "items" => { "$ref" => "File" } })
+      expect(result["anyOf"]).to eql([{ "type" => "string" }, { "type" => "array", "items" => { "$ref" => "#/components/schemas/File" } }])
+    end
+
+    it "gives an array branch with no items any item" do
+      result = described_class.union_schema({ "type" => %w[array string] })
+      expect(result["anyOf"].first).to eql({ "type" => "array", "items" => {} })
+    end
+
+    it "gives the properties to the object branch" do
+      result = described_class.union_schema({ "type" => %w[object string], "properties" => { "due_at" => { "type" => "datetime" } } })
+      expect(result["anyOf"].first).to eql({ "type" => "object", "properties" => { "due_at" => { "type" => "string", "format" => "date-time" } } })
+    end
+  end
+
   describe ".handle_single_type" do
     it "converts datetime type" do
       converted_prop = {}
@@ -601,8 +639,20 @@ describe SwaggerYard::CanvasAdapter do
       expect(result["items"]).to eq({ "type" => "string" })
     end
 
-    it "converts a list of item types to the first one" do
+    it "converts a list of item types to anyOf" do
       prop_def = { "type" => "array", "items" => { "type" => %w[object integer null] } }
+      result = described_class.convert_single_property(prop_def)
+      expect(result["items"]).to eql({ "anyOf" => [{ "type" => "object" }, { "type" => "integer" }], "nullable" => true })
+    end
+
+    it "gives nested array items any item" do
+      prop_def = { "type" => "array", "items" => { "type" => "array" } }
+      result = described_class.convert_single_property(prop_def)
+      expect(result["items"]).to eql({ "type" => "array", "items" => {} })
+    end
+
+    it "converts a nullable list of one item type to that type" do
+      prop_def = { "type" => "array", "items" => { "type" => %w[object null] } }
       result = described_class.convert_single_property(prop_def)
       expect(result["items"]).to eql({ "type" => "object", "nullable" => true })
     end
@@ -610,7 +660,13 @@ describe SwaggerYard::CanvasAdapter do
     it "converts the fields of array items" do
       prop_def = { "type" => "array", "items" => { "type" => "object", "properties" => { "rate" => { "type" => %w[integer string] } } } }
       result = described_class.convert_single_property(prop_def)
-      expect(result.dig("items", "properties", "rate")).to eql({ "type" => "integer" })
+      expect(result.dig("items", "properties", "rate")).to eql({ "anyOf" => [{ "type" => "integer" }, { "type" => "string" }] })
+    end
+
+    it "keeps the description of a property with several types" do
+      prop_def = { "type" => %w[string integer], "description" => "The quiz ID", "example" => "2" }
+      result = described_class.convert_single_property(prop_def)
+      expect(result).to eql({ "anyOf" => [{ "type" => "string" }, { "type" => "integer" }], "description" => "The quiz ID", "example" => "2" })
     end
 
     it "adds default items for array without items" do
