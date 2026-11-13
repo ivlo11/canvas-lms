@@ -10,7 +10,8 @@
 #                         [--role ROLE]
 #
 # Column types come from a schema-only dump, such as pg_dump --schema-only, and
-# default to db/structure.sql.
+# default to db/structure.sql. Exits non-zero when a finding isn't listed in
+# lib/api_docs_audit/exceptions.yml, and lists entries that match nothing.
 
 require "fileutils"
 require "json"
@@ -112,8 +113,18 @@ File.write(options[:output], JSON.pretty_generate(docs_ref: options[:docs_ref], 
 
 puts JSON.pretty_generate(summary)
 puts "findings written to #{options[:output]}"
+
+exceptions = ApiDocsAudit::Exceptions.load
+unlisted = exceptions.unlisted(comparison.findings)
+stale = exceptions.stale(comparison.findings)
+puts "#{stale.size} exceptions entries match no finding; remove them:" if stale.any?
+stale.each { |entry| puts "  #{entry.to_json}" }
+puts "#{unlisted.size} findings are not in #{ApiDocsAudit::Exceptions::PATH}:" if unlisted.any?
+unlisted.each { |finding| puts "  #{finding.to_h.slice(:kind, :action, :model, :field).to_json}" }
 if options[:role]
   verified = docs.actions.select { |action| evidence.responses(action.key, role: options[:role]).any? }
   puts "#{verified.size} actions verified for #{options[:role]}:"
   verified.each { |action| puts "  #{action.key}" }
 end
+
+exit 1 if unlisted.any?

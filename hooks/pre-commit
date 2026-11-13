@@ -39,6 +39,21 @@ if [ $(pwd -P) = $CANVAS ]; then
     echo "Checking lockfiles..."
     bundle check
   fi
+
+  # Opt in with CANVAS_API_DOCS_LINT=1; see doc/api_docs_audit/enforcement.md
+  if [[ "$CANVAS_API_DOCS_LINT" == "1" ]] &&
+    git diff --cached --name-only | grep -qE '^(app/controllers|app/serializers|lib/api|lib/api_docs_audit|lib/schemas/docs)/'; then
+    echo 'Checking API docs against code...'
+    if ruby -e 'exit(Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("3.3"))' 2>/dev/null; then
+      script/api_docs_lint
+    else
+      docker compose exec -T web script/api_docs_lint
+    fi
+    if [ $? -ne 0 ]; then
+      echo 'API docs errors found, aborting commit'
+      exit 1
+    fi
+  fi
 fi
 
 $CANVAS/script/rlint ${RLINT_ARGUMENTS:- --auto-correct-all}

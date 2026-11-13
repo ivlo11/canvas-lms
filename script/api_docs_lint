@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Checks @API documentation against the traced code of every action a change
+# can affect: actions in changed controllers, and actions whose responses come
+# from a changed helper in lib/api/v1, serializer or model definition. Reports
+# only what the change introduces, compared with the base ref, and skips
+# findings listed in lib/api_docs_audit/exceptions.yml. Needs no database.
+#
+#   script/api_docs_lint [--base REF]
+#
+# REF defaults to HEAD, which checks uncommitted changes. CI passes the branch
+# the change is going into.
+
+require "optparse"
+
+root = File.expand_path("..", __dir__)
+Dir[File.join(root, "lib/api_docs_audit/*.rb")].each { |file| require file }
+
+base = "HEAD"
+OptionParser.new do |parser|
+  parser.on("--base REF", "compare with this git ref (default HEAD)") { |value| base = value }
+end.parse!
+
+lint = ApiDocsAudit::Lint.new(root:, base:)
+findings = lint.run
+puts "checked #{lint.checked.size} actions affected by changes since #{base}"
+exit if findings.empty?
+
+findings.each do |finding|
+  detail = finding.to_h.slice(:model, :field, :documented, :observed).map { |key, value| "#{key}: #{value}" }.join(", ")
+  puts "ERROR #{finding.action}: #{finding.kind} (#{detail})"
+end
+puts "Fix the documentation, or list a finding in lib/api_docs_audit/exceptions.yml with a reason."
+exit 1

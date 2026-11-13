@@ -239,8 +239,17 @@ describe ApiDocsAudit::Comparison do
         expect(finding.to_h).to include(kind: "missing_returns_no_model", nearest_model: "Widget", undocumented: [])
       end
 
-      it "has no finding for an empty response" do
-        expect(kinds(record({}, container: "none"), trace: { kind: "none", keys: {} })).to be_empty
+      it "reports an empty response, so checks can list it" do
+        finding = findings(record({}, container: "none"), trace: { kind: "none", keys: {} }).first
+        expect(finding.to_h).to include(kind: "missing_returns", apply: "report", evidence: "response", observed: "none")
+      end
+
+      it "reports an action with no evidence" do
+        expect(findings(trace: { kind: "unknown", keys: {} }).map(&:to_h)).to contain_exactly(include(kind: "missing_returns", evidence: "none"))
+      end
+
+      it "reports only the more specific finding when there is a body" do
+        expect(kinds(record({ "[].mystery" => ["string"] }))).to eql(["missing_returns_no_model"])
       end
     end
   end
@@ -269,6 +278,11 @@ describe ApiDocsAudit::Comparison do
       trace = { kind: "list", keys: { "traced" => { conditional: false, kind: nil }, "maybe" => { conditional: true, kind: nil } } }
       found = findings(record({ "[].id" => ["integer"] }), trace:)
       expect(found.map { |finding| [finding.kind, finding.field, finding.evidence] }).to eql([%w[new_field traced trace]])
+    end
+
+    it "doesn't report the keys of a traced wrapper around a documented list as item fields" do
+      trace = { kind: "object", keys: { "widgets" => { conditional: false, kind: "list" } } }
+      expect(kinds(trace:)).to eql(["container_conflict"])
     end
 
     it "reports documented fields never seen, only once per model, and doesn't remove them" do
