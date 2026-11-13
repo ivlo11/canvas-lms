@@ -37,7 +37,7 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: .ruby-version
+          ruby-version: '3.4'
           bundler-cache: true
       - name: Check Docs Against Code
         run: script/api_docs_lint --base origin/${{ github.base_ref }}

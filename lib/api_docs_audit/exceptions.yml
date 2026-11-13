@@ -2082,8 +2082,6 @@
 - model: Scope
   field: path
   reason: needs_description
-- model: SearchAllCoursesResponse
-  reason: needs_description
 - model: SearchResult
   field: due_date
   reason: needs_description
