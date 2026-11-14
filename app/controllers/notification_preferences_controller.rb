@@ -57,6 +57,22 @@
 #       }
 #     }
 #
+# @model NotificationPreferencesCategoryIndexResponse
+#     {
+#       "id": "NotificationPreferencesCategoryIndexResponse",
+#       "properties": {
+#         "categories": { "type": "array", "items": { "type": "string" } }
+#       }
+#     }
+#
+# @model NotificationPreferencesUpdateResponse
+#     {
+#       "id": "NotificationPreferencesUpdateResponse",
+#       "properties": {
+#         "notification_preferences": { "type": "array", "items": { "$ref": "NotificationPreference" } }
+#       }
+#     }
+#
 class NotificationPreferencesController < ApplicationController
   before_action :get_cc
 
@@ -64,7 +80,7 @@ class NotificationPreferencesController < ApplicationController
 
   # @API List preferences
   # Fetch all preferences for the given communication channel
-  # @returns [NotificationPreference]
+  # @returns { notification_preferences: [NotificationPreference] }
   def index
     policies = NotificationPolicy.find_all_for(@cc)
     render json: { notification_preferences: policies.map { |p| notification_policy_json(p, @current_user, session) } }
@@ -72,6 +88,7 @@ class NotificationPreferencesController < ApplicationController
 
   # @API List of preference categories
   # Fetch all notification preference categories for the given communication channel
+  # @returns NotificationPreferencesCategoryIndexResponse
   def category_index
     policies = NotificationPolicy.find_all_for(@cc)
     render json: { categories: policies.filter_map { |p| p.notification.try(:category_slug) }.uniq }
@@ -79,7 +96,7 @@ class NotificationPreferencesController < ApplicationController
 
   # @API Get a preference
   # Fetch the preference for the given notification for the given communication channel
-  # @returns NotificationPreference
+  # @returns { notification_preferences: [NotificationPreference] }
   def show
     render json: { notification_preferences: [notification_policy_json(NotificationPolicy.find_or_update_for(@cc, params[:notification]), @current_user, session)] }
   end
@@ -87,6 +104,7 @@ class NotificationPreferencesController < ApplicationController
   # @API Update a preference
   # Change the preference for a single notification for a single communication channel
   # @argument notification_preferences[frequency] [Required] The desired frequency for this notification
+  # @returns NotificationPreferencesUpdateResponse
   def update
     return render_unauthorized_action unless @user == @current_user
 
@@ -98,6 +116,7 @@ class NotificationPreferencesController < ApplicationController
   # Change the preferences for multiple notifications based on the category for a single communication channel
   # @argument category [String] The name of the category. Must be parameterized (e.g. The category "Course Content" should be "course_content")
   # @argument notification_preferences[frequency] [Required] The desired frequency for each notification in the category
+  # @returns NotificationPreferencesUpdateResponse
   def update_preferences_by_category
     return render_unauthorized_action unless @user == @current_user
 
@@ -112,6 +131,7 @@ class NotificationPreferencesController < ApplicationController
   # @API Update multiple preferences
   # Change the preferences for multiple notifications for a single communication channel at once
   # @argument notification_preferences[<X>][frequency] [Required] The desired frequency for <X> notification
+  # @returns NotificationPreferencesUpdateResponse
   def update_all
     return render_unauthorized_action unless @user == @current_user
 

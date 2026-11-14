@@ -82,7 +82,10 @@
 #           "description": "A URL to the release notes describing the feature",
 #           "example": "http://canvas.example.com/release_notes#fancy_wickets",
 #           "type": "string"
-#         }
+#         },
+#         "description": { "type": "string" },
+#         "shadow": { "type": "boolean" },
+#         "type": { "type": "string" }
 #       }
 #     }
 # @model FeatureFlag
@@ -129,7 +132,120 @@
 #           "description": "If set, this feature flag cannot be changed in the caller's context because the flag is set 'off' or 'on' in a higher context",
 #           "type": "boolean",
 #           "example": false
-#         }
+#         },
+#         "hidden": { "type": "boolean" },
+#         "locking_account_id": {},
+#         "parent_state": { "type": ["string", "null"] },
+#         "transitions": { "type": "object" },
+#         "applies_to": { "type": "string" },
+#         "autoexpand": { "type": "boolean" },
+#         "beta": { "type": "boolean" },
+#         "description": { "type": "object" },
+#         "display_name": { "type": "object" }
+#       }
+#     }
+#
+# @model FeatureFlagsEnvironmentResponse
+#     {
+#       "id": "FeatureFlagsEnvironmentResponse",
+#       "properties": {
+#         "a11y_checker_ga2_features": { "type": "boolean" },
+#         "accessibility_automatic_scanning": { "type": "boolean" },
+#         "account_level_blackout_dates": { "type": "boolean" },
+#         "account_level_mastery_scales": { "type": "boolean" },
+#         "account_survey_notifications": { "type": "boolean" },
+#         "ams_advanced_content_organization": { "type": "boolean" },
+#         "ams_root_account_integration": { "type": "boolean" },
+#         "assignment_edit_placement_not_on_announcements": { "type": "boolean" },
+#         "block_content_editor_ai_alt_text": { "type": "boolean" },
+#         "block_content_editor_toolbar_reorder": { "type": "boolean" },
+#         "buttons_and_icons_root_account": { "type": "boolean" },
+#         "canvas_apps_sub_account_access": { "type": "boolean" },
+#         "commons_new_quizzes": { "type": "boolean" },
+#         "cookie_consent_necessary": { "type": "boolean" },
+#         "course_navigation_and_feature_options_permissions": { "type": "boolean" },
+#         "course_pace_allow_bulk_pace_assign": { "type": "boolean" },
+#         "course_pace_download_document": { "type": "boolean" },
+#         "course_pace_draft_state": { "type": "boolean" },
+#         "course_pace_pacing_status_labels": { "type": "boolean" },
+#         "course_pace_pacing_with_mastery_paths": { "type": "boolean" },
+#         "course_pace_time_selection": { "type": "boolean" },
+#         "course_pace_weighted_assignments": { "type": "boolean" },
+#         "course_paces_skip_selected_days": { "type": "boolean" },
+#         "courses_popout_sisid": { "type": "boolean" },
+#         "create_course_subaccount_picker": { "type": "boolean" },
+#         "create_external_apps_side_tray_overrides": { "type": "boolean" },
+#         "dashboard_graphql_integration": { "type": "boolean" },
+#         "default_discussion_options": { "type": "boolean" },
+#         "developer_key_user_agent_alert": { "type": "boolean" },
+#         "disable_iframe_sandbox_file_show": { "type": "boolean" },
+#         "disallow_threaded_replies_fix_alert": { "type": "boolean" },
+#         "disallow_threaded_replies_manage": { "type": "boolean" },
+#         "discussion_ai_survey_link": { "type": "boolean" },
+#         "discussion_checkpoints": { "type": "boolean" },
+#         "discussion_permalink": { "type": "boolean" },
+#         "educator_dashboard": { "type": "boolean" },
+#         "embedded_release_notes": { "type": "boolean" },
+#         "enhanced_course_creation_account_fetching": { "type": "boolean" },
+#         "explicit_latex_typesetting": { "type": "boolean" },
+#         "extended_submission_state": { "type": "boolean" },
+#         "feature_flag_ui_sorting": { "type": "boolean" },
+#         "file_verifiers_for_quiz_links": { "type": "boolean" },
+#         "files_a11y_folder_duplicates": { "type": "boolean" },
+#         "files_a11y_rewrite": { "type": "boolean" },
+#         "files_a11y_rewrite_toggle": { "type": "boolean" },
+#         "grading_rubrics_pagination": { "type": "boolean" },
+#         "horizon_course_setting": { "type": "boolean" },
+#         "institutional_tags": { "type": "boolean" },
+#         "instui_for_import_page": { "type": "boolean" },
+#         "instui_header": { "type": "boolean" },
+#         "instui_nav": { "type": "boolean" },
+#         "lock_lti_registrations": { "type": "boolean" },
+#         "login_registration_ui_identity": { "type": "boolean" },
+#         "lti_apps_page_instructors": { "type": "boolean" },
+#         "lti_asset_processor": { "type": "boolean" },
+#         "lti_asset_processor_discussions": { "type": "boolean" },
+#         "lti_deactivate_registrations": { "type": "boolean" },
+#         "lti_link_to_apps_from_developer_keys": { "type": "boolean" },
+#         "lti_registrations_next": { "type": "boolean" },
+#         "lti_registrations_templates": { "type": "boolean" },
+#         "lti_registrations_usage_data": { "type": "boolean" },
+#         "lti_registrations_usage_data_dev": { "type": "boolean" },
+#         "lti_registrations_usage_data_low_usage": { "type": "boolean" },
+#         "lti_registrations_usage_tab": { "type": "boolean" },
+#         "lti_toggle_placements": { "type": "boolean" },
+#         "media_links_use_attachment_id": { "type": "boolean" },
+#         "mobile_offline_mode": { "type": "boolean" },
+#         "modules_requirements_allow_percentage": { "type": "boolean" },
+#         "multiselect_gradebook_filters": { "type": "boolean" },
+#         "nav_menu_links": { "type": "boolean" },
+#         "new_quizzes_media_type": { "type": "boolean" },
+#         "new_quizzes_navigation_updates": { "type": "boolean" },
+#         "non_scoring_rubrics": { "type": "boolean" },
+#         "pendo_extended": { "type": "boolean" },
+#         "permanent_page_links": { "type": "boolean" },
+#         "product_tours": { "type": "boolean" },
+#         "rce_a11y_resize": { "type": "boolean" },
+#         "rce_asr_captioning_improvements": { "type": "boolean" },
+#         "rce_find_replace": { "type": "boolean" },
+#         "rce_lite_enabled_speedgrader_comments": { "type": "boolean" },
+#         "rce_transform_loaded_content": { "type": "boolean" },
+#         "react_discussions_post": { "type": "boolean" },
+#         "render_both_to_do_lists": { "type": "boolean" },
+#         "restrict_student_access": { "type": "boolean" },
+#         "rubric_criterion_range": { "type": "boolean" },
+#         "scheduled_feedback_releases": { "type": "boolean" },
+#         "scheduled_page_publication": { "type": "boolean" },
+#         "send_usage_metrics": { "type": "boolean" },
+#         "send_usage_metrics_after_consent": { "type": "boolean" },
+#         "speedgrader_studio_media_capture": { "type": "boolean" },
+#         "substitution_variable_display": { "type": "boolean" },
+#         "telepathic_navigation": { "type": "boolean" },
+#         "top_navigation_placement": { "type": "boolean" },
+#         "ux_list_concluded_courses_in_bp": { "type": "boolean" },
+#         "validate_call_to_action": { "type": "boolean" },
+#         "widget_dashboard": { "type": "boolean" },
+#         "youtube_migration": { "type": "boolean" }
 #       }
 #     }
 #
@@ -189,6 +305,8 @@ class FeatureFlagsController < ApplicationController
   # @example_response
   #
   #   ["fancy_wickets", "automatic_essay_grading", "telepathic_navigation"]
+  #
+  # @returns [String]
   def enabled_features
     if authorized_action(@context, @current_user, :read)
       features = Feature.applicable_features(@context).filter_map { |fd| @context.lookup_feature_flag(fd.feature) }
@@ -212,6 +330,7 @@ class FeatureFlagsController < ApplicationController
   #
   #   { "telepathic_navigation": true, "fancy_wickets": true, "automatic_essay_grading": false }
   #
+  # @returns FeatureFlagsEnvironmentResponse
   def environment
     unless mobile_device?
       return unless require_user

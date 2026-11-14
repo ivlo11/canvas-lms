@@ -57,6 +57,16 @@ module Lti
     #       }
     #     }
     #
+    # @model AccessToken
+    #     {
+    #       "id": "AccessToken",
+    #       "properties": {
+    #         "access_token": { "type": "string" },
+    #         "expires_in": { "type": "string" },
+    #         "token_type": { "type": "string" }
+    #       }
+    #     }
+    #
     class AuthorizationController < ApplicationController
       skip_before_action :load_user, :require_user
       before_action :require_context
@@ -107,7 +117,7 @@ module Lti
       #          -F 'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer' \
       #          -F 'assertion=<AuthorizationJWT>'
       #
-      # @returns [AccessToken]
+      # @returns AccessToken
       def authorize
         raise InvalidGrant unless GRANT_TYPES.include?(params[:grant_type])
         raise InvalidGrant if params[:assertion].blank?

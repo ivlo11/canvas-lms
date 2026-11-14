@@ -38,7 +38,7 @@ module Polling
   #         },
   #         "description": {
   #           "description": "A short description of the poll.",
-  #           "type": "string",
+  #           "type": ["string", "null"],
   #           "example": "This poll is to determine what priorities the students in the course have."
   #         },
   #         "created_at": {
@@ -72,6 +72,7 @@ module Polling
     #     "polls": [Poll]
     #   }
     #
+    # @returns { polls: [Poll], meta: object }
     def index
       @polls = @current_user.polls.order(created_at: :desc)
       json, meta = paginate_for(@polls)
@@ -88,6 +89,7 @@ module Polling
     #     "polls": [Poll]
     #   }
     #
+    # @returns { polls: [Poll], meta: object }
     def show
       @poll = Polling::Poll.find(params[:id])
 
@@ -111,6 +113,7 @@ module Polling
     #     "polls": [Poll]
     #   }
     #
+    # @returns { polls: [Poll], meta: object }
     def create
       @poll = @current_user.polls.new(get_poll_params)
       if authorized_action(@poll, @current_user, :create)
@@ -137,6 +140,7 @@ module Polling
     #     "polls": [Poll]
     #   }
     #
+    # @returns { polls: [Poll], meta: object }
     def update
       @poll = Polling::Poll.find(params[:id])
       poll_params = get_poll_params

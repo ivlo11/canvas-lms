@@ -35,32 +35,32 @@
 #         "app_name": {
 #           "description": "If the request is from an API request, the app that generated the access token",
 #           "example": "Canvas for iOS",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "url": {
 #           "description": "The URL requested",
 #           "example": "https://canvas.instructure.com/conversations",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "context_type": {
 #           "description": "The type of context for the request",
 #           "example": "Course",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "asset_type": {
 #           "description": "The type of asset in the context for the request, if any",
 #           "example": "Discussion",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "controller": {
 #           "description": "The rails controller that handled the request",
 #           "example": "discussions",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "action": {
 #           "description": "The rails action that handled the request",
 #           "example": "index",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "contributed": {
 #           "description": "This field is deprecated, and will always be false",
@@ -81,53 +81,55 @@
 #         "user_request": {
 #           "description": "A flag indicating whether the request was user-initiated, or automatic (such as an AJAX call). Not available in history CSV.",
 #           "example": "true",
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "render_time": {
 #           "description": "How long the response took to render, in seconds. Not available in history CSV.",
 #           "example": "0.369",
-#           "type": "number"
+#           "type": ["number", "null"]
 #         },
 #         "user_agent": {
 #           "description": "The user-agent of the browser or program that made the request",
 #           "example": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/536.30.1 (KHTML, like Gecko) Version/6.0.5 Safari/536.30.1",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "participated": {
 #           "description": "True if the request counted as participating, such as submitting homework",
 #           "example": "false",
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "http_method": {
 #           "description": "The HTTP method such as GET or POST",
 #           "example": "GET",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "remote_ip": {
 #           "description": "The origin IP address of the request",
 #           "example": "173.194.46.71",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "session_id": {
 #           "description": "The session identifier for the user session that made the request",
 #           "example": "0ca9e5e58964bc58d4c1a0a8df509805",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #        "developer_key_id": {
 #          "description": "The ID of the developer key that authorized the API request, if applicable",
 #          "example": "42",
-#          "type": "number"
+#          "type": ["number", "null"]
 #        },
 #        "asset_user_access_id": {
 #          "description": "The ID of the asset (e.g. an assignment) associated with this page view, if applicable",
 #          "example": "9876",
-#          "type": "number"
+#          "type": ["number", "null"]
 #        },
 #         "links": {
 #           "description": "The page view links to define the relationships",
 #           "$ref": "PageViewLinks",
 #           "example": {"user": 1234, "account": 1234}
-#         }
+#         },
+#         "summarized": { "type": ["boolean", "null"] },
+#         "updated_at": { "type": "string" }
 #       }
 #     }
 #
@@ -145,25 +147,25 @@
 #        "context": {
 #          "description": "The ID of the context for the request (course id if context_type is Course, etc)",
 #          "example": "1234",
-#          "type": "integer",
+#          "type": ["integer", "null"],
 #          "format": "int64"
 #        },
 #        "asset": {
 #          "description": "The ID of the asset for the request, if any. Not available in history CSV.",
 #          "example": "1234",
-#          "type": "integer",
+#          "type": ["integer", "null"],
 #          "format": "int64"
 #        },
 #        "real_user": {
 #          "description": "The ID of the actual user who made this request, if the request was made by a user who was masquerading",
 #          "example": "1234",
-#          "type": "integer",
+#          "type": ["integer", "null"],
 #          "format": "int64"
 #        },
 #         "account": {
 #           "description": "The ID of the account context for this page view",
 #           "example": "1234",
-#           "type": "integer",
+#           "type": ["integer", "null"],
 #           "format": "int64"
 #        }
 #     }
@@ -221,20 +223,21 @@
 #         "format": {
 #           "description": "The format that results will be returned in",
 #           "example": "csv",
-#           "type": "string",
+#           "type": ["string", "null"],
 #           "enum": ["csv", "json"]
 #         },
 #         "results_url": {
 #           "description": "URL to retrieve query results. Only present when status is 'finished'",
 #           "example": "/api/v1/users/123/page_views/query/550e8400-e29b-41d4-a716-446655440000/results",
-#           "type": "string",
+#           "type": ["string", "null"],
 #           "format": "uri"
 #         },
 #           "error_code": {
 #           "description": "Error code indicating the reason for query failure, if applicable",
 #           "example": "RESULT_SIZE_LIMIT_EXCEEDED",
-#           "type": "string"
-#         }
+#           "type": ["string", "null"]
+#         },
+#           "warnings": { "type": "array", "items": { "type": "object" } }
 #       }
 #     }
 #

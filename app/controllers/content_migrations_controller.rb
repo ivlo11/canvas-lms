@@ -34,7 +34,7 @@
 #         "migration_type": {
 #           "description": "the type of content migration",
 #           "example": "common_cartridge_importer",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "migration_type_title": {
 #           "description": "the name of the content migration type",
@@ -49,7 +49,7 @@
 #         "attachment": {
 #           "description": "attachment api object for the uploaded file may not be present for all migrations",
 #           "example": "{\"url\"=>\"https://example.com/api/v1/courses/1/content_migrations/1/download_archive\"}",
-#           "type": "string"
+#           "type": ["object", "string"]
 #         },
 #         "progress_url": {
 #           "description": "The api endpoint for polling the current progress",
@@ -59,7 +59,7 @@
 #         "user_id": {
 #           "description": "The user who started the migration",
 #           "example": 4,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "workflow_state": {
 #           "description": "Current state of the content migration: pre_processing, pre_processed, running, waiting_for_select, completed, failed",
@@ -79,18 +79,22 @@
 #         "started_at": {
 #           "description": "timestamp",
 #           "example": "2012-06-01T00:00:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "finished_at": {
 #           "description": "timestamp",
 #           "example": "2012-06-01T00:00:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "pre_attachment": {
 #           "description": "file uploading data, see {file:file.file_uploads.html File Upload Documentation} for file upload workflow This works a little differently in that all the file data is in the pre_attachment hash if there is no upload_url then there was an attachment pre-processing error, the error message will be in the message key This data will only be here after a create or update call",
 #           "example": "{\"upload_url\"=>\"\", \"message\"=>\"file exceeded quota\", \"upload_params\"=>{}}",
-#           "type": "string"
-#         }
+#           "type": ["object", "string"]
+#         },
+#         "created_at": { "type": "string" },
+#         "migration_issues_count": { "type": "integer" },
+#         "audit_info": { "type": "object" },
+#         "settings": { "type": "object" }
 #       }
 #     }
 #
@@ -120,6 +124,33 @@
 #           "type": "array",
 #           "items": {"type": "string"}
 #         }
+#       }
+#     }
+#
+# @model ContentMigrationsContentListResponse
+#     {
+#       "id": "ContentMigrationsContentListResponse",
+#       "properties": {
+#         "count": { "type": "integer" },
+#         "migration_id": { "type": "string" },
+#         "property": { "type": "string" },
+#         "sub_items_url": { "type": "string" },
+#         "title": { "type": "string" },
+#         "type": { "type": "string" }
+#       }
+#     }
+#
+# @model ContentMigrationsAssetIdMappingResponse
+#     {
+#       "id": "ContentMigrationsAssetIdMappingResponse",
+#       "properties": {
+#         "announcements": { "type": "object" },
+#         "assignments": { "type": "object" },
+#         "discussion_topics": { "type": "object" },
+#         "files": { "type": "object" },
+#         "module_items": { "type": "object" },
+#         "modules": { "type": "object" },
+#         "pages": { "type": "object" }
 #       }
 #     }
 #
@@ -559,7 +590,7 @@ class ContentMigrationsController < ApplicationController
   # @argument type ["context_modules"|"assignments"|"quizzes"|"assessment_question_banks"|"discussion_topics"|"wiki_pages"|"context_external_tools"|"tool_profiles"|"announcements"|"calendar_events"|"rubrics"|"groups"|"learning_outcomes"|"attachments"]
   #   The type of content to enumerate.
   #
-  # @returns list of content items
+  # @returns [ContentMigrationsContentListResponse] list of content items
   def content_list
     return unless authorized_action(@context, @current_user, RoleOverride::GRANULAR_MANAGE_COURSE_CONTENT_PERMISSIONS)
 
@@ -598,6 +629,7 @@ class ContentMigrationsController < ApplicationController
   #      "discussion_topics": {"15": "743", "16": "744"}
   #    }
   #
+  # @returns ContentMigrationsAssetIdMappingResponse
   def asset_id_mapping
     return unless authorized_action(@context, @current_user, RoleOverride::GRANULAR_MANAGE_COURSE_CONTENT_PERMISSIONS)
 

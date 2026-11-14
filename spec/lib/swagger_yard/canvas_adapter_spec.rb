@@ -32,6 +32,111 @@ describe SwaggerYard::CanvasAdapter do
     end
   end
 
+  describe ".receiverless_calls" do
+    it "finds bare, parenthesised and command calls" do
+      source = "def x\n  helper_one\n  helper_two(1)\n  helper_three 1\nend"
+      expect(described_class.receiverless_calls(source)).to eql(%w[helper_one helper_two helper_three])
+    end
+
+    it "ignores strings, local variables and calls on other objects" do
+      source = "def x\n  users = 1\n  users\n  @context.groups\n  sql = 'pages.id'\nend"
+      expect(described_class.receiverless_calls(source)).to eql([])
+    end
+
+    it "finds nothing in source that doesn't parse" do
+      expect(described_class.receiverless_calls("def (")).to eql([])
+    end
+  end
+
+  describe ".api_helper_paginates?" do
+    before do
+      allow(described_class).to receive(:api_helper_sources).and_return(
+        "direct" => "def direct\n  Api.paginate(x)\nend",
+        "jsonapi" => "def jsonapi\n  Api.jsonapi_paginate(x)\nend",
+        "context" => "def context\n  api_context.paginate(x)\nend",
+        "chained" => "def chained\n  direct\nend",
+        "plain" => "def plain\n  'Api paginate'\nend",
+        "loop_one" => "def loop_one\n  loop_two\nend",
+        "loop_two" => "def loop_two\n  loop_one\nend"
+      )
+    end
+
+    it "detects each pagination call, and one reached through a chain" do
+      %w[direct jsonapi context chained].each do |name|
+        expect(described_class.api_helper_paginates?(name)).to be(true)
+      end
+    end
+
+    it "doesn't detect a helper without pagination, or one it can't resolve" do
+      %w[plain loop_one unknown].each do |name|
+        expect(described_class.api_helper_paginates?(name)).to be(false)
+      end
+    end
+  end
+
+  describe ".api_helper_sources" do
+    let(:root) { Pathname.new(Dir.mktmpdir) }
+
+    def forget_sources
+      described_class.remove_instance_variable(:@api_helper_sources) if described_class.instance_variable_defined?(:@api_helper_sources)
+    end
+
+    before do
+      forget_sources
+      FileUtils.mkdir_p(root.join("lib/api/v1"))
+      root.join("lib/api/v1/one.rb").write("module One\n  def only_here\n    Api.paginate(x)\n  end\n\n  def in_both\n  end\nend\n")
+      root.join("lib/api/v1/two.rb").write("module Two\n  def in_both\n  end\nend\n")
+      allow(Rails).to receive(:root).and_return(root)
+    end
+
+    after do
+      forget_sources
+      FileUtils.remove_entry(root)
+    end
+
+    it "holds a helper's whole source" do
+      expect(described_class.api_helper_sources["only_here"]).to eql("  def only_here\n    Api.paginate(x)\n  end\n")
+    end
+
+    it "leaves out a name defined in two modules" do
+      expect(described_class.api_helper_sources).not_to have_key("in_both")
+    end
+  end
+
+  describe "pagination detection" do
+    let(:controller) { YARD::CodeObjects::ClassObject.new(:root, "PaginationDetectionController") }
+
+    before { described_class.install! }
+
+    after { YARD::Registry.clear }
+
+    def controller_method(name, source)
+      YARD::CodeObjects::MethodObject.new(controller, name).tap { |method| method.source = source }
+    end
+
+    def paginates?(source)
+      SwaggerYard::Operation.send(:method_uses_pagination?, controller_method(:action_under_test, source))
+    end
+
+    it "follows bare and parenthesised calls to the controller's own helper" do
+      controller_method(:paged_items, "def paged_items\n  Api.paginate(items, self, url)\nend")
+      expect(paginates?("def action_under_test\n  paged_items\nend")).to be(true)
+      expect(paginates?("def action_under_test\n  paged_items(1)\nend")).to be(true)
+    end
+
+    it "follows a helper in lib/api/v1" do
+      allow(described_class).to receive(:api_helper_sources).and_return("library_helper" => "def library_helper\n  Api.jsonapi_paginate(x)\nend")
+      expect(paginates?("def action_under_test\n  library_helper\nend")).to be(true)
+    end
+
+    it "doesn't follow a name in a string, a local variable or a call on another object" do
+      controller_method(:users, "def users\n  Api.paginate(items, self, url)\nend")
+      expect(paginates?("def action_under_test\n  x = 'users.id'\nend")).to be(false)
+      expect(paginates?("def action_under_test\n  users = 1\n  users\nend")).to be(false)
+      expect(paginates?("def action_under_test\n  @context.users\nend")).to be(false)
+    end
+  end
+
   describe ".load_canvas_routes!" do
     before do
       described_class.load_canvas_routes!
@@ -387,6 +492,44 @@ describe SwaggerYard::CanvasAdapter do
     end
   end
 
+  describe ".union_schema" do
+    it "returns nil for one type" do
+      expect(described_class.union_schema({ "type" => "string" })).to be_nil
+    end
+
+    it "returns nil for one type and null" do
+      expect(described_class.union_schema({ "type" => %w[string null] })).to be_nil
+    end
+
+    it "makes anyOf from several types" do
+      expect(described_class.union_schema({ "type" => %w[string integer] })).to eql({ "anyOf" => [{ "type" => "string" }, { "type" => "integer" }] })
+    end
+
+    it "marks the union nullable when the list includes null" do
+      expect(described_class.union_schema({ "type" => %w[integer string null] })["nullable"]).to be(true)
+    end
+
+    it "keeps the format of a special type" do
+      result = described_class.union_schema({ "type" => %w[datetime boolean] })
+      expect(result["anyOf"]).to eql([{ "type" => "string", "format" => "date-time" }, { "type" => "boolean" }])
+    end
+
+    it "gives the items to the array branch" do
+      result = described_class.union_schema({ "type" => %w[string array], "items" => { "$ref" => "File" } })
+      expect(result["anyOf"]).to eql([{ "type" => "string" }, { "type" => "array", "items" => { "$ref" => "#/components/schemas/File" } }])
+    end
+
+    it "gives an array branch with no items any item" do
+      result = described_class.union_schema({ "type" => %w[array string] })
+      expect(result["anyOf"].first).to eql({ "type" => "array", "items" => {} })
+    end
+
+    it "gives the properties to the object branch" do
+      result = described_class.union_schema({ "type" => %w[object string], "properties" => { "due_at" => { "type" => "datetime" } } })
+      expect(result["anyOf"].first).to eql({ "type" => "object", "properties" => { "due_at" => { "type" => "string", "format" => "date-time" } } })
+    end
+  end
+
   describe ".handle_single_type" do
     it "converts datetime type" do
       converted_prop = {}
@@ -494,6 +637,36 @@ describe SwaggerYard::CanvasAdapter do
       result = described_class.convert_single_property(prop_def)
       expect(result["type"]).to eq("array")
       expect(result["items"]).to eq({ "type" => "string" })
+    end
+
+    it "converts a list of item types to anyOf" do
+      prop_def = { "type" => "array", "items" => { "type" => %w[object integer null] } }
+      result = described_class.convert_single_property(prop_def)
+      expect(result["items"]).to eql({ "anyOf" => [{ "type" => "object" }, { "type" => "integer" }], "nullable" => true })
+    end
+
+    it "gives nested array items any item" do
+      prop_def = { "type" => "array", "items" => { "type" => "array" } }
+      result = described_class.convert_single_property(prop_def)
+      expect(result["items"]).to eql({ "type" => "array", "items" => {} })
+    end
+
+    it "converts a nullable list of one item type to that type" do
+      prop_def = { "type" => "array", "items" => { "type" => %w[object null] } }
+      result = described_class.convert_single_property(prop_def)
+      expect(result["items"]).to eql({ "type" => "object", "nullable" => true })
+    end
+
+    it "converts the fields of array items" do
+      prop_def = { "type" => "array", "items" => { "type" => "object", "properties" => { "rate" => { "type" => %w[integer string] } } } }
+      result = described_class.convert_single_property(prop_def)
+      expect(result.dig("items", "properties", "rate")).to eql({ "anyOf" => [{ "type" => "integer" }, { "type" => "string" }] })
+    end
+
+    it "keeps the description of a property with several types" do
+      prop_def = { "type" => %w[string integer], "description" => "The quiz ID", "example" => "2" }
+      result = described_class.convert_single_property(prop_def)
+      expect(result).to eql({ "anyOf" => [{ "type" => "string" }, { "type" => "integer" }], "description" => "The quiz ID", "example" => "2" })
     end
 
     it "adds default items for array without items" do
@@ -1520,6 +1693,13 @@ describe SwaggerYard::CanvasAdapter do
 
         expect(operations["Foo-index"].default_response.type.source).to eql "array<object>"
         expect(described_class.operation_models["Foo-index"]["200"]).to eql(model: "Poll", is_array: true)
+      end
+
+      it "keeps the item type of a list of a primitive" do
+        operations = operations_for("@returns [String]")
+
+        expect(operations["Foo-index"].default_response.type.source).to eql "array<string>"
+        expect(described_class.operation_models).not_to have_key("Foo-index")
       end
 
       it "gives two actions with the same shape their own wrappers" do

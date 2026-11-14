@@ -32,7 +32,7 @@ require "rrule"
 #         "id": {
 #           "description": "The ID of the calendar event",
 #           "example": 234,
-#           "type": "integer"
+#           "type": ["integer", "string"]
 #         },
 #         "title": {
 #           "description": "The title of the calendar event",
@@ -42,27 +42,27 @@ require "rrule"
 #         "start_at": {
 #           "description": "The start timestamp of the event",
 #           "example": "2012-07-19T15:00:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "end_at": {
 #           "description": "The end timestamp of the event",
 #           "example": "2012-07-19T16:00:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "description": {
 #           "description": "The HTML description of the event",
 #           "example": "<b>It's that time again!</b>",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "location_name": {
 #           "description": "The location name of the event",
 #           "example": "Greendale Community College",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "location_address": {
 #           "description": "The address where the event is taking place",
 #           "example": "Greendale, Colorado",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "context_code": {
 #           "description": "the context code of the calendar this event belongs to (course, group, user, or account)",
@@ -76,7 +76,7 @@ require "rrule"
 #         "context_name": {
 #           "description": "the context name of the calendar this event belongs to (course, user or group)",
 #           "example": "Chemistry 101",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "all_context_codes": {
 #           "description": "a comma-separated list of all calendar contexts this event is part of",
@@ -95,7 +95,7 @@ require "rrule"
 #         },
 #         "parent_event_id": {
 #           "description": "Normally null. If this is a reservation (see the Appointment Groups API), the id will indicate the time slot it is for. If this is a section-level event, this will be the course-level parent event.",
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "child_events_count": {
 #           "description": "The number of child_events. See child_events (and parent_event_id)",
@@ -105,7 +105,7 @@ require "rrule"
 #         "child_events": {
 #           "description": "Included by default, but may be excluded (see include[] option). If this is a time slot (see the Appointment Groups API) this will be a list of any reservations. If this is a course-level event, this will be a list of section-level events (if any)",
 #           "type": "array",
-#           "items": {"type": "integer"}
+#           "items": {"type": ["object", "integer"]}
 #         },
 #         "url": {
 #           "description": "URL for this calendar event (to update, delete, etc.)",
@@ -120,7 +120,7 @@ require "rrule"
 #         "all_day_date": {
 #           "description": "The date of this event",
 #           "example": "2012-07-19",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "all_day": {
 #           "description": "Boolean indicating whether this is an all-day event (midnight to midnight)",
@@ -187,11 +187,11 @@ require "rrule"
 #         },
 #         "series_uuid": {
 #           "description": "Identifies the recurring event series this event may belong to.",
-#           "type": "uuid"
+#           "type": ["uuid", "null"]
 #         },
 #         "rrule": {
 #           "description": "An iCalendar RRULE for defining how events in a recurring event series repeat.",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "series_head": {
 #            "description": "Boolean indicating if is the first event in the series of recurring events.",
@@ -206,7 +206,20 @@ require "rrule"
 #           "description": "Boolean indicating whether this has blackout date.",
 #           "example": true,
 #           "type": "boolean"
-#         }
+#         },
+#         "can_manage_appointment_group": { "type": "boolean" },
+#         "comments": { "type": ["string", "null"] },
+#         "context_color": {},
+#         "duplicates": { "type": "array" },
+#         "type": { "type": "string" },
+#         "reserve_comments": { "type": "string" },
+#         "assignment": { "type": "object" },
+#         "assignment_overrides": { "type": "array", "items": { "type": "object" } },
+#         "lock_info": { "type": "object" },
+#         "sub_assignment": { "type": "object" },
+#         "sub_assignment_overrides": { "type": "array", "items": { "type": "object" } },
+#         "submission_types": { "type": "string" },
+#         "web_conference": { "type": "object" }
 #       }
 #     }
 #
@@ -313,6 +326,22 @@ require "rrule"
 #            "type": "string",
 #            "example": "Daily 5 times"
 #         }
+#       }
+#     }
+#
+# @model CalendarEventsSaveEnabledAccountCalendarsResponse
+#     {
+#       "id": "CalendarEventsSaveEnabledAccountCalendarsResponse",
+#       "properties": {
+#         "status": { "type": "string" }
+#       }
+#     }
+#
+# @model CalendarEventsGetCourseTimetableResponse
+#     {
+#       "id": "CalendarEventsGetCourseTimetableResponse",
+#       "properties": {
+#         "all": { "type": "array", "items": { "type": "object" } }
 #       }
 #     }
 #
@@ -556,6 +585,7 @@ class CalendarEventsApiController < ApplicationController
   #        -F 'calendar_event[start_at]=2012-07-19T21:00:00Z' \
   #        -F 'calendar_event[end_at]=2012-07-19T22:00:00Z' \
   #        -H "Authorization: Bearer <token>"
+  # @returns CalendarEvent
   def create
     if @context.is_a?(Course) && @context.deleted?
       return render json: { error: t("cannot create event for deleted course") }, status: :bad_request
@@ -676,6 +706,7 @@ class CalendarEventsApiController < ApplicationController
   #        -X POST \
   #        -F 'cancel_existing=true' \
   #        -H "Authorization: Bearer <token>"
+  # @returns CalendarEvent
   def reserve
     get_event
     @request_shard = Shard.current
@@ -777,6 +808,7 @@ class CalendarEventsApiController < ApplicationController
   #        -X PUT \
   #        -F 'calendar_event[title]=Epic Paintball Fight!' \
   #        -H "Authorization: Bearer <token>"
+  # @returns [CalendarEvent]
   def update
     get_event(search_assignments: true)
     if authorized_action(@event, @current_user, :update)
@@ -852,6 +884,7 @@ class CalendarEventsApiController < ApplicationController
   #        -F 'cancel_reason=Greendale layed off the janitorial staff :(' \
   #        -F 'which=following'
   #        -H "Authorization: Bearer <token>"
+  # @returns [CalendarEvent]
   def destroy
     get_event
     if @event.series_uuid.present?
@@ -1424,6 +1457,7 @@ class CalendarEventsApiController < ApplicationController
   #        -F 'enabled_account_calendars[]=1' \
   #        -F 'enabled_account_calendars[]=2' \
   #        -H "Authorization: Bearer <token>"
+  # @returns CalendarEventsSaveEnabledAccountCalendarsResponse
   def save_enabled_account_calendars
     @current_user.set_preference(:account_calendar_events_seen, value_to_boolean(params[:mark_feature_as_seen])) if params.key?(:mark_feature_as_seen)
 
@@ -1471,6 +1505,7 @@ class CalendarEventsApiController < ApplicationController
   #        -F 'timetables[all][][end_time]=11:50 am' \
   #        -F 'timetables[all][][location_name]=Room 237' \
   #        -H "Authorization: Bearer <token>"
+  # @returns CalendarEventsSaveEnabledAccountCalendarsResponse
   def set_course_timetable
     get_context
     if authorized_action(@context, @current_user, :manage_calendar)
@@ -1520,6 +1555,7 @@ class CalendarEventsApiController < ApplicationController
   # Returns the last timetable set by the
   # {api:CalendarEventsApiController#set_course_timetable Set a course timetable} endpoint
   #
+  # @returns CalendarEventsGetCourseTimetableResponse
   def get_course_timetable
     get_context
     if authorized_action(@context, @current_user, :manage_calendar)
@@ -1558,6 +1594,7 @@ class CalendarEventsApiController < ApplicationController
   # @argument events[][title] [Optional, String]
   #   Title for the meeting. If not present, will default to the associated course's name
   #
+  # @returns CalendarEventsSaveEnabledAccountCalendarsResponse
   def set_course_timetable_events
     get_context
     if authorized_action(@context, @current_user, :manage_calendar)

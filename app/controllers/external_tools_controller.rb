@@ -44,17 +44,17 @@
 #         "description": {
 #           "description": "A description of the external tool",
 #           "example": "Basic LTI 1.1 Tool",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "url": {
 #           "description": "The launch URL for the external tool",
 #           "example": "http://example.com/launch",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "domain": {
 #           "description": "The domain to match links against. Note that this doesn't contain the protocol.",
 #           "example": "example.com",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "consumer_key": {
 #           "description": "The consumer key used by the tool (The associated shared secret is not returned)",
@@ -80,7 +80,7 @@
 #         "custom_fields": {
 #           "description": "Custom fields that will be sent to the tool consumer",
 #           "example": {"key": "value"},
-#           "type": "object"
+#           "type": ["object", "null"]
 #         },
 #         "workflow_state": {
 #           "description": "The current state of the external tool",
@@ -127,7 +127,7 @@
 #         "unified_tool_id": {
 #           "description": "The unique identifier for the tool in LearnPlatform",
 #           "example": null,
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "developer_key_id": {
 #           "description": "The developer key id associated with this tool. Only present for LTI 1.3 tools.",
@@ -152,7 +152,7 @@
 #         "prefer_sis_email": {
 #           "description": "Whether to send the SIS email address in launches",
 #           "example": false,
-#           "type": "boolean"
+#           "type": ["string", "boolean"]
 #         },
 #         "estimated_duration": {
 #           "description": "The estimated duration for completing this tool. Only present for horizon courses when the tool has an estimated duration.",
@@ -380,7 +380,7 @@
 #         },
 #         "message_settings": {
 #           "description": "Configuration for placementless message types (currently only LtiEulaRequest).",
-#           "type": "array",
+#           "type": ["array", "null"],
 #           "items": {
 #             "$ref": "ContextExternalToolMessageSettings"
 #           },
@@ -392,7 +392,9 @@
 #               "custom_fields": {"agreement_version": "2.1"}
 #             }
 #           ]
-#         }
+#         },
+#         "context_id": { "type": "integer" },
+#         "context_name": { "type": "string" }
 #       }
 #     }
 #
@@ -539,13 +541,14 @@
 #         "prefer_sis_email": {
 #           "description": "If true, the tool will send the SIS email in the lis_person_contact_email_primary launch property. LTI 1.1 only.",
 #           "example": false,
-#           "type": "boolean"
+#           "type": ["string", "boolean"]
 #         },
 #         "oauth_compliant": {
 #           "description": "If true, query parameters from the launch URL will not be copied to the POST body. LTI 1.1 only.",
 #           "example": true,
 #           "type": "boolean"
-#         }
+#         },
+#         "placement": { "type": "string" }
 #       }
 #     }
 #
@@ -604,6 +607,14 @@
 #         }
 #       }
 #     }
+# @model ExternalToolsMarkRceFavoriteResponse
+#     {
+#       "id": "ExternalToolsMarkRceFavoriteResponse",
+#       "properties": {
+#         "rce_favorite_tool_ids": { "type": "array", "items": { "type": "integer" } }
+#       }
+#     }
+#
 class ExternalToolsController < ApplicationController
   class InvalidSettingsError < StandardError; end
 
@@ -1700,6 +1711,7 @@ class ExternalToolsController < ApplicationController
   #
   #   curl -X POST 'https://<canvas>/api/v1/accounts/<account_id>/external_tools/rce_favorites/<id>' \
   #        -H "Authorization: Bearer <token>"
+  # @returns ExternalToolsMarkRceFavoriteResponse
   def mark_rce_favorite
     if authorized_action(@context, @current_user, :manage_lti_edit)
       @tool = Lti::ToolFinder.from_id(params[:id], @context)
@@ -1738,6 +1750,7 @@ class ExternalToolsController < ApplicationController
   #
   #   curl -X DELETE 'https://<canvas>/api/v1/accounts/<account_id>/external_tools/rce_favorites/<id>' \
   #        -H "Authorization: Bearer <token>"
+  # @returns ExternalToolsMarkRceFavoriteResponse
   def unmark_rce_favorite
     if authorized_action(@context, @current_user, :manage_lti_edit)
       favorite_ids = @context.get_rce_favorite_tool_ids
@@ -1831,6 +1844,7 @@ class ExternalToolsController < ApplicationController
   #      },
   #      { ...  }]
   #
+  # @returns [ContextExternalTool]
   def all_visible_nav_tools
     GuardRail.activate(:secondary) do
       courses = api_find_all(Course, @course_ids)
@@ -1851,6 +1865,7 @@ class ExternalToolsController < ApplicationController
   #
   #   curl 'https://<canvas>/api/v1/courses/<course_id>/external_tools/visible_course_nav_tools' \
   #        -H "Authorization: Bearer <token>"
+  # @returns [ContextExternalTool]
   def visible_course_nav_tools
     GuardRail.activate(:secondary) do
       return unless authorized_action(@context, @current_user, :read)

@@ -48,7 +48,7 @@ module Polling
   #       },
   #       "position": {
   #         "description": "The order of the poll choice in relation to it's sibling poll choices.",
-  #         "type": "integer",
+  #         "type": ["integer", "null"],
   #         "example": 1
   #       }
   #     }
@@ -68,6 +68,7 @@ module Polling
     #     "poll_choices": [PollChoice]
     #   }
     #
+    # @returns { poll_choices: [PollChoice], meta: object }
     def index
       if authorized_action(@poll, @current_user, :read)
         @poll_choices = @poll.poll_choices
@@ -86,6 +87,7 @@ module Polling
     #     "poll_choices": [PollChoice]
     #   }
     #
+    # @returns { poll_choices: [PollChoice], meta: object }
     def show
       @poll_choice = @poll.poll_choices.find(params[:id])
       if authorized_action(@poll, @current_user, :read)
@@ -111,6 +113,7 @@ module Polling
     #     "poll_choices": [PollChoice]
     #   }
     #
+    # @returns { poll_choices: [PollChoice], meta: object }
     def create
       poll_choice_params = get_poll_choice_params
       @poll_choice = @poll.poll_choices.new(poll_choice_params)
@@ -143,6 +146,7 @@ module Polling
     #     "poll_choices": [PollChoice]
     #   }
     #
+    # @returns { poll_choices: [PollChoice], meta: object }
     def update
       poll_choice_params = get_poll_choice_params
       @poll_choice = @poll.poll_choices.find(params[:id])

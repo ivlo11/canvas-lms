@@ -19,6 +19,15 @@
 #
 
 # @API Rubrics
+# @model RubricsCreateResponse
+#     {
+#       "id": "RubricsCreateResponse",
+#       "properties": {
+#         "rubric": { "type": "object" },
+#         "rubric_association": { "type": "object" }
+#       }
+#     }
+#
 class RubricsController < ApplicationController
   before_action :require_context
 
@@ -149,6 +158,7 @@ class RubricsController < ApplicationController
   #   or if it's to indicate the rubric should appear in its context
   # @argument rubric[criteria] [Hash]
   #   An indexed Hash of RubricCriteria objects where the keys are integer ids and the values are the RubricCriteria objects
+  # @returns RubricsCreateResponse
   def create
     update
   end
@@ -196,6 +206,7 @@ class RubricsController < ApplicationController
   #   or if it's to indicate the rubric should appear in its context
   # @argument rubric[criteria] [Hash]
   #   An indexed Hash of RubricCriteria objects where the keys are integer ids and the values are the RubricCriteria objects
+  # @returns RubricsCreateResponse
   def update
     association_params = if params[:rubric_association]
                            params[:rubric_association].permit(:use_for_grading, :title, :purpose, :url, :hide_score_total, :hide_points, :hide_outcome_results, :bookmarked)
@@ -376,7 +387,7 @@ class RubricsController < ApplicationController
   #
   # Deletes a Rubric and removes all RubricAssociations.
   #
-  # @returns Rubric
+  # @returns { rubric: Rubric }
   def destroy
     @rubric = RubricAssociation.active.where(rubric_id: params[:id], context_id: @context, context_type: @context.class.to_s).first.rubric
     if authorized_action(@rubric, @current_user, :delete_associations) && authorized_action(@context, @current_user, :manage_rubrics)

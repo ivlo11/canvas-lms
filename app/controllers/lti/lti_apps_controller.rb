@@ -43,7 +43,7 @@ module Lti
   #      "description": {
   #         "description": "The description of the tool for the given placement.",
   #         "example": "This is a tool that does things.",
-  #         "type": "string"
+  #         "type": ["string", "null"]
   #       },
   #      "url": {
   #         "description": "The launch URL for the tool",
@@ -53,7 +53,7 @@ module Lti
   #      "domain": {
   #         "description": "The domain of the tool",
   #         "example": "example.com",
-  #         "type": "string"
+  #         "type": ["string", "null"]
   #       },
   #      "placements": {
   #         "description": "Placement-specific config for given placements",

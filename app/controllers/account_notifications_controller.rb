@@ -69,15 +69,17 @@
 #         "role_ids": {
 #           "description": "The roles to send the notification to.  If roles is not passed it defaults to all roles",
 #           "example": [1],
-#           "type": "array",
+#           "type": ["array", "null"],
 #           "items": {"type": "integer"}
 #         },
 #         "author": {
 #           "description": "The author of the notification. Available only to admins using include_all.",
 #           "example": {"id": 1, "name": "John Doe"},
-#           "type": "object",
+#           "type": ["object", "null"],
 #           "items": {"type": "integer"}
-#         }
+#         },
+#         "closed": { "type": "boolean" },
+#         "id": { "type": "integer" }
 #       }
 #     }
 class AccountNotificationsController < ApplicationController
@@ -235,6 +237,7 @@ class AccountNotificationsController < ApplicationController
   #     "end_at": "2014-02-01T00:00:00Z",
   #     "message": "This is a global notification"
   #   }
+  # @returns AccountNotification
   def create
     @notification = AccountNotification.new(account_notification_params)
     @notification.account = @account
@@ -318,6 +321,7 @@ class AccountNotificationsController < ApplicationController
   #     "end_at": "2014-02-01T00:00:00Z",
   #     "message": "This is a global notification"
   #   }
+  # @returns AccountNotification
   def update
     account_notification = @account.announcements.find(params[:id])
     if account_notification

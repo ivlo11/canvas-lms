@@ -82,6 +82,14 @@ module Quizzes
   #         "example": 100
   #       }
   #     }
+  # @model QuizzesQuizSubmissionUsersMessageResponse
+  #     {
+  #       "id": "QuizzesQuizSubmissionUsersMessageResponse",
+  #       "properties": {
+  #         "status": { "type": "string" }
+  #       }
+  #     }
+  #
   class QuizSubmissionUsersController < ::ApplicationController
     include ::Filters::Quizzes
 
@@ -140,6 +148,7 @@ module Quizzes
     #     "example": "ATTN: Quiz 101 Students"
     #   }
     # }
+    # @returns QuizzesQuizSubmissionUsersMessageResponse
     def message
       return unless user_has_teacher_level_access?
 

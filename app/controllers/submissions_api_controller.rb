@@ -54,17 +54,17 @@
 #         "attempt": {
 #           "description": "This is the submission attempt number.",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "body": {
 #           "description": "The content of the submission, if it was submitted directly in a text field.",
 #           "example": "There are three factors too...",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "grade": {
 #           "description": "The grade for the submission, translated into the assignment grading scheme (so a letter grade, for example).",
 #           "example": "A-",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "grade_matches_current_submission": {
 #           "description": "A boolean flag which is false if the student has re-submitted since the submission was last graded.",
@@ -84,7 +84,7 @@
 #         "score": {
 #           "description": "The raw score",
 #           "example": 13.5,
-#           "type": "number"
+#           "type": ["number", "null"]
 #         },
 #         "submission_comments": {
 #           "description": "Associated comments for a submission (optional)",
@@ -94,7 +94,7 @@
 #         "submission_type": {
 #           "description": "The types of submission ex: ('online_text_entry'|'online_url'|'online_upload'|'online_quiz'|'media_recording'|'student_annotation')",
 #           "example": "online_text_entry",
-#           "type": "string",
+#           "type": ["string", "null"],
 #           "allowableValues": {
 #             "values": [
 #               "online_text_entry",
@@ -109,11 +109,11 @@
 #         "submitted_at": {
 #           "description": "The timestamp when the assignment was submitted",
 #           "example": "2012-01-01T01:00:00Z",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "url": {
 #           "description": "The URL of the submission (for 'online_url' submissions).",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "user_id": {
 #           "description": "The id of the user who created the submission",
@@ -123,11 +123,11 @@
 #         "grader_id": {
 #           "description": "The id of the user who graded the submission. This will be null for submissions that haven't been graded yet. It will be a positive number if a real user has graded the submission and a negative number if the submission was graded by a process (e.g. Quiz autograder and autograding LTI tools).  Specifically autograded quizzes set grader_id to the negative of the quiz id.  Submissions autograded by LTI tools set grader_id to the negative of the tool id.",
 #           "example": 86,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "graded_at" : {
 #           "example": "2012-01-02T03:05:34Z",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "user": {
 #           "description": "The submissions user (see user API) (optional)",
@@ -146,7 +146,7 @@
 #         "excused": {
 #           "description": "Whether the assignment is excused.  Excused assignments have no impact on a user's grade.",
 #           "example": true,
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "missing": {
 #           "description": "Whether the assignment is missing.",
@@ -156,12 +156,12 @@
 #         "late_policy_status": {
 #           "description": "The status of the submission in relation to the late policy. Can be late, missing, extended, none, or null.",
 #           "example": "missing",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "points_deducted": {
 #           "description": "The amount of points automatically deducted from the score by the missing/late policy for a late or missing assignment.",
 #           "example": 12.3,
-#           "type": "number"
+#           "type": ["number", "null"]
 #         },
 #         "seconds_late": {
 #           "description": "The amount of time, in seconds, that an submission is late by.",
@@ -184,7 +184,7 @@
 #         "extra_attempts": {
 #           "description": "Extra submission attempts allowed for the given user and assignment.",
 #           "example": 10,
-#           "type": "number"
+#           "type": ["number", "null"]
 #         },
 #         "anonymous_id": {
 #           "description": "A unique short ID identifying this submission without reference to the owning user. Only included if the caller has administrator access for the current account.",
@@ -194,7 +194,7 @@
 #         "posted_at" : {
 #           "description": "The date this submission was posted to the student, or nil if it has not been posted.",
 #           "example": "2020-01-02T11:10:30Z",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "read_status" : {
 #           "description": "The read status of this submission for the given user (optional). Including read_status will mark submission(s) as read.",
@@ -211,7 +211,61 @@
 #           "description": "This indicates whether the submission has been reassigned by the instructor.",
 #           "example": "true",
 #           "type": "boolean"
-#         }
+#         },
+#         "cached_due_date": { "type": ["string", "null"] },
+#         "custom_grade_status_id": { "type": ["integer", "null"] },
+#         "entered_grade": { "type": ["string", "null"] },
+#         "entered_score": { "type": ["number", "null"] },
+#         "grading_period_id": { "type": ["integer", "null"] },
+#         "sticker": { "type": ["string", "null"] },
+#         "attachments": { "type": "array", "items": { "type": "object" } },
+#         "external_tool_url": { "type": "string" },
+#         "grading_status": { "type": "string" },
+#         "group": { "type": "object" },
+#         "media_comment": { "type": "object" },
+#         "provisional_grades": { "type": "array", "items": { "type": "object" } },
+#         "rubric_assessment": { "type": "object" },
+#         "student_entered_score": { "type": ["number", "null"] },
+#         "submission_history": { "type": "array", "items": { "type": "object" } },
+#         "submission_status": { "type": "string" },
+#         "computed_current_score": { "type": "number" },
+#         "computed_final_score": { "type": "number" },
+#         "discussion_entries": { "type": "array", "items": { "type": "object" } },
+#         "has_originality_report": { "type": "boolean" },
+#         "has_peer_review_submission": { "type": "boolean" },
+#         "integration_id": { "type": ["string", "null"] },
+#         "peer_review_submission": { "type": ["object", "null"] },
+#         "section_id": { "type": "integer" },
+#         "sis_user_id": { "type": "string" },
+#         "submissions": { "type": "array", "items": { "type": "object" } },
+#         "turnitin_data": { "type": "object" },
+#         "unposted_current_score": { "type": "number" },
+#         "unposted_final_score": { "type": "number" },
+#         "context_type": { "type": "string" },
+#         "conversation_id": { "type": "integer" },
+#         "course_id": { "type": "integer" },
+#         "created_at": { "type": "string" },
+#         "discussion_topic_id": { "type": "integer" },
+#         "latest_messages": { "type": "array", "items": { "type": "object" } },
+#         "message": { "type": ["string", "null"] },
+#         "message_id": {},
+#         "notification_category": { "type": "string" },
+#         "participant_count": { "type": "integer" },
+#         "private": { "type": "boolean" },
+#         "read_state": { "type": "boolean" },
+#         "require_initial_post": { "type": "boolean" },
+#         "root_discussion_entries": { "type": "array", "items": { "type": "object" } },
+#         "submission_id": { "type": "integer" },
+#         "title": { "type": "string" },
+#         "total_root_discussion_entries": { "type": "integer" },
+#         "type": { "type": "string" },
+#         "updated_at": { "type": "string" },
+#         "user_has_posted": {},
+#         "full_rubric_assessment": { "type": "object" },
+#         "has_sub_assignment_submissions": { "type": "boolean" },
+#         "sub_assignment_submissions": { "type": "array", "items": { "type": "object" } },
+#         "vericite_data": { "type": "object" },
+#         "all_submissions": { "type": "array", "items": { "type": "object" } }
 #       }
 #     }
 #
@@ -249,7 +303,7 @@
 #         "pronouns": {
 #           "description": "The user's pronouns, if pronouns are enabled.",
 #           "example": "they/them",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "fake_student": {
 #           "description": "Optional: true if the user is the course's test student. Only included for test students.",
@@ -262,6 +316,35 @@
 #           "type": "array",
 #           "items": { "type": "integer" }
 #         }
+#       }
+#     }
+#
+# @model SubmissionsCreateFileResponse
+#     {
+#       "id": "SubmissionsCreateFileResponse",
+#       "properties": {
+#         "file_param": { "type": ["string", "null"] },
+#         "progress": { "type": "object" },
+#         "upload_params": { "type": "object" },
+#         "upload_url": { "type": "string" }
+#       }
+#     }
+#
+# @model SubmissionsRubricAssessmentsReadStateResponse
+#     {
+#       "id": "SubmissionsRubricAssessmentsReadStateResponse",
+#       "properties": {
+#         "read": { "type": "boolean" }
+#       }
+#     }
+#
+# @model SubmissionsSubmissionSummaryResponse
+#     {
+#       "id": "SubmissionsSubmissionSummaryResponse",
+#       "properties": {
+#         "graded": { "type": "integer" },
+#         "not_submitted": { "type": "integer" },
+#         "ungraded": { "type": "integer" }
 #       }
 #     }
 #
@@ -697,6 +780,7 @@ class SubmissionsApiController < ApplicationController
   #
   # @argument include[] [String, "submission_history"|"submission_comments"|"submission_html_comments"|"rubric_assessment"|"full_rubric_assessment"|"visibility"|"course"|"user"|"read_status"|"student_entered_score"]
   #   Associations to include with the group.
+  # @returns Submission
   def show
     Submission.bulk_load_attachments_and_previews([@submission])
 
@@ -749,6 +833,7 @@ class SubmissionsApiController < ApplicationController
   # including the new file id. The caller can then POST to submit the
   # +online_upload+ assignment with these file ids.
   #
+  # @returns SubmissionsCreateFileResponse
   def create_file
     @assignment = api_find(@context.assignments.active, params[:assignment_id])
     @user = get_user_considering_section(params[:user_id])
@@ -788,6 +873,12 @@ class SubmissionsApiController < ApplicationController
   #         "type": "integer",
   #         "format": "int64"
   #       },
+  #       "created_at": { "type": "string" },
+  #       "hide_points": { "type": "boolean" },
+  #       "root_account_id": { "type": "integer" },
+  #       "rubric_assessment_imports_id": { "type": ["integer", "null"] },
+  #       "updated_at": { "type": "string" },
+  #       "user_id": { "type": "integer" },
   #     }
   #  }
   #
@@ -928,6 +1019,7 @@ class SubmissionsApiController < ApplicationController
   #
   #   Then a possible set of values for rubric_assessment would be:
   #       rubric_assessment[crit1][points]=3&rubric_assessment[crit1][rating_id]=rat1&rubric_assessment[crit2][points]=5&rubric_assessment[crit2][rating_id]=rat2&rubric_assessment[crit2][comments]=Well%20Done.
+  # @returns Submission
   def update
     assignment_scope = AbstractAssignment.assignment_or_peer_review.where(context: @context).active
     assignment_scope = assignment_scope.preload(:parent_assignment) if params[:assignment_id]
@@ -1270,6 +1362,7 @@ class SubmissionsApiController < ApplicationController
   #
   #   Then a possible set of values for rubric_assessment would be:
   #       rubric_assessment[crit1][points]=3&rubric_assessment[crit1][rating_id]=rat1&rubric_assessment[crit2][points]=5&rubric_assessment[crit2][rating_id]=rat2&rubric_assessment[crit2][comments]=Well%20Done.
+  # @returns Submission
   def update_anonymous
     assignment_scope = AbstractAssignment.assignment_scope_for_context(@context).active
     @assignment = api_find(assignment_scope, params[:assignment_id])
@@ -1613,6 +1706,7 @@ class SubmissionsApiController < ApplicationController
   #     "read": false
   #   }
   #
+  # @returns SubmissionsRubricAssessmentsReadStateResponse
   def rubric_assessments_read_state
     if authorized_action(@submission, @current_user, :read)
       render json: { read: !@user.unread_rubric_assessments?(@submission) }
@@ -1645,6 +1739,7 @@ class SubmissionsApiController < ApplicationController
   #     "read": true
   #   }
   #
+  # @returns SubmissionsRubricAssessmentsReadStateResponse
   def mark_rubric_assessments_read
     return render_unauthorized_action unless @user == @current_user
 
@@ -1666,6 +1761,7 @@ class SubmissionsApiController < ApplicationController
   #     "read": false
   #   }
   #
+  # @returns SubmissionsRubricAssessmentsReadStateResponse
   def document_annotations_read_state
     if authorized_action(@submission, @current_user, :read)
       render json: { read: !@user.unread_submission_annotations?(@submission) }
@@ -1691,6 +1787,7 @@ class SubmissionsApiController < ApplicationController
   #     "read": true
   #   }
   #
+  # @returns SubmissionsRubricAssessmentsReadStateResponse
   def mark_document_annotations_read
     return render_unauthorized_action unless @user == @current_user
 
@@ -1720,6 +1817,7 @@ class SubmissionsApiController < ApplicationController
   #     "ungraded": 10,
   #     "not_submitted": 42
   #   }
+  # @returns SubmissionsSubmissionSummaryResponse
   def submission_summary
     if authorized_action(@context, @current_user, [:manage_grades, :view_all_grades])
       @assignment = api_find(@context.assignments.active, params[:assignment_id])

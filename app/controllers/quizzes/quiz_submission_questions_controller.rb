@@ -40,13 +40,43 @@
 #         },
 #         "answer": {
 #           "description": "The provided answer (if any) for this question. The format of this parameter depends on the type of the question, see the Appendix for more information.",
-#           "type": "string"
+#           "type": ["string", "number", "object", "array", "null"],
+#           "items": { "type": ["string", "object"] }
 #         },
 #         "answers": {
 #           "description": "The possible answers for this question when those possible answers are necessary.  The presence of this parameter is dependent on permissions.",
 #           "type": "array",
-#           "items": {"type": "string"}
-#         }
+#           "items": {"type": ["object", "string"]}
+#         },
+#         "answer_tolerance": { "type": ["number", "null"] },
+#         "assessment_question_id": { "type": "integer" },
+#         "correct": { "type": "boolean" },
+#         "formula_decimal_places": { "type": ["integer", "null"] },
+#         "formulas": { "type": ["array", "null"], "items": { "type": "object" } },
+#         "matches": { "type": ["array", "null"], "items": { "type": "object" } },
+#         "position": { "type": ["integer", "null"] },
+#         "question_name": { "type": "string" },
+#         "question_text": { "type": "string" },
+#         "question_type": { "type": "string" },
+#         "quiz_group_id": {},
+#         "quiz_id": { "type": "integer" },
+#         "variables": { "type": ["array", "null"], "items": { "type": "object" } }
+#       }
+#     }
+#
+# @model QuizzesQuizSubmissionQuestionsFormattedAnswerResponse
+#     {
+#       "id": "QuizzesQuizSubmissionQuestionsFormattedAnswerResponse",
+#       "properties": {
+#         "formatted_answer": { "type": "string" }
+#       }
+#     }
+#
+# @model QuizzesQuizSubmissionQuestionsFlagResponse
+#     {
+#       "id": "QuizzesQuizSubmissionQuestionsFlagResponse",
+#       "properties": {
+#         "quiz_submission_questions": { "type": "array", "items": { "type": "object" } }
 #       }
 #     }
 #
@@ -131,7 +161,7 @@ class Quizzes::QuizSubmissionQuestionsController < ApplicationController
   #    }]
   #  }
   #
-  # @returns [QuizSubmissionQuestion]
+  # @returns { quiz_submission_questions: [QuizSubmissionQuestion] }
   def answer
     unless @quiz_submission.grants_right?(@service.participant.user, :update)
       reject! "you are not allowed to update questions for this quiz submission", 403
@@ -175,6 +205,7 @@ class Quizzes::QuizSubmissionQuestionsController < ApplicationController
   #  {
   #    "formatted_answer": 12.1234
   #  }
+  # @returns QuizzesQuizSubmissionQuestionsFormattedAnswerResponse
   def formatted_answer
     student_answer = params[:answer]
 
@@ -223,6 +254,7 @@ class Quizzes::QuizSubmissionQuestionsController < ApplicationController
   #    "validation_token": "YOUR_VALIDATION_TOKEN",
   #    "access_code": null
   #  }
+  # @returns QuizzesQuizSubmissionQuestionsFlagResponse
   def flag
     unless @quiz_submission.grants_right?(@service.participant.user, :update)
       reject! "you are not allowed to update questions for this quiz submission", 403
@@ -255,6 +287,7 @@ class Quizzes::QuizSubmissionQuestionsController < ApplicationController
   #    "validation_token": "YOUR_VALIDATION_TOKEN",
   #    "access_code": null
   #  }
+  # @returns QuizzesQuizSubmissionQuestionsFlagResponse
   def unflag
     unless @quiz_submission.grants_right?(@service.participant.user, :update)
       reject! "you are not allowed to update questions for this quiz submission", 403

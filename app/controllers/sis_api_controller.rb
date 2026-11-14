@@ -47,22 +47,22 @@
 #         "due_at": {
 #           "description": "the due date for the assignment. returns null if not present. NOTE: If this assignment has assignment overrides, this field will be the due date as it applies to the user requesting information from the API.",
 #           "example": "2012-07-01T23:59:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "unlock_at": {
 #           "description": "(Optional) Time at which this was/will be unlocked.",
 #           "example": "2013-01-01T00:00:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "lock_at": {
 #           "description": "(Optional) Time at which this was/will be locked.",
 #           "example": "2013-02-01T00:00:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "points_possible": {
 #           "description": "The maximum points possible for the assignment",
 #           "example": 12,
-#           "type": "integer"
+#           "type": ["number", "null"]
 #         },
 #         "submission_types": {
 #           "description": "the types of submissions allowed for this assignment list containing one or more of the following: 'discussion_topic', 'online_quiz', 'on_paper', 'none', 'external_tool', 'online_text_entry', 'online_url', 'online_upload', 'media_recording', 'student_annotation'",
@@ -87,12 +87,12 @@
 #         },
 #         "integration_id": {
 #             "example": "12341234",
-#             "type": "string",
+#             "type": ["string", "null"],
 #             "description": "Third Party integration id for assignment"
 #           },
 #         "integration_data": {
 #           "example": "other_data",
-#           "type": "string",
+#           "type": ["object", "string"],
 #           "description": "(optional, Third Party integration data for assignment)"
 #         },
 #         "include_in_final_grade": {
@@ -102,7 +102,7 @@
 #         },
 #         "assignment_group": {
 #           "description": "Includes attributes of a assignment_group for convenience. For more details see Assignments API.",
-#           "type": "array",
+#           "type": ["object", "array"],
 #           "items": { "$ref": "AssignmentGroupAttributes" }
 #         },
 #         "sections": {
@@ -169,12 +169,12 @@
 #         "sis_id": {
 #           "description": "The sis id of the section.",
 #           "example": "s34643",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "integration_id": {
 #           "description": "Optional: The integration ID of the section.",
 #           "example": "3452342345",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "origin_course": {
 #           "description": "The course to which the section belongs or the course from which the section was cross-listed",
@@ -209,12 +209,12 @@
 #         "sis_id": {
 #           "description": "The sis id of the origin_course.",
 #           "example": "c34643",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "integration_id": {
 #           "description": "The integration ID of the origin_course.",
 #           "example": "I-2",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         }
 #       }
 #     }
@@ -237,13 +237,14 @@
 #         "unlock_at": {
 #           "description": "(Optional) Time at which this was/will be unlocked.",
 #           "example": "2013-01-01T00:00:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "lock_at": {
 #           "description": "(Optional) Time at which this was/will be locked.",
 #           "example": "2013-02-01T00:00:00-06:00",
-#           "type": "datetime"
-#         }
+#           "type": ["datetime", "null"]
+#         },
+#         "id": { "type": "integer" }
 #       }
 #     }
 #
@@ -270,12 +271,12 @@
 #         "unlock_at": {
 #           "description": "(Optional) Time at which this was/will be unlocked.",
 #           "example": "2013-01-01T00:00:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "lock_at": {
 #           "description": "(Optional) Time at which this was/will be locked.",
 #           "example": "2013-02-01T00:00:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "students": {
 #           "description": "Includes attributes of a student for convenience. For more details see Users API.",
@@ -298,7 +299,7 @@
 #         "sis_user_id": {
 #           "description": "The SIS ID associated with the user.  This field is only included if the user came from a SIS import and has permissions to view SIS information.",
 #           "example": "SHEL93921",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         }
 #       }
 #     }
@@ -353,6 +354,7 @@ class SisApiController < ApplicationController
   #
   #   "student_overrides":: returns individual student override information
   #
+  # @returns [SisAssignment]
   def sis_assignments
     includes = { student_overrides: include_student_overrides? }
     render json: sis_assignments_json(paginated_assignments, includes:, current_user: @current_user)

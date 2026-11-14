@@ -36,7 +36,8 @@ module ApiDocsAudit
     COMMENT = /\A\s*#/
     DEF_LINE = /\A\s*def\s+([a-zA-Z_]\w*[?!]?)/
     NAME = /[A-Za-z][A-Za-z0-9_]*(?:::[A-Za-z][A-Za-z0-9_]*)*/
-    MODEL_REFERENCE = /\A[A-Z][A-Za-z0-9_]*(?:::[A-Z][A-Za-z0-9_]*)*\z/
+    # A name may start with one lowercase letter, as ePortfolio does
+    MODEL_REFERENCE = /\A[a-z]?[A-Z][A-Za-z0-9_]*(?:::[A-Z][A-Za-z0-9_]*)*\z/
     PRIMITIVES = %w[string integer int float number numeric boolean bool array object hash].freeze
     INLINE_PRIMITIVES = %w[integer string boolean number object].freeze
     INLINE_ENTRY = /\A(?:"([a-z][a-z0-9_]*)"|([a-z][a-z0-9_]*))\s*:\s*(.+)\z/m
@@ -49,7 +50,8 @@ module ApiDocsAudit
       end
     end
 
-    Definition = Struct.new(:name, :file, :line, :end_line, :properties, :malformed)
+    # tag is the name as written, such as Lti::Registration
+    Definition = Struct.new(:name, :file, :line, :end_line, :properties, :malformed, :tag)
 
     # container is :list, :object, :union, :scalar, :prose or :none. schema, when
     # present, is in @model property form, with $ref for models.
@@ -125,7 +127,7 @@ module ApiDocsAudit
         nil
       end
       malformed = properties.nil?
-      @definitions[canonical(name)] << Definition.new(canonical(name), path, index + 1, last, properties || {}, malformed)
+      @definitions[canonical(name)] << Definition.new(canonical(name), path, index + 1, last, properties || {}, malformed, name)
     end
 
     def parse_docs_schema(path, text)
@@ -134,7 +136,7 @@ module ApiDocsAudit
 
       name = schema["id"] || File.basename(path, ".rb").capitalize
       line = text.lines.index { |item| item.include?("def self.schema") }.to_i + 1
-      @definitions[canonical(name)] << Definition.new(canonical(name), path, line, line, schema.fetch("properties", {}), false)
+      @definitions[canonical(name)] << Definition.new(canonical(name), path, line, line, schema.fetch("properties", {}), false, name)
     end
 
     def literal_schema(node)

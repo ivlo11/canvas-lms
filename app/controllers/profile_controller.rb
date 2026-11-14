@@ -46,30 +46,30 @@
 #           "type": "string"
 #         },
 #         "title": {
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "bio": {
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "pronunciation": {
 #           "description": "Name pronunciation",
 #           "example": "Sample name pronunciation",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "primary_email": {
 #           "description": "sample_user@example.com",
 #           "example": "sample_user@example.com",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "login_id": {
 #           "description": "sample_user@example.com",
 #           "example": "sample_user@example.com",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "sis_user_id": {
 #           "description": "sis1",
 #           "example": "sis1",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "lti_user_id": {
 #           "type": "string"
@@ -89,7 +89,7 @@
 #         },
 #         "locale": {
 #           "description": "The users locale.",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "k5_user": {
 #           "description": "Optional: Whether or not the user is a K5 user. This field is nil if the user settings are not for the user making the request.",
@@ -100,7 +100,11 @@
 #           "description": "Optional: Whether or not the user should see the classic font on the dashboard. Only applies if k5_user is true. This field is nil if the user settings are not for the user making the request.",
 #           "example": false,
 #           "type": "boolean"
-#         }
+#         },
+#         "effective_locale": { "type": "string" },
+#         "integration_id": { "type": ["string", "null"] },
+#         "links": { "type": "array", "items": { "type": "object" } },
+#         "user_services": { "type": "array", "items": { "type": "object" } }
 #       }
 #     }
 #

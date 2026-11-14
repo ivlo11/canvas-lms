@@ -42,7 +42,7 @@
 #         "name": {
 #           "description": "The name of the question group.",
 #           "example": "Fraction questions",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "pick_count": {
 #           "description": "The number of questions to pick from the group to display to the student.",
@@ -53,13 +53,13 @@
 #         "question_points": {
 #           "description": "The amount of points allotted to each question in the group.",
 #           "example": 10,
-#           "type": "integer",
+#           "type": ["number", "null"],
 #           "format": "int64"
 #         },
 #         "assessment_question_bank_id": {
 #           "description": "The ID of the Assessment question bank to pull questions from.",
 #           "example": 2,
-#           "type": "integer",
+#           "type": ["integer", "null"],
 #           "format": "int64"
 #         },
 #         "position": {

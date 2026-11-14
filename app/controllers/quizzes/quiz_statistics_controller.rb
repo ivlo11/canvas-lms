@@ -36,12 +36,12 @@
 # @model QuizStatistics
 #     {
 #       "id": "QuizStatistics",
-#       "required": [ "id", "quiz_id" ],
+#       "required": [ "id" ],
 #       "properties": {
 #         "id": {
 #           "description": "The ID of the quiz statistics report.",
 #           "example": 1,
-#           "type": "integer",
+#           "type": ["string", "integer"],
 #           "format": "int64"
 #         },
 #         "quiz_id": {
@@ -76,7 +76,8 @@
 #           "type": "string"
 #         },
 #         "question_statistics": {
-#           "$ref": "QuizStatisticsQuestionStatistics",
+#           "type": "array",
+#           "items": { "$ref": "QuizStatisticsQuestionStatistics" },
 #           "description": "Question-specific statistics for each question and its answers."
 #         },
 #         "submission_statistics": {
@@ -86,7 +87,12 @@
 #         "links": {
 #           "$ref": "QuizStatisticsLinks",
 #           "description": "JSON-API construct that contains links to media related to this quiz statistics object. \nNOTE: AVAILABLE ONLY IN JSON-API REQUESTS."
-#         }
+#         },
+#         "anonymous_survey": { "type": "boolean" },
+#         "includes_sis_ids": { "type": "boolean" },
+#         "points_possible": { "type": "number" },
+#         "quiz_submissions_zip_url": { "type": "string" },
+#         "speed_grader_url": { "type": "string" }
 #       }
 #     }
 #
@@ -115,9 +121,33 @@
 #           "format": "int64"
 #         },
 #         "answers": {
-#           "$ref": "QuizStatisticsAnswerStatistics",
+#           "type": "array",
+#           "items": { "$ref": "QuizStatisticsAnswerStatistics" },
 #           "description": "Statistics related to each individual pre-defined answer."
-#         }
+#         },
+#         "alpha": { "type": "number" },
+#         "answered_student_count": { "type": "integer" },
+#         "bottom_student_count": { "type": "integer" },
+#         "correct_bottom_student_count": { "type": "integer" },
+#         "correct_middle_student_count": { "type": "integer" },
+#         "correct_student_count": { "type": "integer" },
+#         "correct_student_ratio": { "type": "number" },
+#         "correct_top_student_count": { "type": "integer" },
+#         "difficulty_index": { "type": "number" },
+#         "full_credit": { "type": "integer" },
+#         "graded": { "type": "integer" },
+#         "id": { "type": "string" },
+#         "incorrect_student_count": { "type": "integer" },
+#         "incorrect_student_ratio": { "type": "number" },
+#         "middle_student_count": { "type": "integer" },
+#         "point_biserials": { "type": "array", "items": { "type": "object" } },
+#         "point_distribution": { "type": "array", "items": { "type": "object" } },
+#         "position": { "type": "integer" },
+#         "question_text": { "type": "string" },
+#         "question_type": { "type": "string" },
+#         "stdev": { "type": "number" },
+#         "top_student_count": { "type": "integer" },
+#         "variance": { "type": "number" }
 #       }
 #     }
 #
@@ -129,7 +159,7 @@
 #         "id": {
 #           "description": "ID of the answer.",
 #           "example": 3866,
-#           "type": "integer",
+#           "type": ["string", "integer"],
 #           "format": "int64"
 #         },
 #         "text": {
@@ -148,7 +178,12 @@
 #           "example": 2,
 #           "type": "integer",
 #           "format": "int64"
-#         }
+#         },
+#         "correct": { "type": "boolean" },
+#         "full_credit": { "type": "boolean" },
+#         "score": { "type": "number" },
+#         "user_ids": { "type": "array", "items": { "type": "integer" } },
+#         "user_names": { "type": "array", "items": { "type": "string" } }
 #       }
 #     }
 #

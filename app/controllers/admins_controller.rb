@@ -43,7 +43,8 @@
 #           "description": "The status of the account role/user assignment.",
 #           "type": "string",
 #           "example": "deleted"
-#         }
+#         },
+#         "role_id": { "type": "integer" }
 #       }
 #    }
 class AdminsController < ApplicationController

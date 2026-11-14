@@ -21,6 +21,17 @@
 # @API Submission Comments
 #
 # This API can be used to edit and delete submission comments.
+# @model SubmissionCommentsCreateFileResponse
+#     {
+#       "id": "SubmissionCommentsCreateFileResponse",
+#       "properties": {
+#         "file_param": { "type": "string" },
+#         "progress": { "type": "object" },
+#         "upload_params": { "type": "object" },
+#         "upload_url": { "type": "string" }
+#       }
+#     }
+#
 class SubmissionCommentsApiController < ApplicationController
   before_action :require_context
 
@@ -89,6 +100,7 @@ class SubmissionCommentsApiController < ApplicationController
   # The final step of the file upload workflow will return the attachment data,
   # including the new file id. The caller can then PUT the file_id to the
   # submission API to attach it to a comment
+  # @returns SubmissionCommentsCreateFileResponse
   def create_file
     @assignment = api_find(@context.assignments.active, params[:assignment_id])
     @user = api_find(@context.students_visible_to(@current_user, include: :inactive),

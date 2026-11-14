@@ -27,6 +27,7 @@
 #    "id": "JWKs",
 #    "description": "",
 #    "properties": {
+#      "keys": { "type": "array", "items": { "type": "object" } }
 #    }
 #  }
 #

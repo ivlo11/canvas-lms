@@ -68,12 +68,12 @@
 #         "group_weight": {
 #           "description": "the weight of the Assignment Group",
 #           "example": 20,
-#           "type": "integer"
+#           "type": "number"
 #         },
 #         "sis_source_id": {
 #           "description": "the sis source id of the Assignment Group",
 #           "example": "1234",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "integration_data": {
 #           "description": "the integration data of the Assignment Group",
@@ -84,12 +84,13 @@
 #           "description": "the assignments in this Assignment Group (see the Assignment API for a detailed list of fields)",
 #           "example": [],
 #           "type": "array",
-#           "items": {"type": "integer"}
+#           "items": {"type": ["object", "integer"]}
 #         },
 #         "rules": {
 #           "description": "the grading rules that this Assignment Group has",
 #           "$ref": "GradingRules"
-#         }
+#         },
+#         "any_assignment_in_closed_grading_period": { "type": "boolean" }
 #       }
 #     }
 #

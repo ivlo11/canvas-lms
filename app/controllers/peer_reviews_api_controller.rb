@@ -58,17 +58,18 @@
 #          "user": {
 #            "description": "the User object for the owner of the asset if the user include parameter is provided (see user API) (optional)",
 #            "example": "User",
-#            "type": "string"
+#            "type": ["object", "string"]
 #          },
 #          "assessor": {
 #            "description": "The User object for the assessor if the user include parameter is provided (see user API) (optional)",
 #            "example": "User",
-#            "type": "string"
+#            "type": ["object", "string"]
 #          },
 #          "submission_comments": {
 #            "description": "The submission comments associated with this Peer Review if the submission_comment include parameter is provided (see submissions API) (optional)",
 #            "example": "SubmissionComment",
-#            "type": "string"
+#            "type": ["array", "string"],
+#            "items": { "type": "object" }
 #          }
 #        }
 #      }
@@ -145,7 +146,7 @@ class PeerReviewsApiController < ApplicationController
   # @API Allocate Peer Review
   # Allocates a submission for the current user to peer review
   #
-  # @returns PeerReview
+  # @returns [PeerReview]
   def allocate
     # Validation: Assignment must be assigned to the student (visibility check)
     visible_assignment_ids = AssignmentVisibility::AssignmentVisibilityService

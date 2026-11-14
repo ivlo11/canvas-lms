@@ -46,12 +46,14 @@
 #         },
 #         "students": {
 #           "description": "an array of the override's target students (present only if the override targets an adhoc set of students)",
-#           "$ref": "OverrideTarget"
+#           "type": "array",
+#           "items": { "$ref": "OverrideTarget" }
 #         },
 #         "course_section": {
 #           "description": "the override's target section (present only if the override targets a section)",
 #           "$ref": "OverrideTarget"
-#         }
+#         },
+#         "group": { "type": "object" }
 #       }
 #     }
 #

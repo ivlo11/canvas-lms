@@ -36,12 +36,12 @@
 #         "due_at": {
 #           "description": "the due date for the learning object. returns null if not present or applicable. never applicable for ungraded discussions, pages, and files",
 #           "example": "2012-07-01T23:59:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "lock_at": {
 #           "description": "the lock date (learning object is locked after this date). returns null if not present",
 #           "example": "2012-07-01T23:59:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "reply_to_topic_due_at": {
 #           "description": "the reply_to_topic sub_assignment due_date. returns null if not present",
@@ -56,7 +56,7 @@
 #         "unlock_at": {
 #           "description": "the unlock date (learning object is unlocked after this date). returns null if not present",
 #           "example": "2012-07-01T23:59:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "only_visible_to_overrides": {
 #           "description": "whether the learning object is only visible to overrides",
@@ -100,8 +100,8 @@
 #           "properties": {
 #             "id": {"type": "integer"},
 #             "due_at": {"type": "datetime"},
-#             "unlock_at": {"type": "datetime"},
-#             "lock_at": {"type": "datetime"},
+#             "unlock_at": {"type": ["datetime", "null"]},
+#             "lock_at": {"type": ["datetime", "null"]},
 #             "only_visible_to_overrides": {"type": "boolean"},
 #             "visible_to_everyone": {"type": "boolean"},
 #             "overrides": {
@@ -110,7 +110,10 @@
 #               "items": {"$ref": "AssignmentOverride"}
 #             }
 #           }
-#         }
+#         },
+#         "name": { "type": "string" },
+#         "points_possible": { "type": "number" },
+#         "group_category_id": { "type": ["integer", "null"] }
 #       }
 #     }
 class LearningObjectDatesController < ApplicationController

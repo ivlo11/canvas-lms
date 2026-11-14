@@ -35,53 +35,55 @@
 #         "current_grade": {
 #           "description": "The user's current grade in the class. Only included if user has permissions to view this grade.",
 #           "example": "",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "final_grade": {
 #           "description": "The user's final grade for the class. Only included if user has permissions to view this grade.",
 #           "example": "",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "current_score": {
 #           "description": "The user's current score in the class. Only included if user has permissions to view this score.",
 #           "example": 95.8,
-#           "type": "number"
+#           "type": ["number", "null"]
 #         },
 #         "final_score": {
 #           "description": "The user's final score for the class. Only included if user has permissions to view this score.",
 #           "example": 95.8,
-#           "type": "number"
+#           "type": ["number", "null"]
 #         },
 #         "current_points": {
 #           "description": "The total points the user has earned in the class. Only included if user has permissions to view this score and 'current_points' is passed in the request's 'include' parameter.",
 #           "example": 150,
-#           "type": "integer"
+#           "type": "number"
 #         },
 #         "unposted_current_grade": {
 #           "description": "The user's current grade in the class including muted/unposted assignments. Only included if user has permissions to view this grade, typically teachers, TAs, and admins.",
 #           "example": "",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "unposted_final_grade": {
 #           "description": "The user's final grade for the class including muted/unposted assignments. Only included if user has permissions to view this grade, typically teachers, TAs, and admins..",
 #           "example": "",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "unposted_current_score": {
 #           "description": "The user's current score in the class including muted/unposted assignments. Only included if user has permissions to view this score, typically teachers, TAs, and admins..",
 #           "example": 95.8,
-#           "type": "number"
+#           "type": ["number", "null"]
 #         },
 #         "unposted_final_score": {
 #           "description": "The user's final score for the class including muted/unposted assignments. Only included if user has permissions to view this score, typically teachers, TAs, and admins..",
 #           "example": 95.8,
-#           "type": "number"
+#           "type": ["number", "null"]
 #         },
 #         "unposted_current_points": {
 #           "description": "The total points the user has earned in the class, including muted/unposted assignments. Only included if user has permissions to view this score (typically teachers, TAs, and admins) and 'current_points' is passed in the request's 'include' parameter.",
 #           "example": 150,
-#           "type": "integer"
-#         }
+#           "type": "number"
+#         },
+#         "override_grade": { "type": "string" },
+#         "override_score": { "type": "number" }
 #       }
 #     }
 #
@@ -93,7 +95,7 @@
 #           "id": {
 #             "description": "The ID of the enrollment.",
 #             "example": 1,
-#             "type": "integer"
+#             "type": ["integer", "null"]
 #           },
 #           "course_id": {
 #             "description": "The unique id of the course.",
@@ -103,12 +105,12 @@
 #           "sis_course_id": {
 #             "description": "The SIS Course ID in which the enrollment is associated. Only displayed if present. This field is only included if the user has permission to view SIS information.",
 #             "example": "SHEL93921",
-#             "type": "string"
+#             "type": ["string", "null"]
 #           },
 #           "course_integration_id": {
 #             "description": "The Course Integration ID in which the enrollment is associated. This field is only included if the user has permission to view SIS information.",
 #             "example": "SHEL93921",
-#             "type": "string"
+#             "type": ["string", "null"]
 #           },
 #           "course_section_id": {
 #             "description": "The unique id of the user's section.",
@@ -118,22 +120,22 @@
 #           "section_integration_id": {
 #             "description": "The Section Integration ID in which the enrollment is associated. This field is only included if the user has permission to view SIS information.",
 #             "example": "SHEL93921",
-#             "type": "string"
+#             "type": ["string", "null"]
 #           },
 #           "sis_account_id": {
 #             "description": "The SIS Account ID in which the enrollment is associated. Only displayed if present. This field is only included if the user has permission to view SIS information.",
 #             "example": "SHEL93921",
-#             "type": "string"
+#             "type": ["string", "null"]
 #           },
 #           "sis_section_id": {
 #             "description": "The SIS Section ID in which the enrollment is associated. Only displayed if present. This field is only included if the user has permission to view SIS information.",
 #             "example": "SHEL93921",
-#             "type": "string"
+#             "type": ["string", "null"]
 #           },
 #           "sis_user_id": {
 #             "description": "The SIS User ID in which the enrollment is associated. Only displayed if present. This field is only included if the user has permission to view SIS information.",
 #             "example": "SHEL93921",
-#             "type": "string"
+#             "type": ["string", "null"]
 #           },
 #           "enrollment_state": {
 #             "description": "The state of the user's enrollment in the course.",
@@ -148,7 +150,7 @@
 #           "sis_import_id": {
 #             "description": "The unique identifier for the SIS import. This field is only included if the user has permission to manage SIS information.",
 #             "example": 83,
-#             "type": "integer"
+#             "type": ["integer", "null"]
 #           },
 #           "root_account_id": {
 #             "description": "The unique id of the user's account.",
@@ -168,7 +170,7 @@
 #           "associated_user_id": {
 #             "description": "The unique id of the associated user. Will be null unless type is ObserverEnrollment.",
 #             "example": null,
-#             "type": "integer"
+#             "type": ["integer", "null"]
 #           },
 #           "role": {
 #             "description": "The enrollment role, for course-level permissions. This field will match `type` if the enrollment role has not been customized.",
@@ -183,32 +185,32 @@
 #           "created_at": {
 #             "description": "The created time of the enrollment, in ISO8601 format.",
 #             "example": "2012-04-18T23:08:51Z",
-#             "type": "datetime"
+#             "type": ["datetime", "null"]
 #           },
 #           "updated_at": {
 #             "description": "The updated time of the enrollment, in ISO8601 format.",
 #             "example": "2012-04-18T23:08:51Z",
-#             "type": "datetime"
+#             "type": ["datetime", "null"]
 #           },
 #           "start_at": {
 #             "description": "The start time of the enrollment, in ISO8601 format.",
 #             "example": "2012-04-18T23:08:51Z",
-#             "type": "datetime"
+#             "type": ["datetime", "null"]
 #           },
 #           "end_at": {
 #             "description": "The end time of the enrollment, in ISO8601 format.",
 #             "example": "2012-04-18T23:08:51Z",
-#             "type": "datetime"
+#             "type": ["datetime", "null"]
 #           },
 #           "last_activity_at": {
 #             "description": "The last activity time of the user for the enrollment, in ISO8601 format.",
 #             "example": "2012-04-18T23:08:51Z",
-#             "type": "datetime"
+#             "type": ["datetime", "null"]
 #           },
 #           "last_attended_at": {
 #             "description": "The last attended date of the user for the enrollment in a course, in ISO8601 format.",
 #             "example": "2012-04-18T23:08:51Z",
-#             "type": "datetime"
+#             "type": ["datetime", "null"]
 #           },
 #           "total_activity_time": {
 #             "description": "The total activity time of the user for the enrollment, in seconds.",
@@ -284,12 +286,12 @@
 #           "current_grading_period_title": {
 #             "description": "optional: The name of the currently active grading period, if one exists. If the course the enrollment belongs to does not have grading periods, or if no currently active grading period exists, the value will be null. (applies only to student enrollments, and only available in course endpoints)",
 #             "example": "Fall Grading Period",
-#             "type": "string"
+#             "type": ["string", "null"]
 #           },
 #           "current_grading_period_id": {
 #             "description": "optional: The id of the currently active grading period, if one exists. If the course the enrollment belongs to does not have grading periods, or if no currently active grading period exists, the value will be null. (applies only to student enrollments, and only available in course endpoints)",
 #             "example": 5,
-#             "type": "integer"
+#             "type": ["integer", "null"]
 #           },
 #           "current_period_override_grade": {
 #             "description": "The user's override grade for the current grading period.",
@@ -304,42 +306,42 @@
 #           "computed_current_score": {
 #             "description": "optional: The student's score in the course, ignoring ungraded assignments. (applies only to student enrollments, and only available in course endpoints with include[]=total_scores)",
 #             "example": 90.25,
-#             "type": "number"
+#             "type": ["number", "null"]
 #           },
 #           "computed_final_score": {
 #             "description": "optional: The student's score in the course including ungraded assignments with a score of 0. (applies only to student enrollments, and only available in course endpoints with include[]=total_scores)",
 #             "example": 80.67,
-#             "type": "number"
+#             "type": ["number", "null"]
 #           },
 #           "computed_current_grade": {
 #             "description": "optional: The letter grade equivalent of computed_current_score, if the course uses a grading scheme. (applies only to student enrollments, and only available in course endpoints with include[]=total_scores)",
 #             "example": "A-",
-#             "type": "string"
+#             "type": ["string", "null"]
 #           },
 #           "computed_final_grade": {
 #             "description": "optional: The letter grade equivalent of computed_final_score, if the course uses a grading scheme. (applies only to student enrollments, and only available in course endpoints with include[]=total_scores)",
 #             "example": "B-",
-#             "type": "string"
+#             "type": ["string", "null"]
 #           },
 #           "current_period_computed_current_score": {
 #             "description": "optional: The student's score in the course for the current grading period, ignoring ungraded assignments. If the course the enrollment belongs to does not have grading periods, or if no currently active grading period exists, the value will be null. (applies only to student enrollments, and only available in course endpoints with include[]=current_grading_period_scores)",
 #             "example": 95.80,
-#             "type": "number"
+#             "type": ["number", "null"]
 #           },
 #           "current_period_computed_final_score": {
 #             "description": "optional: The student's score in the course for the current grading period, including ungraded assignments with a score of 0. If the course the enrollment belongs to does not have grading periods, or if no currently active grading period exists, the value will be null. (applies only to student enrollments, and only available in course endpoints with include[]=current_grading_period_scores)",
 #             "example": 85.25,
-#             "type": "number"
+#             "type": ["number", "null"]
 #           },
 #           "current_period_computed_current_grade": {
 #             "description": "optional: The letter grade equivalent of current_period_computed_current_score, if available. If the course the enrollment belongs to does not have grading periods, or if no currently active grading period exists, the value will be null. (applies only to student enrollments, and only available in course endpoints with include[]=current_grading_period_scores)",
 #             "example": "A",
-#             "type": "string"
+#             "type": ["string", "null"]
 #           },
 #           "current_period_computed_final_grade": {
 #             "description": "optional: The letter grade equivalent of current_period_computed_final_score, if available. If the course the enrollment belongs to does not have grading periods, or if no currently active grading period exists, the value will be null. (applies only to student enrollments, and only available in course endpoints with include[]=current_grading_period_scores)",
 #             "example": "B",
-#             "type": "string"
+#             "type": ["string", "null"]
 #           },
 #           "current_period_unposted_current_score": {
 #             "description": "optional: The student's score in the course for the current grading period, including muted/unposted assignments. Only included if user has permission to view this score, typically teachers, TAs, and admins. If the course the enrollment belongs to does not have grading periods, or if no currently active grading period exists, the value will be null. (applies only to student enrollments, and only available in course endpoints)",
@@ -360,9 +362,34 @@
 #             "description": "optional: The letter grade equivalent of current_period_unposted_final_score, if available. Only included if user has permission to view this grade, typically teachers, TAs, and admins. If the course the enrollment belongs to does not have grading periods, or if no currently active grading period exists, the value will be null. (applies only to student enrollments, and only available in course endpoints)",
 #             "example": "B",
 #             "type": "string"
-#           }
+#           },
+#           "computed_current_letter_grade": { "type": ["string", "null"] },
+#           "multiple_grading_periods_enabled": { "type": "boolean" },
+#           "observed_user": { "type": "object" },
+#           "temporary_enrollment_display_state": { "type": "string" },
+#           "temporary_enrollment_pairing_id": { "type": "integer" },
+#           "temporary_enrollment_provider": { "type": "object" },
+#           "temporary_enrollment_source_user_id": { "type": "integer" }
 #         }
 #       }
+#
+# @model EnrollmentsAcceptResponse
+#     {
+#       "id": "EnrollmentsAcceptResponse",
+#       "properties": {
+#         "success": { "type": "boolean" }
+#       }
+#     }
+#
+# @model EnrollmentsShowTemporaryEnrollmentStatusResponse
+#     {
+#       "id": "EnrollmentsShowTemporaryEnrollmentStatusResponse",
+#       "properties": {
+#         "can_provide": { "type": "boolean" },
+#         "is_provider": { "type": "boolean" },
+#         "is_recipient": { "type": "boolean" }
+#       }
+#     }
 #
 class EnrollmentsApiController < ApplicationController
   before_action :get_course_from_section, :require_context
@@ -1027,6 +1054,7 @@ class EnrollmentsApiController < ApplicationController
   #   {
   #     "success": true
   #   }
+  # @returns EnrollmentsAcceptResponse
   def accept
     @enrollment = @context.enrollments.find(params[:id])
     return render_unauthorized_action unless @current_user && @enrollment.user == @current_user
@@ -1056,6 +1084,7 @@ class EnrollmentsApiController < ApplicationController
   #   {
   #     "success": true
   #   }
+  # @returns EnrollmentsAcceptResponse
   def reject
     @enrollment = @context.enrollments.find(params[:id])
     return render_unauthorized_action unless @current_user && @enrollment.user == @current_user
@@ -1131,6 +1160,7 @@ class EnrollmentsApiController < ApplicationController
   #   {
   #     "is_provider": false, "is_recipient": true, "can_provide": false
   #   }
+  # @returns EnrollmentsShowTemporaryEnrollmentStatusResponse
   def show_temporary_enrollment_status
     GuardRail.activate(:secondary) do
       if (user = api_find(User, params[:user_id])) && @domain_root_account&.feature_enabled?(:temporary_enrollments)

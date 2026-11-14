@@ -56,7 +56,12 @@
 #           "description": "The distance between the search query and the result. Smaller numbers indicate closer matches.",
 #           "example": "0.212",
 #           "type": "number"
-#         }
+#         },
+#         "due_date": { "type": "string" },
+#         "modules": { "type": "array", "items": { "type": "object" } },
+#         "published": { "type": "boolean" },
+#         "readable_type": { "type": "string" },
+#         "relevance": { "type": "integer" }
 #       }
 #     }
 #
@@ -83,7 +88,7 @@ class SmartSearchController < ApplicationController
   #   modules:: An array of module objects that the search result belongs to.
   #   status:: The published status for all results and the due_date for all assignments.
   #
-  # @returns [SearchResult]
+  # @returns { indexing_progress: integer, results: [SearchResult], status: string }
   def search
     return render_unauthorized_action unless @context.grants_right?(@current_user, session, :read)
     return render_unauthorized_action unless SmartSearch.smart_search_available?(@context)

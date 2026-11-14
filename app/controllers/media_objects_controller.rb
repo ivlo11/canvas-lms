@@ -40,7 +40,7 @@
 #         "media_type": {
 #           "description": "The kind of media, for example video or audio",
 #           "example": "video",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "title": {
 #           "description": "The user-entered title, the file name, or Untitled",
@@ -60,7 +60,7 @@
 #         "auto_caption_status": {
 #           "description": "The status of automatic captioning, if requested",
 #           "example": "complete",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "status": {
 #           "description": "The media service's processing status. Only included when the media object has one",
@@ -83,7 +83,7 @@
 #               "content_type": { "description": "The flavor's content type", "example": "video/mp4", "type": "string" },
 #               "containerFormat": { "description": "The flavor's container format", "example": "isom", "type": "string" },
 #               "url": { "description": "The URL to download the flavor", "example": "https://<canvas>/media_objects/m-JYmy6TLsHkxcrhgYmqa7XW1HCH3wEYc/redirect?bitrate=382", "type": "string" },
-#               "bitrate": { "description": "The flavor's bitrate", "example": "382", "type": "string" },
+#               "bitrate": { "description": "The flavor's bitrate", "example": "382", "type": ["integer", "string"] },
 #               "size": { "description": "The flavor's size", "example": "204", "type": "string" },
 #               "isOriginal": { "description": "Whether the flavor is the original upload (\"1\") or not (\"0\")", "example": "0", "type": "string" },
 #               "fileExt": { "description": "The flavor's file extension", "example": "mp4", "type": "string" },

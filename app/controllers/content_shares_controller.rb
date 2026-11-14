@@ -61,7 +61,7 @@
 #         "sender": {
 #           "description": "The user who shared the content. This field is provided only to receivers; it is not populated in the sender's list of sent content shares.",
 #           "example": {"id": 1, "display_name": "Matilda Vargas", "avatar_image_url": "http:\/\/localhost:3000\/image_url", "html_url": "http:\/\/localhost:3000\/users\/1"},
-#           "type": "object"
+#           "type": ["object", "null"]
 #         },
 #         "receivers": {
 #           "description": "An Array of users the content is shared with.  This field is provided only to senders; an empty array will be returned for the receiving users.",
@@ -84,6 +84,14 @@
 #           "example": {"id": 42},
 #           "$ref": "ContentExport"
 #         }
+#       }
+#     }
+#
+# @model ContentSharesDestroyResponse
+#     {
+#       "id": "ContentSharesDestroyResponse",
+#       "properties": {
+#         "message": { "type": "string" }
 #       }
 #     }
 #
@@ -231,6 +239,7 @@ class ContentSharesController < ApplicationController
   # @example_request
   #
   #   curl -X DELETE 'https://<canvas>/api/v1/users/self/content_shares/123'
+  # @returns ContentSharesDestroyResponse
   def destroy
     @content_share = @current_user.content_shares.find(params[:id])
     @content_share.destroy

@@ -40,17 +40,17 @@
 #         "sis_section_id": {
 #           "description": "The sis id of the section. This field is only included if the user has permission to view SIS information.",
 #           "example": "s34643",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "integration_id": {
 #           "description": "Optional: The integration ID of the section. This field is only included if the user has permission to view SIS information.",
 #           "example": "3452342345",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "sis_import_id": {
 #           "description": "The unique identifier for the SIS import if created through SIS. This field is only included if the user has permission to manage SIS information.",
 #           "example": 47,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "course_id": {
 #           "description": "The unique Canvas identifier for the course in which the section belongs",
@@ -60,24 +60,24 @@
 #         "sis_course_id": {
 #           "description": "The unique SIS identifier for the course in which the section belongs. This field is only included if the user has permission to view SIS information.",
 #           "example": 7,
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "start_at": {
 #           "description": "the start date for the section, if applicable",
 #           "example": "2012-06-01T00:00:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "end_at": {
 #           "description": "the end date for the section, if applicable",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "restrict_enrollments_to_section_dates": {
 #           "description": "Restrict user enrollments to the start and end dates of the section",
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "nonxlist_course_id": {
 #           "description": "The unique identifier of the original course of a cross-listed section",
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "total_students": {
 #           "description": "optional: the total number of active and invited students in the section",
@@ -88,7 +88,9 @@
 #           "description": "optional: A list of students that are included in the section. Returned only if include[]=students. WARNING: this collection's size is capped (if there are an extremely large number of users in the section (thousands) not all of them will be returned). If you need to capture all the users in a section with certainty or experiencing slow response consider using the paginated /api/v1/sections/<section_id>/users endpoint.",
 #           "type": "array",
 #           "items": { "$ref": "User" }
-#         }
+#         },
+#         "created_at": { "type": "string" },
+#         "permissions": { "type": "object" }
 #       }
 #     }
 #

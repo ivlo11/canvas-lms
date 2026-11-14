@@ -46,8 +46,16 @@
 #         "nickname": {
 #           "description": "the calling user's nickname for the course",
 #           "example": "Physics",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         }
+#       }
+#     }
+#
+# @model CourseNicknamesClearResponse
+#     {
+#       "id": "CourseNicknamesClearResponse",
+#       "properties": {
+#         "message": { "type": "string" }
 #       }
 #     }
 #
@@ -164,6 +172,7 @@ class CourseNicknamesController < ApplicationController
   #     -X DELETE \
   #     -H 'Authorization: Bearer <token>'
   #
+  # @returns CourseNicknamesClearResponse
   def clear
     @current_user.clear_all_preferences_for(:course_nicknames)
     if @current_user.save

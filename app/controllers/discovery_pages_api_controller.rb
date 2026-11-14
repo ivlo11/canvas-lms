@@ -50,7 +50,7 @@
 #         "authentication_provider_id": {
 #           "description": "The ID of the authentication provider",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["string", "integer"]
 #         },
 #         "label": {
 #           "description": "The display label for this provider button",
@@ -72,7 +72,7 @@ class DiscoveryPagesApiController < ApplicationController
   # @API Get Discovery Page
   # Get the discovery page configuration for the domain root account.
   #
-  # @returns DiscoveryPage
+  # @returns { discovery_page: DiscoveryPage }
   #
   # @example_request
   #   curl 'https://<canvas>/api/v1/discovery_pages' \
@@ -127,7 +127,7 @@ class DiscoveryPagesApiController < ApplicationController
   # @argument discovery_page[active] [Boolean]
   #   Whether the discovery page is enabled. Defaults to false if not provided.
   #
-  # @returns DiscoveryPage
+  # @returns { discovery_page: DiscoveryPage }
   #
   # @example_request
   #   curl -X PUT 'https://<canvas>/api/v1/discovery_pages' \

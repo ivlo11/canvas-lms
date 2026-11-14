@@ -47,7 +47,7 @@ module Lti
   #         "body": {
   #           "description": "The content of the submission, if it was submitted directly in a text field.",
   #           "example": "There are three factors too...",
-  #           "type": "string"
+  #           "type": ["string", "null"]
   #         },
   #         "submission_type": {
   #           "description": "The types of submission ex: ('online_text_entry'|'online_url'|'online_upload'|'media_recording'|'student_annotation')",
@@ -70,17 +70,17 @@ module Lti
   #         },
   #         "url": {
   #           "description": "The URL of the submission (for 'online_url' submissions).",
-  #           "type": "string"
+  #           "type": ["string", "null"]
   #         },
   #         "user_id": {
   #           "description": "The id of the user who created the submission",
   #           "example": 134,
-  #           "type": "integer"
+  #           "type": ["string", "integer"]
   #         },
   #         "eula_agreement_timestamp": {
   #           "description": "UTC timestamp showing when the user agreed to the EULA (if given by the tool provider)",
   #           "example": "1508250487578",
-  #           "type": "string"
+  #           "type": ["integer", "string"]
   #         },
   #         "workflow_state": {
   #           "description": "The current state of the submission",
@@ -97,8 +97,10 @@ module Lti
   #         },
   #         "attachments": {
   #           "description": "Files that are attached to the submission",
-  #           "$ref": "File"
-  #         }
+  #           "type": "array",
+  #           "items": { "$ref": "File" }
+  #         },
+  #         "id": { "type": "integer" }
   #       }
   #     }
   #
@@ -109,7 +111,7 @@ module Lti
   #       "properties": {
   #         "size": {
   #           "example": 4,
-  #           "type": "integer"
+  #           "type": ["integer", "null"]
   #         },
   #         "content-type": {
   #           "example": "text/plain",
@@ -134,7 +136,36 @@ module Lti
   #         "updated_at": {
   #           "example": "2012-07-06T14:58:50Z",
   #           "type": "datetime"
-  #         }
+  #         },
+  #         "category": { "type": "string" },
+  #         "filename": { "type": "string" },
+  #         "folder_id": { "type": ["integer", "null"] },
+  #         "hidden": { "type": "boolean" },
+  #         "hidden_for_user": { "type": "boolean" },
+  #         "lock_at": { "type": ["string", "null"] },
+  #         "locked": { "type": "boolean" },
+  #         "locked_for_user": { "type": "boolean" },
+  #         "media_entry_id": { "type": ["string", "null"] },
+  #         "mime_class": { "type": "string" },
+  #         "modified_at": { "type": "string" },
+  #         "thumbnail_url": { "type": ["string", "null"] },
+  #         "unlock_at": { "type": ["string", "null"] },
+  #         "upload_status": { "type": "string" },
+  #         "instfs_uuid": {},
+  #         "usage_rights": { "type": ["object", "null"] },
+  #         "user": { "type": "object" },
+  #         "uuid": { "type": "string" },
+  #         "visibility_level": { "type": "string" },
+  #         "canvadoc_session_url": { "type": ["string", "null"] },
+  #         "is_master_course_child_content": { "type": "boolean" },
+  #         "lock_explanation": { "type": "string" },
+  #         "lock_info": { "type": "object" },
+  #         "master_course_restrictions": { "type": "object" },
+  #         "preview_url": { "type": "string" },
+  #         "restricted_by_master_course": { "type": "boolean" },
+  #         "view": { "type": "boolean" },
+  #         "attachment": { "type": "object" },
+  #         "ok": { "type": "boolean" }
   #       }
   #     }
   class SubmissionsApiController < ApplicationController
@@ -172,6 +203,7 @@ module Lti
     # @API Get a single submission
     #
     # Get a single submission, based on submission id.
+    # @returns Lti::Submission
     def show
       render json: api_json(submission)
     end
@@ -179,6 +211,7 @@ module Lti
     # @API Get the history of a single submission
     #
     # Get a list of all attempts made for a submission, based on submission id.
+    # @returns [Lti::Submission]
     def history
       submissions = Submission.bulk_load_versioned_attachments(submission.submission_history)
       UserPastLtiId.manual_preload_past_lti_ids(submissions, submission.assignment.context)

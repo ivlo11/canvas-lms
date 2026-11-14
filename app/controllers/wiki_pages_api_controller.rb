@@ -23,6 +23,15 @@
 # Pages are rich content associated with Courses and Groups in Canvas.
 # The Pages API allows you to create, retrieve, update, and delete pages.
 #
+# __Note on page identifiers__
+#
+# Most Pages API endpoints accept identification of the Page as either a URL
+# or an ID. In ambiguous cases, the URL takes precedence.
+#
+# For example, if you have a page whose ID is 7 and another whose ID is 8 and whose URL is "7",
+# the endpoint `/api/v1/courses/:course_id/pages/7` will refer to the latter (ID 8).
+# To explicitly request by ID, you can use the form `/api/v1/courses/:course_id/pages/page_id:7`.
+#
 # @model Page
 #     {
 #       "id": "Page",
@@ -70,7 +79,7 @@
 #         "body": {
 #           "description": "the page content, in HTML (present when requesting a single page; optionally included when listing pages)",
 #           "example": "<p>Page Content</p>",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "published": {
 #           "description": "whether the page is published (true) or draft state (false).",
@@ -80,7 +89,7 @@
 #         "publish_at": {
 #           "description": "scheduled publication date for this page",
 #           "example": "2022-09-01T00:00:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "front_page": {
 #           "description": "whether this page is the front page for the wiki",
@@ -116,7 +125,12 @@
 #           "description": "The block editor attributes for this page. (optionally included, and only if this is a block editor created page)",
 #           "example": { "id": 278, "version": "0.2", "blocks": "{...block json here...}"},
 #           "type": "object"
-#          }
+#          },
+#         "html_url": { "type": "string" },
+#         "todo_date": { "type": ["string", "null"] },
+#         "assignment": { "type": "object" },
+#         "estimated_duration": { "type": "object" },
+#         "block_editor_data": { "type": "object" }
 #       }
 #     }
 #
@@ -157,19 +171,10 @@
 #         "body": {
 #           "description": "the historic page contents",
 #           "example": "<p>Old Page Content</p>",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         }
 #       }
 #     }
-#
-# __Note on page identifiers__
-#
-# Most Pages API endpoints accept identification of the Page as either a URL
-# or an ID. In ambiguous cases, the URL takes precedence.
-#
-# For example, if you have a page whose ID is 7 and another whose ID is 8 and whose URL is "7",
-# the endpoint `/api/v1/courses/:course_id/pages/7` will refer to the latter (ID 8).
-# To explicitly request by ID, you can use the form `/api/v1/courses/:course_id/pages/page_id:7`.
 #
 class WikiPagesApiController < ApplicationController
   include HorizonMode

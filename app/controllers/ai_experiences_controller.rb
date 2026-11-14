@@ -40,7 +40,7 @@
 #         "description": {
 #           "description": "The description of the AI experience",
 #           "example": "Practice customer service skills in a simulated environment",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "facts": {
 #           "description": "The AI facts for the experience (optional)",
@@ -66,10 +66,41 @@
 #           "description": "The course this experience belongs to",
 #           "example": 1578941,
 #           "type": "integer"
-#         }
+#         },
+#         "can_manage": { "type": "boolean" },
+#         "can_unpublish": { "type": "boolean" },
+#         "context_files": { "type": "array", "items": { "type": "object" } },
+#         "context_index_status": { "type": "string" },
+#         "context_ready": { "type": "boolean" },
+#         "created_at": { "type": "string" },
+#         "updated_at": { "type": "string" }
 #       }
 #     }
-
+#
+# @model AiConversation
+#     {
+#       "id": "AiConversation",
+#       "properties": {
+#         "conversations": { "type": "array", "items": { "type": "object" } }
+#       }
+#     }
+#
+# @model AiExperiencesAiConversationShowResponse
+#     {
+#       "id": "AiExperiencesAiConversationShowResponse",
+#       "properties": {
+#         "created_at": { "type": "string" },
+#         "id": { "type": "integer" },
+#         "llm_conversation_id": { "type": "string" },
+#         "messages": { "type": "array", "items": { "type": "object" } },
+#         "progress": { "type": "object" },
+#         "student": { "type": "object" },
+#         "updated_at": { "type": "string" },
+#         "user_id": { "type": "integer" },
+#         "workflow_state": { "type": "string" }
+#       }
+#     }
+#
 class AiExperiencesController < ApplicationController
   include Api::V1::AiExperience
 
@@ -87,7 +118,7 @@ class AiExperiencesController < ApplicationController
   #   Only return experiences with the specified workflow state.
   #   Allowed values: published, unpublished, deleted
   #
-  # @returns [AiExperience]
+  # @returns { can_manage: boolean, experiences: [AiExperience] }
   def index
     permissions = %i[manage_assignments_add manage_assignments_edit manage_assignments_delete]
     can_manage = @context.grants_any_right?(@current_user, *permissions)
@@ -288,7 +319,7 @@ class AiExperiencesController < ApplicationController
   # Retrieve the latest AI conversation for each student in the course for this AI experience.
   # Only available to teachers and course managers.
   #
-  # @returns [AiConversation]
+  # @returns AiConversation
   def ai_conversations_index
     # Ensure user has manage rights
     permissions = %i[manage_assignments_add manage_assignments_edit manage_assignments_delete]
@@ -363,7 +394,7 @@ class AiExperiencesController < ApplicationController
   # Retrieve a specific student's AI conversation with full message history.
   # Only available to teachers and course managers.
   #
-  # @returns AiConversation
+  # @returns AiExperiencesAiConversationShowResponse
   def ai_conversation_show
     # Ensure user has manage rights
     permissions = %i[manage_assignments_add manage_assignments_edit manage_assignments_delete]

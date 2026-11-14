@@ -69,6 +69,34 @@
 #         }
 #       }
 #     }
+# @model ProvisionalGradesBulkSelectResponse
+#     {
+#       "id": "ProvisionalGradesBulkSelectResponse",
+#       "properties": {
+#         "anonymous_id": { "type": "string" },
+#         "assignment_id": { "type": "integer" },
+#         "selected_provisional_grade_id": { "type": "integer" },
+#         "student_id": { "type": "integer" }
+#       }
+#     }
+#
+# @model ProvisionalGradesStatusResponse
+#     {
+#       "id": "ProvisionalGradesStatusResponse",
+#       "properties": {
+#         "needs_provisional_grade": { "type": "boolean" },
+#         "provisional_grades": { "type": "array", "items": { "type": "object" } }
+#       }
+#     }
+#
+# @model ProvisionalGradesPublishResponse
+#     {
+#       "id": "ProvisionalGradesPublishResponse",
+#       "properties": {
+#         "message": { "type": "string" }
+#       }
+#     }
+#
 class ProvisionalGradesController < ProvisionalGradesBaseController
   include Api::V1::Submission
 
@@ -84,6 +112,7 @@ class ProvisionalGradesController < ProvisionalGradesBaseController
   #     "selected_provisional_grade_id": 53669
   #   }]
   #
+  # @returns [ProvisionalGradesBulkSelectResponse]
   def bulk_select
     render_unauthorized_action and return unless @assignment.permits_moderation?(@current_user)
 
@@ -162,6 +191,7 @@ class ProvisionalGradesController < ProvisionalGradesBaseController
   #
   #       { "needs_provisional_grade": false }
   #
+  # @returns ProvisionalGradesStatusResponse
   def status
     @student = @assignment.submissions.find_by!(user_id: params.fetch(:student_id)).user
     super
@@ -179,6 +209,7 @@ class ProvisionalGradesController < ProvisionalGradesBaseController
   #     "selected_provisional_grade_id": 53669
   #   }
   #
+  # @returns ProvisionalGradesBulkSelectResponse
   def select
     render_unauthorized_action and return unless @assignment.permits_moderation?(@current_user)
 
@@ -220,6 +251,7 @@ class ProvisionalGradesController < ProvisionalGradesBaseController
   #   curl 'https://<canvas>/api/v1/courses/1/assignments/2/provisional_grades/publish' \
   #        -X POST
   #
+  # @returns ProvisionalGradesPublishResponse
   def publish
     can_manage_grades = @context.grants_right?(@current_user, :manage_grades)
     unless can_manage_grades && @assignment.permits_moderation?(@current_user)

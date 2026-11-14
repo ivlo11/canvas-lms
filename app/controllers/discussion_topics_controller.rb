@@ -41,7 +41,27 @@
 #         "display_name": {
 #           "example": "content.txt",
 #           "type": "string"
-#         }
+#         },
+#         "category": { "type": "string" },
+#         "created_at": { "type": "string" },
+#         "folder_id": { "type": "integer" },
+#         "hidden": { "type": "boolean" },
+#         "hidden_for_user": { "type": "boolean" },
+#         "id": { "type": "integer" },
+#         "lock_at": {},
+#         "locked": { "type": "boolean" },
+#         "locked_for_user": { "type": "boolean" },
+#         "media_entry_id": {},
+#         "mime_class": { "type": "string" },
+#         "modified_at": { "type": "string" },
+#         "size": { "type": "integer" },
+#         "thumbnail_url": {},
+#         "unlock_at": {},
+#         "updated_at": { "type": "string" },
+#         "upload_status": { "type": "string" },
+#         "uuid": { "type": "string" },
+#         "visibility_level": { "type": "string" },
+#         "usage_rights": { "type": "object" }
 #       }
 #     }
 #
@@ -63,7 +83,7 @@
 #         "message": {
 #           "description": "The HTML content of the message body.",
 #           "example": "<p>content here</p>",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "html_url": {
 #           "description": "The URL to the discussion topic in canvas.",
@@ -78,12 +98,12 @@
 #         "last_reply_at": {
 #           "description": "The datetime for when the last reply was in the topic.",
 #           "example": "2037-07-28T19:38:31Z",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "require_initial_post": {
 #           "description": "If true then a user may not respond to other replies until that user has made an initial reply. Defaults to false.",
 #           "example": false,
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "user_can_see_posts": {
 #           "description": "Whether or not posts in this topic are visible to the user.",
@@ -131,11 +151,11 @@
 #         },
 #         "assignment_id": {
 #           "description": "The unique identifier of the assignment if the topic is for grading, otherwise null.",
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "delayed_post_at": {
 #           "description": "The datetime to publish the topic (if not right away).",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "published": {
 #           "description": "Whether this discussion topic is published (true) or draft state (false)",
@@ -144,7 +164,7 @@
 #         },
 #         "lock_at": {
 #           "description": "The datetime to lock the topic (if ever).",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "locked": {
 #           "description": "Whether or not the discussion is 'closed for comments'.",
@@ -173,7 +193,7 @@
 #         "user_name": {
 #           "description": "The username of the topic creator.",
 #           "example": "User Name",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "topic_children": {
 #           "description": "DEPRECATED An array of topic_ids for the group discussions the user is a part of.",
@@ -189,12 +209,12 @@
 #         },
 #         "root_topic_id": {
 #           "description": "If the topic is for grading and a group assignment this will point to the original topic in the course.",
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "podcast_url": {
 #           "description": "If the topic is a podcast topic this is the feed url for the current user.",
 #           "example": "/feeds/topics/1/enrollment_1XAcepje4u228rt4mi7Z1oFbRpn3RAkTzuXIGOPe.rss",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "discussion_type": {
 #           "description": "The type of discussion. Values are 'side_comment' or 'not_threaded', for discussions that only allow one level of nested comments, and 'threaded' for fully threaded discussions.",
@@ -210,7 +230,7 @@
 #         },
 #         "group_category_id": {
 #           "description": "The unique identifier of the group category if the topic is a group discussion, otherwise null.",
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "attachments": {
 #           "description": "Array of file attachments.",
@@ -264,7 +284,64 @@
 #           "description": "Can users decide their preferred thread expand setting.",
 #           "example": true,
 #           "type": "boolean"
-#         }
+#         },
+#         "anonymous_state": { "type": ["string", "null"] },
+#         "author": { "type": ["object", "null"] },
+#         "can_group": { "type": "boolean" },
+#         "can_lock": { "type": "boolean" },
+#         "can_unpublish": { "type": "boolean" },
+#         "comments_disabled": { "type": "boolean" },
+#         "context_code": { "type": "string" },
+#         "created_at": { "type": "string" },
+#         "expanded": { "type": "boolean" },
+#         "expanded_locked": { "type": "boolean" },
+#         "is_announcement": { "type": "boolean" },
+#         "is_section_specific": { "type": "boolean" },
+#         "podcast_has_student_posts": { "type": "boolean" },
+#         "position": { "type": ["integer", "null"] },
+#         "sections": { "type": "array", "items": { "type": "object" } },
+#         "summary_enabled": { "type": "boolean" },
+#         "todo_date": { "type": ["string", "null"] },
+#         "ungraded_discussion_overrides": { "type": ["array", "null"], "items": { "type": "object" } },
+#         "url": { "type": "string" },
+#         "new_positions": { "type": "object" },
+#         "assignment": { "type": "object" },
+#         "in_paced_course": { "type": "boolean" },
+#         "user_count": { "type": "integer" },
+#         "is_checkpointed": { "type": "boolean" },
+#         "reply_to_entry_required_count": { "type": "integer" },
+#         "attachment_id": { "type": "integer" },
+#         "cloned_item_id": { "type": ["integer", "null"] },
+#         "context_id": { "type": "integer" },
+#         "context_type": { "type": "string" },
+#         "could_be_locked": { "type": "boolean" },
+#         "deleted_at": { "type": "string" },
+#         "edited_at": {},
+#         "editor_id": { "type": ["integer", "null"] },
+#         "external_feed_id": { "type": ["integer", "null"] },
+#         "is_anonymous_author": { "type": "boolean" },
+#         "last_assignment_id": { "type": ["integer", "null"] },
+#         "migration_id": { "type": ["string", "null"] },
+#         "old_assignment_id": { "type": ["integer", "null"] },
+#         "only_visible_to_overrides": { "type": "boolean" },
+#         "ordered_pinned_posts": { "type": "array" },
+#         "podcast_enabled": { "type": "boolean" },
+#         "root_account_id": { "type": "integer" },
+#         "subtopics_refreshed_at": { "type": ["string", "null"] },
+#         "unlock_at": {},
+#         "updated_at": { "type": "string" },
+#         "user": { "type": "object" },
+#         "user_id": { "type": "integer" },
+#         "workflow_state": { "type": "string" }
+#       }
+#     }
+#
+# @model DiscussionTopicsReorderResponse
+#     {
+#       "id": "DiscussionTopicsReorderResponse",
+#       "properties": {
+#         "order": { "type": "array", "items": { "type": "string" } },
+#         "reorder": { "type": "boolean" }
 #       }
 #     }
 #
@@ -1122,6 +1199,7 @@ class DiscussionTopicsController < ApplicationController
   #         -F assignment[points_possible]=15 \
   #         -H 'Authorization: Bearer <token>'
   #
+  # @returns DiscussionTopic
   def create
     page_has_instui_topnav
     process_discussion_topic(is_new: true)
@@ -1223,6 +1301,7 @@ class DiscussionTopicsController < ApplicationController
   #         -F position_after=1234 \
   #         -H 'Authorization: Bearer <token>'
   #
+  # @returns DiscussionTopic
   def update
     process_discussion_topic(is_new: false)
   end
@@ -1235,6 +1314,7 @@ class DiscussionTopicsController < ApplicationController
   # @example_request
   #     curl -X DELETE https://<canvas>/api/v1/courses/<course_id>/discussion_topics/<topic_id> \
   #          -H 'Authorization: Bearer <token>'
+  # @returns { discussion_topic: DiscussionTopic }
   def destroy
     @topic = @context.all_discussion_topics.find(params[:id] || params[:topic_id])
     if authorized_action(@topic, @current_user, :delete)
@@ -1277,6 +1357,7 @@ class DiscussionTopicsController < ApplicationController
   #   The ids of the pinned discussion topics in the desired order.
   #   (For example, "order=104,102,103".)
   #
+  # @returns DiscussionTopicsReorderResponse
   def reorder
     if authorized_action(@context.discussion_topics.temp_record, @current_user, :update)
       order = Api.value_to_array(params[:order])

@@ -46,7 +46,8 @@ module Polling
   #           "example": "2013-11-07T13:16:18Z",
   #           "type": "string",
   #           "format": "date-time"
-  #         }
+  #         },
+  #         "poll_session_id": { "type": "string" }
   #       }
   #    }
   #
@@ -65,6 +66,7 @@ module Polling
     #     "poll_submissions": [PollSubmission]
     #   }
     #
+    # @returns { poll_submissions: [PollSubmission], meta: object }
     def show
       @poll_submission = @poll_session.poll_submissions.find(params[:id])
       if authorized_action(@poll_submission, @current_user, :read)
@@ -84,6 +86,7 @@ module Polling
     #     "poll_submissions": [PollSubmission]
     #   }
     #
+    # @returns { poll_submissions: [PollSubmission], meta: object }
     def create
       poll_submission_params = params[:poll_submissions][0]
       @poll_submission = @poll_session.poll_submissions.new

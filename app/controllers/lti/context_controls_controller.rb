@@ -36,12 +36,12 @@ module Lti
   #         "course_id": {
   #           "description": "the Canvas ID of the Course that owns this. one of this or account_id will always be present",
   #           "example": 2,
-  #           "type": "integer"
+  #           "type": ["integer", "null"]
   #         },
   #         "account_id": {
   #           "description": "the Canvas ID of the Account that owns this. one of this or course_id will always be present",
   #           "example": 2,
-  #           "type": "integer"
+  #           "type": ["integer", "null"]
   #         },
   #         "deployment_id": {
   #           "description": "the Canvas ID of the ContextExternalTool that owns this, representing an LTI deployment",
@@ -110,15 +110,16 @@ module Lti
   #         "created_by": {
   #           "description": "The user that created this object. Not always present.",
   #           "example": { "type": "User" },
-  #           "type": "User",
+  #           "type": ["User", "null"],
   #           "$ref": "User"
   #         },
   #         "updated_by": {
   #           "description": "The user that last updated this object. Not always present.",
   #           "example": { "type": "User" },
-  #           "type": "User",
+  #           "type": ["User", "null"],
   #           "$ref": "User"
-  #         }
+  #         },
+  #         "registration_id": { "type": "integer" }
   #     }
   #   }
   #

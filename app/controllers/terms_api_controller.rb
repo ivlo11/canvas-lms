@@ -38,12 +38,12 @@
 #         "sis_term_id": {
 #           "description": "The SIS id of the term. Only included if the user has permission to view SIS information.",
 #           "example": "Sp2014",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "sis_import_id": {
 #           "description": "the unique identifier for the SIS import. This field is only included if the user has permission to manage SIS information.",
 #           "example": 34,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "name": {
 #           "description": "The name of the term.",
@@ -53,12 +53,12 @@
 #         "start_at": {
 #           "description": "The datetime of the start of the term.",
 #           "example": "2014-01-06T08:00:00-05:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "end_at": {
 #           "description": "The datetime of the end of the term.",
 #           "example": "2014-05-16T05:00:00-04:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #           "workflow_state": {
 #           "description": "The state of the term. Can be 'active' or 'deleted'.",
@@ -74,7 +74,9 @@
 #           "description": "The number of courses in the term (available via include)",
 #           "example": "80",
 #           "type": "integer"
-#         }
+#         },
+#         "created_at": { "type": "string" },
+#         "grading_period_group_id": { "type": ["integer", "null"] }
 #       }
 #     }
 #

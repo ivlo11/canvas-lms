@@ -36,7 +36,7 @@
 #         "subject": {
 #           "description": "the subject of the conversation.",
 #           "example": 2,
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "workflow_state": {
 #           "description": "The current state of the conversation (read, unread or archived).",
@@ -46,7 +46,7 @@
 #         "last_message": {
 #           "description": "A <=100 character preview from the most recent message.",
 #           "example": "sure thing, here's the file",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "start_at": {
 #           "description": "the date and time at which the last message was sent.",
@@ -89,7 +89,7 @@
 #         },
 #         "audience_contexts": {
 #           "description": "Most relevant shared contexts (courses and groups) between current user and other participants. If there is only one participant, it will also include that user's enrollment(s)/ membership type(s) in each course/group.",
-#           "type": "array",
+#           "type": ["object", "array"],
 #           "items": {
 #             "type": "string"
 #           }
@@ -112,8 +112,15 @@
 #         "context_name": {
 #           "description": "Name of the course or group in which the conversation is occurring.",
 #           "example": "Canvas 101",
-#           "type": "string"
-#         }
+#           "type": ["string", "null"]
+#         },
+#         "context_code": { "type": ["string", "null"] },
+#         "last_authored_message": { "type": ["string", "null"] },
+#         "last_authored_message_at": { "type": ["string", "null"] },
+#         "last_message_at": { "type": ["string", "null"] },
+#         "messages": { "type": "array", "items": { "type": "object" } },
+#         "cannot_reply": { "type": "boolean" },
+#         "submissions": { "type": "array" }
 #       }
 #     }
 #
@@ -147,7 +154,10 @@
 #           "description": "The Canvas UUID for the participant.",
 #           "example": "W9GQIcdoDTqwX8mxIunDQQVL6WZTaGmpa5xovmCB",
 #           "type": "string"
-#         }
+#         },
+#         "pronouns": {},
+#         "common_courses": { "type": "object" },
+#         "common_groups": { "type": "object" }
 #       }
 #     }
 #
@@ -187,6 +197,14 @@
 #           "type": "array",
 #           "items": { "type": "string" }
 #         }
+#       }
+#     }
+#
+# @model ConversationsUnreadCountResponse
+#     {
+#       "id": "ConversationsUnreadCountResponse",
+#       "properties": {
+#         "unread_count": { "type": "string" }
 #       }
 #     }
 #
@@ -442,6 +460,7 @@ class ConversationsController < ApplicationController
   #
   # @argument include[] [Optional, String, "uuid"]
   #   "uuid":: Optionally include an "uuid" key for each user participating in the conversation
+  # @returns [Conversation]
   def create
     return render_error("recipients", "blank") if params[:recipients].blank?
     return render_error("recipients", "invalid") if @recipients.blank?
@@ -700,6 +719,7 @@ class ConversationsController < ApplicationController
   #       ],
   #     "submissions": []
   #   }
+  # @returns Conversation
   def show
     unless request.xhr? || params[:format] == "json"
       scope = if @conversation.archived?
@@ -774,6 +794,7 @@ class ConversationsController < ApplicationController
   #     "avatar_url": "https://canvas.instructure.com/images/messages/avatar-50.png",
   #     "participants": [{"id": 1, "name": "Joe", "full_name": "Joe TA"}]
   #   }
+  # @returns Conversation
   def update
     prev_conversation_state = @conversation.deep_dup
     if @conversation.update(params.require(:conversation).permit(*API_ALLOWED_FIELDS))
@@ -814,6 +835,7 @@ class ConversationsController < ApplicationController
   #     "starred": false,
   #     "properties": []
   #   }
+  # @returns Conversation
   def destroy
     @conversation.remove_messages(:all)
     render json: conversation_json(@conversation, @current_user, session, visible: false, include_participant_uuid: include_participant_uuid?)
@@ -930,6 +952,7 @@ class ConversationsController < ApplicationController
   #       ]
   #   }
   #
+  # @returns Conversation
   def add_recipients
     if @recipients.present?
       if @conversation.conversation.can_add_participants?(@recipients)
@@ -1062,6 +1085,7 @@ class ConversationsController < ApplicationController
   #     "starred": null,
   #     "properties": ["attachments"]
   #   }
+  # @returns Conversation
   def remove_messages
     if params[:remove]
       @conversation.remove_messages(*@conversation.messages.where(id: params[:remove]).to_a)
@@ -1120,6 +1144,7 @@ class ConversationsController < ApplicationController
   #
   # @example_response
   #   {'unread_count': '7'}
+  # @returns ConversationsUnreadCountResponse
   def unread_count
     # the reasons for this being a string instead of an integer are historical,
     # but for backwards API compatibility we need to leave it a string.

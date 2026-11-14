@@ -38,7 +38,7 @@
 #         "name": {
 #           "description": "The name of the ePortfolio",
 #           "example": "My Academic Journey",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "public": {
 #           "description": "Whether or not the ePortfolio is visible without authentication",
@@ -63,14 +63,12 @@
 #         "deleted_at": {
 #           "description": "The timestamp when the ePortfolio was deleted, or else null",
 #           "example": "2021-09-20T18:59:37Z",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "spam_status": {
-#           "description": "A flag indicating whether the ePortfolio has been
-#           flagged or moderated as spam. One of 'flagged_as_possible_spam',
-#           'marked_as_safe', 'marked_as_spam', or null",
+#           "description": "A flag indicating whether the ePortfolio has been flagged or moderated as spam. One of 'flagged_as_possible_spam', 'marked_as_safe', 'marked_as_spam', or null",
 #           "example": null,
-#           "type": "string"
+#           "type": ["string", "null"]
 #         }
 #       }
 #     }
@@ -103,7 +101,7 @@
 #         "content": {
 #           "description": "The user entered content of the entry",
 #           "example": "A long time ago...",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "created_at": {
 #           "description": "The creation timestamp for the ePortfolio",
@@ -178,6 +176,8 @@ class EportfoliosApiController < ApplicationController
   #
   # Get details for the pages of an ePortfolio
   #
+  # @returns [ePortfolioPage]
+  # @returns [ePortfolioPage]
   # @returns [ePortfolioPage]
   def pages
     portfolio = Eportfolio.find(params[:eportfolio_id])

@@ -22,7 +22,7 @@ module ApiDocsAudit
   # Compares documentation with recorded responses, traces and column types, and
   # returns one finding per action and field. Findings hold names and types only.
   class Comparison
-    Finding = Struct.new(:action, :kind, :apply, :evidence, :model, :field, :documented, :observed, :roles, :trace_agrees, :nearest_model, :undocumented) do
+    Finding = Struct.new(:action, :kind, :apply, :evidence, :model, :field, :documented, :observed, :roles, :trace_agrees, :nearest_model, :undocumented, :items, :column_type, :fields) do
       def to_h
         super.compact
       end
@@ -51,6 +51,8 @@ module ApiDocsAudit
     }.freeze
     FIT_THRESHOLD = 0.5
     MIN_FIT_KEYS = 2
+    # Keys most models have, which say nothing about which model a response is
+    GENERIC_KEYS = %w[id created_at updated_at workflow_state user_id course_id account_id root_account_id context_id context_type progress message type url name title].freeze
 
     attr_reader :findings
 
@@ -184,7 +186,20 @@ module ApiDocsAudit
       kind = fit ? "missing_returns_model_fits" : "missing_returns_no_model"
       apply = (fit && agrees) ? "auto" : "review"
       nearest, undocumented = fit ? nil : nearest_model(keys, fields)
-      add(action, kind, apply, "response", model: fit, documented: action.response.text, observed: list ? "list" : "object", trace_agrees: agrees, roles: roles_of(records), nearest_model: nearest, undocumented:)
+      prefix = list ? "[]." : ""
+      shapes = fit ? nil : field_shapes(fields, keys, prefix)
+      add(action, kind, apply, "response", model: fit, documented: action.response.text, observed: list ? "list" : "object", trace_agrees: agrees, roles: roles_of(records), nearest_model: nearest, undocumented:, fields: shapes)
+    end
+
+    # The types of each top-level key, and of its items when it is a list, so a
+    # reviewer can accept a new model as seen
+    def field_shapes(fields, keys, prefix)
+      keys.sort.to_h do |key|
+        shape = { types: fields["#{prefix}#{key}"] }
+        items = fields.fetch("#{prefix}#{key}[]", nil)
+        shape[:items] = items if items
+        [key, shape]
+      end
     end
 
     # What a reviewer needs when no model fits: the model most of the keys belong
@@ -199,9 +214,11 @@ module ApiDocsAudit
 
       name, shared = @docs.definitions.keys.filter_map do |candidate|
         properties = @docs.model_properties(candidate)
-        [candidate, (keys & properties.keys).size] if properties&.any?
-      end.max_by(&:last)
-      return nil unless name && shared >= keys.size * FIT_THRESHOLD
+        [candidate, keys & properties.keys] if properties&.any?
+      end.max_by { |_, common| common.size }
+      return nil unless name && shared.size >= keys.size * FIT_THRESHOLD
+      # Sharing only generic keys, or a small part of the model, isn't a match
+      return nil if (shared - GENERIC_KEYS).size < MIN_FIT_KEYS || shared.size < @docs.model_properties(name).size * FIT_THRESHOLD
 
       [name, keys - @docs.model_properties(name).keys]
     end
@@ -224,24 +241,28 @@ module ApiDocsAudit
     def compare_fields(action, schema, records)
       roles = roles_of(records)
       trace = @traces[action.key] || {}
-      merged_fields(records).sort.each do |path, types|
-        compare_path(action, schema, path, types, roles, trace)
+      typed = merged_fields(records)
+      typed.sort.each do |path, types|
+        compare_path(action, schema, path, types, roles, trace, typed.fetch("#{path}[]", nil))
       end
       # String-ID responses still prove a key exists
       merged_fields(records, types: false).each_key { |path| note_seen(schema, path) }
       report_new_fields(action, schema, records, roles, trace)
     end
 
-    def compare_path(action, schema, path, types, roles, trace)
+    def compare_path(action, schema, path, types, roles, trace, items)
       node = descend(schema, tokens(path))
       return unless node.is_a?(Hash) && node[:schema]
 
-      compare_types(action, node, types, roles, trace)
+      # Types seen at a list's items are about the items, not the list
+      node = node.merge(items_of: true) if tokens(path).last == "[]"
+      compare_types(action, node, types, roles, trace, items)
     end
 
     def report_new_fields(action, schema, records, roles, trace)
       reported = []
-      merged_fields(records, types: false).keys.sort.each do |path|
+      seen = merged_fields(records, types: false)
+      seen.keys.sort.each do |path|
         next if reported.any? { |prefix| path.start_with?("#{prefix}.", "#{prefix}[") }
 
         node = descend(schema, tokens(path))
@@ -249,11 +270,14 @@ module ApiDocsAudit
 
         reported << path
         field = (node[:path] + [node[:new_field]]).join(".")
-        add(action, "new_field", "review", "response", model: node[:model], field:, observed: merged_fields(records, types: false)[path], roles:, trace_agrees: trace[:keys].to_h.key?(node[:new_field]))
+        observed = seen[path]
+        items = seen.fetch("#{path}[]", nil) if observed.include?("array")
+        column_type = @columns&.type_for(node[:model], field) if node[:model] && (observed - ["null"]).empty?
+        add(action, "new_field", "review", "response", model: node[:model], field:, observed:, roles:, trace_agrees: trace[:keys].to_h.key?(node[:new_field]), items:, column_type:)
       end
     end
 
-    def compare_types(action, node, types, roles, _trace)
+    def compare_types(action, node, types, roles, _trace, items = nil)
       documented = documented_types(node[:schema])
       return if documented.empty?
 
@@ -272,7 +296,8 @@ module ApiDocsAudit
         add(action, "integer_should_be_number", "auto", "response", model: node[:model], field:, documented: documented.join("|"), observed: types, roles:)
       else
         agrees = trace_type_agrees?(node[:model], node[:path].last, conflicts)
-        add(action, "type_conflict", "review", "response", model: node[:model], field:, documented: documented.join("|"), observed: types, roles:, trace_agrees: agrees)
+        field = "#{field}[]" if node[:items_of]
+        add(action, "type_conflict", "review", "response", model: node[:model], field:, documented: documented.join("|"), observed: types, roles:, trace_agrees: agrees, items: (items if types.include?("array")))
       end
     end
 
@@ -430,8 +455,8 @@ module ApiDocsAudit
       records.filter_map(&:role).uniq.sort
     end
 
-    def add(action, kind, apply, evidence, model: nil, field: nil, documented: nil, observed: nil, roles: nil, trace_agrees: nil, nearest_model: nil, undocumented: nil)
-      @findings << Finding.new(action.key, kind, apply, evidence, model, field, documented, observed, roles, trace_agrees, nearest_model, undocumented)
+    def add(action, kind, apply, evidence, model: nil, field: nil, documented: nil, observed: nil, roles: nil, trace_agrees: nil, nearest_model: nil, undocumented: nil, items: nil, column_type: nil, fields: nil)
+      @findings << Finding.new(action.key, kind, apply, evidence, model, field, documented, observed, roles, trace_agrees, nearest_model, undocumented, items, column_type, fields)
     end
   end
 end

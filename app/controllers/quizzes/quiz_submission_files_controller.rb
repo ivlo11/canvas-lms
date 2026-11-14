@@ -19,6 +19,14 @@
 #
 
 # @API Quiz Submission Files
+# @model QuizzesQuizSubmissionFilesCreateResponse
+#     {
+#       "id": "QuizzesQuizSubmissionFilesCreateResponse",
+#       "properties": {
+#         "attachments": { "type": "array", "items": { "type": "object" } }
+#       }
+#     }
+#
 class Quizzes::QuizSubmissionFilesController < ApplicationController
   include Api::V1::Submission
 
@@ -56,6 +64,7 @@ class Quizzes::QuizSubmissionFilesController < ApplicationController
   #       }
   #     ]
   #   }
+  # @returns QuizzesQuizSubmissionFilesCreateResponse
   def create
     quiz = @context.quizzes.active.find(params[:quiz_id])
     quiz_submission = quiz.quiz_submissions.where(user_id: @current_user).first

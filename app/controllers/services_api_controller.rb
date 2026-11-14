@@ -19,6 +19,31 @@
 #
 
 # @API Services
+# @model ServicesShowKalturaConfigResponse
+#     {
+#       "id": "ServicesShowKalturaConfigResponse",
+#       "properties": {
+#         "domain": { "type": "string" },
+#         "enabled": { "type": "boolean" },
+#         "partner_id": { "type": "string" },
+#         "resource_domain": { "type": "string" },
+#         "rtmp_domain": { "type": "string" }
+#       }
+#     }
+#
+# @model ServicesStartKalturaSessionResponse
+#     {
+#       "id": "ServicesStartKalturaSessionResponse",
+#       "properties": {
+#         "kaltura_setting": { "type": "object" },
+#         "ks": { "type": "string" },
+#         "partner_id": { "type": "string" },
+#         "serverTime": { "type": "integer" },
+#         "subp_id": { "type": "string" },
+#         "uid": { "type": "string" }
+#       }
+#     }
+#
 class ServicesApiController < ApplicationController
   before_action :get_context, only: [:rce_config]
 
@@ -45,6 +70,7 @@ class ServicesApiController < ApplicationController
   #     {
   #       'enabled': false
   #     }
+  # @returns ServicesShowKalturaConfigResponse
   def show_kaltura_config
     @kal = CanvasKaltura::ClientV3.config
     response = { "enabled" => !@kal.nil? }
@@ -69,6 +95,7 @@ class ServicesApiController < ApplicationController
   #     {
   #       'ks': '1e39ad505f30c4fa1af5752b51bd69fe'
   #     }
+  # @returns ServicesStartKalturaSessionResponse
   def start_kaltura_session
     @user = @current_user
     client = CanvasKaltura::ClientV3.new

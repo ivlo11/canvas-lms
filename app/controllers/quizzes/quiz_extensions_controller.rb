@@ -30,13 +30,13 @@
 #         "quiz_id": {
 #           "description": "The ID of the Quiz the quiz extension belongs to.",
 #           "example": 2,
-#           "type": "integer",
+#           "type": ["string", "integer"],
 #           "format": "int64"
 #         },
 #         "user_id": {
 #           "description": "The ID of the Student that needs the quiz extension.",
 #           "example": 3,
-#           "type": "integer",
+#           "type": ["string", "integer"],
 #           "format": "int64"
 #         },
 #         "extra_attempts": {
@@ -48,18 +48,18 @@
 #         "extra_time": {
 #           "description": "Amount of extra time allowed for the quiz submission, in minutes.",
 #           "example": 60,
-#           "type": "integer",
+#           "type": ["integer", "null"],
 #           "format": "int64"
 #         },
 #         "manually_unlocked": {
 #           "description": "The student can take the quiz even if it's locked for everyone else",
 #           "example": true,
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "end_at": {
 #           "description": "The time at which the quiz submission will be overdue, and be flagged as a late submission.",
 #           "example": "2013-11-07T13:16:18Z",
-#           "type": "string",
+#           "type": ["string", "null"],
 #           "format": "date-time"
 #         }
 #       }

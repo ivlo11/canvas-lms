@@ -34,7 +34,10 @@
 #           "description": "The tool configuration JSON",
 #           "example": { "name": "LTI 1.3 Tool" },
 #           "type": "object"
-#         }
+#         },
+#         "developer_key": { "type": "object" },
+#         "tool_configuration": { "type": "object" },
+#         "warning_message": { "type": "array" }
 #       }
 #     }
 

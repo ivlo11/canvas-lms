@@ -17,6 +17,25 @@
 # You should have received a copy of the GNU Affero General Public License along
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
+# @model AccessibilityResourceScan
+#     {
+#       "id": "AccessibilityResourceScan",
+#       "properties": {
+#         "error_message": { "type": "string" },
+#         "id": { "type": "integer" },
+#         "issue_count": { "type": "integer" },
+#         "issues": { "type": "array", "items": { "type": "object" } },
+#         "resource_id": {},
+#         "resource_name": { "type": "string" },
+#         "resource_scan_path": { "type": "string" },
+#         "resource_type": {},
+#         "resource_updated_at": { "type": "string" },
+#         "resource_url": { "type": "string" },
+#         "resource_workflow_state": { "type": "string" },
+#         "workflow_state": { "type": "string" }
+#       }
+#     }
+#
 class SyllabusApiController < ApplicationController
   include Api::V1::AccessibilityResourceScan
 

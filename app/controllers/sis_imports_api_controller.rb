@@ -41,7 +41,12 @@
 #         "counts": {
 #           "description": "The number of rows processed for each type of import",
 #           "$ref": "SisImportCounts"
-#         }
+#         },
+#         "completed_importers": { "type": "array", "items": { "type": "string" } },
+#         "diffed_attachment_ids": { "type": "array", "items": { "type": "integer" } },
+#         "downloadable_attachment_ids": { "type": "array", "items": { "type": "integer" } },
+#         "running_immediately": { "type": "boolean" },
+#         "statistics": { "type": "object" }
 #       }
 #     }
 #
@@ -214,7 +219,18 @@
 #         "warning_count": {
 #           "example": 0,
 #           "type": "integer"
-#         }
+#         },
+#         "admins": { "type": "integer" },
+#         "change_sis_ids": { "type": "integer" },
+#         "differentiation_tag_memberships": { "type": "integer" },
+#         "differentiation_tag_sets": { "type": "integer" },
+#         "differentiation_tags": { "type": "integer" },
+#         "group_categories": { "type": "integer" },
+#         "institutional_tag_associations": { "type": "integer" },
+#         "institutional_tag_categories": { "type": "integer" },
+#         "institutional_tags": { "type": "integer" },
+#         "logins": { "type": "integer" },
+#         "user_observers": { "type": "integer" }
 #       }
 #     }
 #
@@ -236,7 +252,7 @@
 #         "ended_at": {
 #           "description": "The date the SIS import finished. Returns null if not finished.",
 #           "example": "2013-12-02T00:03:21-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "updated_at": {
 #           "description": "The date the SIS import was last updated.",
@@ -275,7 +291,7 @@
 #         "progress": {
 #           "description": "The progress of the SIS import. The progress will reset when using batch_mode and have a different progress for the cleanup stage",
 #           "example": "100",
-#           "type": "string"
+#           "type": ["integer", "string", "null"]
 #         },
 #         "errors_attachment": {
 #           "description": "The errors_attachment api object of the SIS import. Only available if there are errors or warning and import has completed.",
@@ -306,37 +322,37 @@
 #         "batch_mode": {
 #           "description": "Whether the import was run in batch mode.",
 #           "example": "true",
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "batch_mode_term_id": {
 #           "description": "The term the batch was limited to.",
 #           "example": "1234",
-#           "type": "string"
+#           "type": ["integer", "string", "null"]
 #         },
 #         "multi_term_batch_mode": {
 #           "description": "Enables batch mode against all terms in term file. Requires change_threshold to be set.",
 #           "example": "false",
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "skip_deletes": {
 #           "description": "When set the import will skip any deletes.",
 #           "example": "false",
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "override_sis_stickiness": {
 #           "description": "Whether UI changes were overridden.",
 #           "example": "false",
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "add_sis_stickiness": {
 #           "description": "Whether stickiness was added to the batch changes.",
 #           "example": "false",
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "clear_sis_stickiness": {
 #           "description": "Whether stickiness was cleared.",
 #           "example": "false",
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "diffing_threshold_exceeded": {
 #           "description": "Whether a diffing job failed because the threshold limit got exceeded.",
@@ -346,27 +362,35 @@
 #         "diffing_data_set_identifier": {
 #           "description": "The identifier of the data set that this SIS batch diffs against",
 #           "example": "account-5-enrollments",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "diffing_remaster": {
 #           "description": "Whether diffing remaster data was enabled.",
 #           "example": "false",
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "diffed_against_import_id": {
 #           "description": "The ID of the SIS Import that this import was diffed against",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "csv_attachments": {
 #           "description": "An array of CSV files for processing",
 #           "example": [],
 #           "type": "array",
 #           "items": {
-#             "type": "array",
+#             "type": ["object", "array"],
 #             "items": {"$ref": "File"}
 #           }
-#         }
+#         },
+#         "change_threshold": { "type": ["integer", "null"] },
+#         "diff_row_count_threshold": { "type": ["integer", "null"] },
+#         "diffed_csv_attachments": { "type": "array", "items": { "type": "object" } },
+#         "diffing_drop_status": { "type": ["string", "null"] },
+#         "diffing_user_remove_status": {},
+#         "started_at": { "type": ["string", "null"] },
+#         "update_sis_id_if_login_claimed": { "type": ["boolean", "null"] },
+#         "pre_attachment": { "type": "object" }
 #       }
 #     }
 #
@@ -398,7 +422,7 @@ class SisImportsApiController < ApplicationController
   #   curl https://<canvas>/api/v1/accounts/<account_id>/sis_imports \
   #     -H 'Authorization: Bearer <token>'
   #
-  # @returns [SisImport]
+  # @returns { sis_imports: [SisImport] }
   def index
     if authorized_action(@account, @current_user, [:import_sis, :manage_sis])
       scope = @account.sis_batches.order(created_at: :desc)
@@ -438,7 +462,7 @@ class SisImportsApiController < ApplicationController
   #   curl https://<canvas>/api/v1/accounts/<account_id>/sis_imports/importing \
   #     -H 'Authorization: Bearer <token>'
   #
-  # @returns SisImport
+  # @returns { sis_imports: [SisImport] }
   def importing
     if authorized_action(@account, @current_user, [:import_sis, :manage_sis])
       batches = @account.sis_batches.importing

@@ -113,7 +113,7 @@
 #         "position": {
 #           "description": "the position of this item in the module (1-based)",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "title": {
 #           "description": "the title of this item",
@@ -186,7 +186,14 @@
 #           "description": "(Optional) Whether this module item is published. This field is present only if the caller has permission to view unpublished items.",
 #           "type": "boolean",
 #           "example": true
-#         }
+#         },
+#         "estimated_duration": { "type": ["string", "null"] },
+#         "mastery_paths": { "type": ["object", "null"] },
+#         "publish_at": {},
+#         "quiz_lti": { "type": "boolean" },
+#         "unpublishable": { "type": "boolean" },
+#         "created": { "type": "array", "items": { "type": "object" } },
+#         "errors": { "type": "array", "items": { "type": "object" } }
 #       }
 #     }
 #
@@ -210,7 +217,7 @@
 #           "example": {"id": 769, "module_id": 127, "title": "Project 1", "type": "Assignment"}
 #         },
 #         "mastery_path": {
-#           "type": "object",
+#           "type": ["object", "null"],
 #           "description": "The conditional release rule for the module item, if applicable",
 #           "example": {"locked": true, "assignment_sets": [], "selected_set_id": null, "awaiting_choice": false, "still_processing": false, "modules_url": "/courses/11/modules", "choose_url": "/courses/11/modules/items/9/choose", "modules_tab_disabled": false}
 #         }
@@ -237,6 +244,24 @@
 #           "items": { "$ref": "Module" },
 #           "example": [{"id": 123, "name": "Overview"}, {"id": 127, "name": "Imaginary Numbers"}]
 #         }
+#       }
+#     }
+#
+# @model ContextModuleItemsSelectMasteryPathResponse
+#     {
+#       "id": "ContextModuleItemsSelectMasteryPathResponse",
+#       "properties": {
+#         "assignments": { "type": "array", "items": { "type": "object" } },
+#         "items": { "type": "array", "items": { "type": "object" } },
+#         "meta": { "type": "object" }
+#       }
+#     }
+#
+# @model ContextModuleItemsMarkAsDoneResponse
+#     {
+#       "id": "ContextModuleItemsMarkAsDoneResponse",
+#       "properties": {
+#         "message": { "type": "string" }
 #       }
 #     }
 #
@@ -603,6 +628,7 @@ class ContextModuleItemsApiController < ApplicationController
   #       -H 'Authorization: Bearer <token>' \
   #       -d 'assignment_set_id=2992'
   #
+  # @returns ContextModuleItemsSelectMasteryPathResponse
   def select_mastery_path
     return unless authorized_action(@context, @current_user, :read)
     return unless @student == @current_user || authorized_action(@context, @current_user, :manage_assignments_edit)
@@ -665,6 +691,7 @@ class ContextModuleItemsApiController < ApplicationController
   #     curl https://<canvas>/api/v1/courses/<course_id>/modules/<module_id>/items/<item_id>/done \
   #       -X Put \
   #       -H 'Authorization: Bearer <token>'
+  # @returns ContextModuleItemsMarkAsDoneResponse
   def mark_as_done
     if authorized_action(@context, @current_user, :read)
       get_module_item
@@ -739,6 +766,7 @@ class ContextModuleItemsApiController < ApplicationController
   #       -X POST \
   #       -H 'Authorization: Bearer <token>'
   #
+  # @returns ContextModuleItemsMarkAsDoneResponse
   def mark_item_read
     if authorized_action(@context, @current_user, :read)
       get_module_item

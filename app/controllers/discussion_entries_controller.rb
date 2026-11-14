@@ -95,6 +95,7 @@ class DiscussionEntriesController < ApplicationController
   #   curl -X PUT 'https://<canvas>/api/v1/courses/<course_id>/discussion_topics/<topic_id>/entries/<entry_id>' \
   #        -F 'message=<message>' \
   #        -H "Authorization: Bearer <token>"
+  # @returns DiscussionEntry
   def update
     @topic = @context.all_discussion_topics.active.find(params[:topic_id]) if params[:topic_id].present?
 

@@ -29,17 +29,17 @@
 #       "properties": {
 #         "id": {
 #           "example": "42",
-#           "type": "integer",
+#           "type": ["integer", "null"],
 #           "description": "A unique identifier for this result"
 #         },
 #         "score": {
 #           "example": 6,
-#           "type": "integer",
+#           "type": "number",
 #           "description": "The student's score"
 #         },
 #         "submitted_or_assessed_at": {
 #           "example": "2013-02-01T00:00:00-06:00",
-#           "type": "datetime",
+#           "type": ["datetime", "null"],
 #           "description": "The datetime the resulting OutcomeResult was submitted at, or absent that, when it was assessed."
 #         },
 #         "links": {
@@ -49,9 +49,13 @@
 #         },
 #         "percent": {
 #           "example": "0.65",
-#           "type": "number",
+#           "type": ["number", "null"],
 #           "description": "score's percent of maximum points possible for outcome, scaled to reflect any custom mastery levels that differ from the learning outcome"
-#         }
+#         },
+#         "hidden": { "type": "boolean" },
+#         "hide_points": { "type": "boolean" },
+#         "mastery": { "type": ["boolean", "null"] },
+#         "possible": { "type": ["number", "null"] }
 #       }
 #     }
 #
@@ -63,7 +67,7 @@
 #         "outcome": {
 #           "description": "The id of the related outcome",
 #           "example": 42,
-#           "type": "integer"
+#           "type": ["string", "integer"]
 #         }
 #       }
 #     }
@@ -76,7 +80,7 @@
 #         "score": {
 #           "description": "The rollup score for the outcome, based on the student alignment scores related to the outcome. This could be null if the student has no related scores.",
 #           "example": 3,
-#           "type": "integer"
+#           "type": "number"
 #         },
 #         "count": {
 #           "example": 6,
@@ -86,7 +90,10 @@
 #         "links": {
 #           "example": {"outcome": "42"},
 #           "$ref": "OutcomeRollupScoreLinks"
-#         }
+#         },
+#         "hide_points": { "type": "boolean" },
+#         "submitted_at": { "type": ["string", "null"] },
+#         "title": { "type": ["string", "null"] }
 #       }
 #     }
 #
@@ -98,18 +105,19 @@
 #         "course": {
 #           "description": "If an aggregate result was requested, the course field will be present. Otherwise, the user and section field will be present (Optional) The id of the course that this rollup applies to",
 #           "example": 42,
-#           "type": "integer"
+#           "type": ["string", "object", "integer"]
 #         },
 #         "user": {
 #           "description": "(Optional) The id of the user that this rollup applies to",
 #           "example": 42,
-#           "type": "integer"
+#           "type": ["string", "object", "integer"]
 #         },
 #         "section": {
 #           "description": "(Optional) The id of the section the user is in",
 #           "example": 57,
-#           "type": "integer"
-#         }
+#           "type": ["string", "integer"]
+#         },
+#         "status": { "type": "string" }
 #       }
 #     }
 #
@@ -120,7 +128,8 @@
 #       "properties": {
 #         "scores": {
 #           "description": "an array of OutcomeRollupScore objects",
-#           "$ref": "OutcomeRollupScore"
+#           "type": "array",
+#           "items": { "$ref": "OutcomeRollupScore" }
 #         },
 #         "name": {
 #           "description": "The name of the resource for this rollup. For example, the user name.",
@@ -185,7 +194,54 @@
 #         }
 #       }
 #     }
-
+#
+# @model OutcomeResultsIndexResponse
+#     {
+#       "id": "OutcomeResultsIndexResponse",
+#       "properties": {
+#         "linked": { "type": "object" },
+#         "outcome_results": { "type": "array", "items": { "$ref": "OutcomeResult" } }
+#       }
+#     }
+#
+# @model OutcomeResultsRollupsResponse
+#     {
+#       "id": "OutcomeResultsRollupsResponse",
+#       "properties": {
+#         "linked": { "type": "object" },
+#         "meta": { "type": "object" },
+#         "rollups": { "type": "array", "items": { "$ref": "OutcomeRollup" } }
+#       }
+#     }
+#
+# @model OutcomeResultsContributingScoresResponse
+#     {
+#       "id": "OutcomeResultsContributingScoresResponse",
+#       "properties": {
+#         "alignments": { "type": "array", "items": { "type": "object" } },
+#         "outcome": { "type": "object" },
+#         "scores": { "type": "array" }
+#       }
+#     }
+#
+# @model MasteryDistributionResponse
+#     {
+#       "id": "MasteryDistributionResponse",
+#       "properties": {
+#         "outcome_distributions": { "type": "object" },
+#         "students": { "type": "array", "items": { "type": "object" } }
+#       }
+#     }
+#
+# @model RollupJob
+#     {
+#       "id": "RollupJob",
+#       "properties": {
+#         "message": { "type": "string" },
+#         "type": { "type": "string" }
+#       }
+#     }
+#
 class OutcomeResultsController < ApplicationController
   CACHE_EXPIRATION = 5.minutes
   include Api::V1::OutcomeResults
@@ -234,6 +290,7 @@ class OutcomeResultsController < ApplicationController
   #      outcome_results: [OutcomeResult]
   #    }
   # used in sLMGB
+  # @returns OutcomeResultsIndexResponse
   def index
     include_hidden_value = value_to_boolean(params[:include_hidden])
     @results, @outcome_service_results = find_canvas_os_results(include_hidden: include_hidden_value)
@@ -356,6 +413,7 @@ class OutcomeResultsController < ApplicationController
   #        "outcomes.alignments": [OutcomeAlignment]
   #      }
   #    }
+  # @returns OutcomeResultsRollupsResponse
   def rollups
     respond_to do |format|
       format.json do
@@ -428,6 +486,7 @@ class OutcomeResultsController < ApplicationController
   #        }
   #      ]
   #    }
+  # @returns OutcomeResultsContributingScoresResponse
   def contributing_scores
     unless @context.grants_any_right?(@current_user, :manage_grades, :view_all_grades)
       reject! "insufficient permissions", :forbidden

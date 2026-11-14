@@ -24,12 +24,11 @@
 # @model LatePolicy
 #   {
 #     "id": "LatePolicy",
-#     "required": "course_id",
 #     "properties": {
 #       "id": {
 #         "description": "the unique identifier for the late policy",
 #         "example": 123,
-#         "type": "integer"
+#         "type": ["string", "integer"]
 #       },
 #       "course_id": {
 #         "description": "the unique identifier for the course",
@@ -113,6 +112,7 @@ class LatePolicyController < ApplicationController
   #     "late_policy": LatePolicy
   #   }
   #
+  # @returns { late_policy: LatePolicy }
   def show
     raise ActiveRecord::RecordNotFound if course.late_policy.blank?
 
@@ -151,6 +151,7 @@ class LatePolicyController < ApplicationController
   #     "late_policy": LatePolicy
   #   }
   #
+  # @returns { late_policy: LatePolicy }
   def create
     increment_request_cost(200)
 

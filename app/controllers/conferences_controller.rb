@@ -68,27 +68,27 @@
 #         "conference_key": {
 #           "description": "The 3rd party's ID for the conference",
 #           "example": "abcdjoelisgreatxyz",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "description": {
 #           "description": "The description for the conference",
 #           "example": "Conference Description",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "duration": {
 #           "description": "The expected duration the conference is supposed to last",
 #           "example": 60,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "ended_at": {
 #           "description": "The date that the conference ended at, null if it hasn't ended",
 #           "example": "2013-12-13T17:23:26Z",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "started_at": {
 #           "description": "The date the conference started at, null if it hasn't started",
 #           "example": "2013-12-12T23:02:17Z",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "title": {
 #           "description": "The title of the conference",
@@ -139,7 +139,7 @@
 #         },
 #         "join_url": {
 #           "description": "URL to join the conference, may be null if the conference type doesn't set it",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "context_type": {
 #           "description": "The type of this conference's context, typically 'Course' or 'Group'.",
@@ -148,7 +148,10 @@
 #         "context_id": {
 #           "description": "The ID of this conference's context.",
 #           "type": "integer"
-#         }
+#         },
+#         "end_at": { "type": ["string", "null"] },
+#         "has_calendar_event": { "type": "integer" },
+#         "start_at": { "type": ["string", "null"] }
 #       }
 #     }
 #
@@ -183,7 +186,7 @@ class ConferencesController < ApplicationController
   #     curl 'https://<canvas>/api/v1/groups/<group_id>/conferences' \
   #         -H "Authorization: Bearer <token>"
   #
-  # @returns [Conference]
+  # @returns { conferences: [Conference] }
   def index
     return unless authorized_action(@context, @current_user, :read)
     return unless tab_enabled?(@context.class::TAB_CONFERENCES)
@@ -216,7 +219,7 @@ class ConferencesController < ApplicationController
   #     curl 'https://<canvas>/api/v1/conferences' \
   #         -H "Authorization: Bearer <token>"
   #
-  # @returns [Conference]
+  # @returns { conferences: [Conference] }
   def for_user
     return render_unauthorized_action unless @current_user
     return render json: api_conferences_json([], @current_user, session) unless WebConference.config

@@ -56,7 +56,10 @@ module Lti::IMS
   #            "description": "URL of the line item this belongs to",
   #            "example": "http://institution.canvas.com/api/lti/courses/5/line_items/2",
   #            "type": "string"
-  #          }
+  #          },
+  #          "assessed_at": { "type": "string" },
+  #          "links": { "type": "object" },
+  #          "passed": { "type": "boolean" }
   #       }
   #     }
   class ResultsController < ApplicationController
@@ -75,7 +78,7 @@ module Lti::IMS
     # one Result in the collection if the result exists, otherwise it will be empty. May
     # also limit number of results by adding the limit query param (i.e. limit=100)
     #
-    # @returns Result
+    # @returns [Result]
     def index
       render(json: [], content_type: MIME_TYPE) and return if user.present? && !context.user_is_student?(user)
 

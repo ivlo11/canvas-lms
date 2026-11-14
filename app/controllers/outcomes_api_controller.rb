@@ -40,11 +40,11 @@
 #         "context_id": {
 #           "description": "the context owning the outcome. may be null for global outcomes",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "context_type": {
 #           "example": "Account",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "title": {
 #           "description": "title of the outcome",
@@ -54,27 +54,27 @@
 #         "display_name": {
 #           "description": "Optional friendly name for reporting",
 #           "example": "My Favorite Outcome",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "description": {
 #           "description": "description of the outcome. omitted in the abbreviated form.",
 #           "example": "Outcome description",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "vendor_guid": {
 #           "description": "A custom GUID for the learning standard.",
 #           "example": "customid9000",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "points_possible": {
 #           "description": "maximum points possible. included only if the outcome embeds a rubric criterion. omitted in the abbreviated form.",
 #           "example": 5,
-#           "type": "integer"
+#           "type": "number"
 #         },
 #         "mastery_points": {
 #           "description": "points necessary to demonstrate mastery outcomes. included only if the outcome embeds a rubric criterion. omitted in the abbreviated form.",
 #           "example": 3,
-#           "type": "integer"
+#           "type": "number"
 #         },
 #         "calculation_method": {
 #           "description": "the method used to calculate a students score",
@@ -94,7 +94,7 @@
 #         "calculation_int": {
 #           "description": "this defines the variable value used by the calculation_method. included only if calculation_method uses it",
 #           "example": 65,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "ratings": {
 #           "description": "possible ratings for this outcome. included only if the outcome embeds a rubric criterion. omitted in the abbreviated form.",
@@ -120,7 +120,10 @@
 #           "description": "whether updates to this outcome will propagate to unassessed rubrics that have imported it",
 #           "example": true,
 #           "type": "boolean"
-#         }
+#         },
+#         "friendly_description": { "type": ["string", "null"] },
+#         "proficiency_context_id": { "type": "string" },
+#         "proficiency_context_type": { "type": "string" }
 #       }
 #     }
 #

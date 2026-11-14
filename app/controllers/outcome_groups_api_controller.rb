@@ -55,11 +55,11 @@
 #         "context_id": {
 #           "description": "the context owning the outcome group. may be null for global outcome groups. omitted in the abbreviated form.",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "context_type": {
 #           "example": "Account",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "title": {
 #           "description": "title of the outcome group",
@@ -69,12 +69,12 @@
 #         "description": {
 #           "description": "description of the outcome group. omitted in the abbreviated form.",
 #           "example": "Outcome group description",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "vendor_guid": {
 #           "description": "A custom GUID for the learning standard.",
 #           "example": "customid9000",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "subgroups_url": {
 #           "description": "the URL for listing/creating subgroups under the outcome group. should be treated as opaque",
@@ -95,7 +95,14 @@
 #           "description": "whether the current user can update the outcome group",
 #           "example": true,
 #           "type": "boolean"
-#         }
+#         },
+#         "completion": {},
+#         "created_at": { "type": "string" },
+#         "message": {},
+#         "tag": { "type": "string" },
+#         "updated_at": { "type": "string" },
+#         "user_id": { "type": "integer" },
+#         "workflow_state": { "type": "string" }
 #       }
 #     }
 #
@@ -112,11 +119,11 @@
 #         "context_id": {
 #           "description": "the context owning the outcome link. will match the context owning the outcome group containing the outcome link; included for convenience. may be null for links in global outcome groups.",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "context_type": {
 #           "example": "Account",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "outcome_group": {
 #           "description": "an abbreviated OutcomeGroup object representing the group containing the outcome link.",
@@ -134,7 +141,8 @@
 #         "can_unlink": {
 #           "description": "whether this outcome link is manageable and is not the last link to an aligned outcome",
 #           "type": "boolean"
-#         }
+#         },
+#         "quiz_lti": { "type": "boolean" }
 #       }
 #     }
 #
@@ -151,6 +159,7 @@ class OutcomeGroupsApiController < ApplicationController
   # Convenience redirect to find the root outcome group for a particular
   # context. Will redirect to the appropriate outcome group's URL.
   #
+  # @returns OutcomeGroup
   def redirect
     return unless can_read_outcomes
 

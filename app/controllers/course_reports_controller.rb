@@ -34,7 +34,7 @@
 #         "file_url": {
 #           "description": "The url to the report download.",
 #           "example": "https://example.com/some/path",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "attachment": {
 #           "description": "The attachment api object of the report. Only available after the report has completed.",
@@ -53,12 +53,12 @@
 #         "started_at": {
 #           "description": "The date and time the report started processing.",
 #           "example": "2013-12-02T00:03:21-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "ended_at": {
 #           "description": "The date and time the report finished processing.",
 #           "example": "2013-12-02T00:03:21-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "parameters": {
 #           "description": "The report parameters",
@@ -69,7 +69,14 @@
 #           "description": "The progress of the report",
 #           "example": "100",
 #           "type": "integer"
-#         }
+#         },
+#         "current_line": {},
+#         "message": {},
+#         "report": { "type": "string" },
+#         "run_time": { "type": "number" },
+#         "user": { "type": "object" },
+#         "course_id": { "type": "integer" },
+#         "report_type": { "type": "string" }
 #       }
 #     }
 #
@@ -78,6 +85,11 @@
 #       "id": "ReportParameters",
 #       "description": "The parameters returned will vary for each report.",
 #       "properties": {
+#         "enrollment_term_id": { "type": ["integer", "string"] },
+#         "error": { "type": "string" },
+#         "param": { "type": "string" },
+#         "enrollment_ids": { "type": "array" },
+#         "section_ids": { "type": "array" }
 #       }
 #     }
 #

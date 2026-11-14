@@ -33,7 +33,7 @@
 #         "weighted": {
 #           "description": "If true, the grading periods in the set are weighted.",
 #           "example": true,
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "display_totals_for_all_grading_periods": {
 #           "description": "If true, the totals for all grading periods in the set are displayed.",
@@ -53,7 +53,7 @@
 #         "course_id": {
 #           "description": "The id of the course the set belongs to, or null if it belongs to an account.",
 #           "example": null,
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "grading_periods": {
 #           "description": "The active grading periods in the set.",
@@ -82,7 +82,7 @@ class GradingPeriodSetsController < ApplicationController
   #
   # Returns the paginated list of grading period sets
   #
-  # @returns { "grading_period_sets": [GradingPeriodSets] }
+  # @returns { grading_period_sets: [GradingPeriodSets], meta: object }
   #
   # @example_response
   #   {

@@ -66,27 +66,27 @@
 #         "start_at": {
 #           "description": "The start of the first time slot in the appointment group",
 #           "example": "2012-07-20T15:00:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "end_at": {
 #           "description": "The end of the last time slot in the appointment group",
 #           "example": "2012-07-20T17:00:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "description": {
 #           "description": "The text description of the appointment group",
 #           "example": "Es muy importante",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "location_name": {
 #           "description": "The location name of the appointment group",
 #           "example": "El Tigre Chino's office",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "location_address": {
 #           "description": "The address of the appointment group's location",
 #           "example": "Room 234",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "participant_count": {
 #           "description": "The number of participant who have reserved slots (see include[] argument)",
@@ -114,7 +114,7 @@
 #           "description": "The sub-context codes (i.e. course sections and group categories) this appointment group is restricted to",
 #           "example": ["course_section_234"],
 #           "type": "array",
-#           "items": {"type": "integer"}
+#           "items": {"type": ["string", "integer"]}
 #         },
 #         "workflow_state": {
 #           "description": "Current state of the appointment group ('pending', 'active' or 'deleted'). 'pending' indicates that it has not been published yet and is invisible to participants.",
@@ -153,7 +153,7 @@
 #         "max_appointments_per_participant": {
 #           "description": "Maximum number of time slots a user may register for, or null if no limit",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "min_appointments_per_participant": {
 #           "description": "Minimum number of time slots a user must register for. If not set, users do not need to sign up for any time slots",
@@ -163,7 +163,7 @@
 #         "participants_per_appointment": {
 #           "description": "Maximum number of participants that may register for each time slot, or null if no limit",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "participant_visibility": {
 #           "description": "'private' means participants cannot see who has signed up for a particular time slot, 'protected' means that they can",
@@ -206,7 +206,8 @@
 #           "description": "When the appointment group was last updated",
 #           "example": "2012-07-13T10:55:20-06:00",
 #           "type": "datetime"
-#         }
+#         },
+#         "all_context_codes": { "type": "array", "items": { "type": "string" } }
 #       }
 #     }
 #
@@ -371,6 +372,7 @@ class AppointmentGroupsController < ApplicationController
   #        -F 'appointment_group[new_appointments][1][]=2012-07-19T22:00:00Z' \
   #        -F 'appointment_group[new_appointments][1][]=2012-07-19T23:00:00Z' \
   #        -H "Authorization: Bearer <token>"
+  # @returns AppointmentGroup
   def create
     @request_shard = Shard.current
     contexts = get_contexts
@@ -426,6 +428,7 @@ class AppointmentGroupsController < ApplicationController
   #   "child_events":: reservations of time slots time slots
   #   "appointments":: will always be returned
   #   "all_context_codes":: all context codes associated with this appointment group
+  # @returns AppointmentGroup
   def show
     if authorized_action(@group, @current_user, :read)
       return web_show unless request.format == :json
@@ -518,6 +521,7 @@ class AppointmentGroupsController < ApplicationController
   #        -X PUT \
   #        -F 'appointment_group[publish]=1' \
   #        -H "Authorization: Bearer <token>"
+  # @returns AppointmentGroup
   def update
     contexts = get_contexts
     @group.contexts = contexts if contexts
@@ -546,6 +550,7 @@ class AppointmentGroupsController < ApplicationController
   #        -X DELETE \
   #        -F 'cancel_reason=El Tigre Chino got fired' \
   #        -H "Authorization: Bearer <token>"
+  # @returns AppointmentGroup
   def destroy
     if authorized_action(@group, @current_user, :delete)
       @group.cancel_reason = params[:cancel_reason]

@@ -68,6 +68,14 @@ module Lti::IMS
   #          }
   #       }
   #     }
+  # @model LtiImsScoresCreateResponse
+  #     {
+  #       "id": "LtiImsScoresCreateResponse",
+  #       "properties": {
+  #         "resultUrl": { "type": "string" }
+  #       }
+  #     }
+  #
   class ScoresController < ApplicationController
     include Lti::IMS::Concerns::GradebookServices
     include Api::V1::Attachment
@@ -187,7 +195,7 @@ module Lti::IMS
     # @argument https://canvas.instructure.com/lti/submission[content_items] [Optional, Array]
     #   (EXTENSION field) Files that should be included with the submission. Each item should contain `type: file`, and a url pointing to the file. It can also contain a title, and an explicit MIME type if needed (otherwise, MIME type will be inferred from the title or url). If any items are present, submission_type will be online_upload.
     #
-    # @returns resultUrl [String]
+    # @returns LtiImsScoresCreateResponse resultUrl [String]
     #   The url to the result that was created.
     #
     # @returns https://canvas.instructure.com/lti/submission [Optional, Object]

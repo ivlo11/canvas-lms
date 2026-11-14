@@ -63,6 +63,15 @@
 #     }
 #   }
 #
+# @model ErrorsCreateResponse
+#     {
+#       "id": "ErrorsCreateResponse",
+#       "properties": {
+#         "id": { "type": "integer" },
+#         "logged": { "type": "boolean" }
+#       }
+#     }
+#
 class ErrorsController < ApplicationController
   include CaptchaValidation
 
@@ -133,6 +142,7 @@ class ErrorsController < ApplicationController
   #         -F 'error[url]=http://<canvas>/courses/1' \
   #         -F 'error[description]="All my thoughts on what I saw"' \
   #         -H 'Authorization: Bearer <token>'
+  # @returns ErrorsCreateResponse
   def create
     # this action can be called by an unauthenticated user.  To prevent
     # abuse, we're representing this as an expensive operation so it would

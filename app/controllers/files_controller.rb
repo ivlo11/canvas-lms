@@ -54,7 +54,7 @@
 #         },
 #         "size": {
 #           "example": 43451,
-#           "type": "integer",
+#           "type": ["integer", "null"],
 #           "description": "file size in bytes"
 #         },
 #         "created_at": {
@@ -121,7 +121,67 @@
 #         "preview_url": {
 #           "type": "string",
 #           "description": "optional: url to the document preview. This url is specific to the user making the api call. Only included in submission endpoints."
-#         }
+#         },
+#         "category": { "type": "string" },
+#         "upload_status": { "type": "string" },
+#         "instfs_uuid": {},
+#         "usage_rights": { "type": ["object", "null"] },
+#         "user": { "type": "object" },
+#         "uuid": { "type": "string" },
+#         "canvadoc_session_url": { "type": ["string", "null"] },
+#         "is_master_course_child_content": { "type": "boolean" },
+#         "master_course_restrictions": { "type": "object" },
+#         "restricted_by_master_course": { "type": "boolean" },
+#         "view": { "type": "boolean" },
+#         "attachment": { "type": "object" },
+#         "ok": { "type": "boolean" }
+#       }
+#     }
+#
+# @model FilesApiQuotaResponse
+#     {
+#       "id": "FilesApiQuotaResponse",
+#       "properties": {
+#         "quota": { "type": "integer" },
+#         "quota_used": { "type": "integer" }
+#       }
+#     }
+#
+# @model FilesPublicUrlResponse
+#     {
+#       "id": "FilesPublicUrlResponse",
+#       "properties": {
+#         "public_url": { "type": "string" }
+#       }
+#     }
+#
+# @model FilesIconMetadataResponse
+#     {
+#       "id": "FilesIconMetadataResponse",
+#       "properties": {
+#         "alt": { "type": "string" },
+#         "color": { "type": "string" },
+#         "encodedImage": { "type": "string" },
+#         "encodedImageName": { "type": "string" },
+#         "encodedImageType": { "type": "string" },
+#         "height": { "type": "integer" },
+#         "name": { "type": "string" },
+#         "outlineColor": { "type": "string" },
+#         "outlineSize": { "type": "string" },
+#         "shape": { "type": "string" },
+#         "size": { "type": "string" },
+#         "text": { "type": "string" },
+#         "textBackgroundColor": { "type": "string" },
+#         "textColor": { "type": "string" },
+#         "textPosition": { "type": "string" },
+#         "textSize": { "type": "string" },
+#         "transform": { "type": "string" },
+#         "translateX": { "type": "integer" },
+#         "translateY": { "type": "integer" },
+#         "type": { "type": "string" },
+#         "width": { "type": "integer" },
+#         "x": { "type": "string" },
+#         "y": { "type": "string" }
 #       }
 #     }
 #
@@ -243,6 +303,7 @@ class FilesController < ApplicationController
   #
   #  { "quota": 524288000, "quota_used": 402653184 }
   #
+  # @returns FilesApiQuotaResponse
   def api_quota
     # allow user quota info to be viewed by admins
     permitted = true if @context.is_a?(User) &&
@@ -509,6 +570,7 @@ class FilesController < ApplicationController
   #
   #  { "public_url": "https://example-bucket.s3.amazonaws.com/example-namespace/attachments/1/example-filename?AWSAccessKeyId=example-key&Expires=1400000000&Signature=example-signature" }
   #
+  # @returns FilesPublicUrlResponse
   def public_url
     @attachment = Attachment.find(params[:id])
 
@@ -1508,6 +1570,7 @@ class FilesController < ApplicationController
   #    "transform":"translate(-54,-54)"
   #  }
   #
+  # @returns FilesIconMetadataResponse
   def icon_metadata
     @icon = Attachment.find(params[:id])
     @icon = attachment_or_replacement(@icon.context, params[:id]) if @icon.deleted? && @icon.replacement_attachment_id.present?

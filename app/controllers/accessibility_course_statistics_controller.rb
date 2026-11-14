@@ -56,12 +56,12 @@
 #       "resolved_issue_count": {
 #         "description": "The number of resolved accessibility issues in the course",
 #         "example": 3,
-#         "type": "integer"
+#         "type": ["integer", "null"]
 #       },
 #       "closed_issue_count": {
 #         "description": "The number of closed accessibility issues in the course",
 #         "example": 2,
-#         "type": "integer"
+#         "type": ["integer", "null"]
 #       },
 #       "workflow_state": {
 #         "description": "The workflow state of the statistic record",

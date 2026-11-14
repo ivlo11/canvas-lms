@@ -68,7 +68,9 @@ module Lti
     #            "description": "The launch url of the Line Item. Only returned if `include=launch_url` query parameter is passed, and only for Show and List actions.",
     #            "example": "https://my.tool.url/launch",
     #            "type": "string"
-    #          }
+    #          },
+    #          "endDateTime": { "type": "string" },
+    #          "startDateTime": { "type": "string" }
     #       }
     #     }
     class LineItemsController < ApplicationController
@@ -233,7 +235,7 @@ module Lti
       #
       #   "launch_url":: includes the launch URL for each line item using the "https\://canvas.instructure.com/lti/launch_url" extension
       #
-      # @returns LineItem
+      # @returns [LineItem]
       def index
         line_items = Api.paginate(
           Lti::LineItem.active.where(index_query).eager_load(:resource_link),

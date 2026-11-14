@@ -53,7 +53,7 @@
 #         "description": {
 #           "description": "the description of the quiz",
 #           "example": "This is a quiz on Act 3 of Hamlet",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "quiz_type": {
 #           "description": "type of quiz possible values: 'practice_quiz', 'assignment', 'graded_survey', 'survey'",
@@ -71,12 +71,12 @@
 #         "assignment_group_id": {
 #           "description": "the ID of the quiz's assignment group:",
 #           "example": 3,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "time_limit": {
 #           "description": "quiz time limit in minutes",
 #           "example": 5,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "shuffle_answers": {
 #           "description": "shuffle answers for students?",
@@ -86,7 +86,7 @@
 #         "hide_results": {
 #           "description": "let students see their quiz responses? possible values: null, 'always', 'until_after_last_attempt'",
 #           "example": "always",
-#           "type": "string",
+#           "type": ["string", "null"],
 #           "allowableValues": {
 #             "values": [
 #               "always",
@@ -107,12 +107,12 @@
 #         "show_correct_answers_at": {
 #           "description": "when should the correct answers be visible by students? only valid if show_correct_answers=true",
 #           "example": "2013-01-23T23:59:00-07:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "hide_correct_answers_at": {
 #           "description": "prevent the students from seeing correct answers after the specified date has passed. only valid if show_correct_answers=true",
 #           "example": "2013-01-23T23:59:00-07:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "one_time_results": {
 #           "description": "prevent the students from seeing their results more than once (right after they submit the quiz)",
@@ -133,7 +133,7 @@
 #         "allowed_attempts": {
 #           "description": "how many times a student can take the quiz -1 = unlimited attempts",
 #           "example": 3,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "one_question_at_a_time": {
 #           "description": "show one question at a time?",
@@ -148,7 +148,7 @@
 #         "points_possible": {
 #           "description": "The total point value given to the quiz",
 #           "example": 20,
-#           "type": "number"
+#           "type": ["number", "null"]
 #         },
 #         "cant_go_back": {
 #           "description": "lock questions after answering? only valid if one_question_at_a_time=true",
@@ -158,26 +158,26 @@
 #         "access_code": {
 #           "description": "access code to restrict quiz access",
 #           "example": "2beornot2be",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "ip_filter": {
 #           "description": "IP address or range that quiz access is limited to",
 #           "example": "123.123.123.123",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "due_at": {
 #           "description": "when the quiz is due",
 #           "example": "2013-01-23T23:59:00-07:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "lock_at": {
 #           "description": "when to lock the quiz",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "unlock_at": {
 #           "description": "when to unlock the quiz",
 #           "example": "2013-01-21T23:59:00-07:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "published": {
 #           "description": "whether the quiz has a published or unpublished draft state.",
@@ -239,7 +239,36 @@
 #           "description": "Whether survey submissions will be kept anonymous (only applicable to 'graded_survey', 'survey' quiz types)",
 #           "example": false,
 #           "type": "boolean"
-#         }
+#         },
+#         "assignment_id": { "type": ["integer", "null"] },
+#         "can_update": { "type": "boolean" },
+#         "has_access_code": { "type": "boolean" },
+#         "important_dates": { "type": "boolean" },
+#         "in_paced_course": { "type": "boolean" },
+#         "lockdown_browser_monitor_data": { "type": ["string", "null"] },
+#         "migration_id": {},
+#         "post_to_sis": { "type": ["boolean", "null"] },
+#         "quiz_reports_url": { "type": "string" },
+#         "quiz_statistics_url": { "type": "string" },
+#         "quiz_submission_versions_html_url": { "type": "string" },
+#         "require_lockdown_browser": { "type": "boolean" },
+#         "require_lockdown_browser_for_results": { "type": "boolean" },
+#         "require_lockdown_browser_monitor": { "type": "boolean" },
+#         "timer_autosubmit_disabled": { "type": "boolean" },
+#         "visible_to_everyone": { "type": "boolean" },
+#         "can_unpublish": { "type": "boolean" },
+#         "message_students_url": { "type": "string" },
+#         "only_visible_to_overrides": { "type": "boolean" },
+#         "section_count": { "type": "integer" },
+#         "speed_grader_url": { "type": ["string", "null"] },
+#         "quizzes": { "type": "array", "items": { "type": "object" } },
+#         "can_duplicate": { "type": "boolean" },
+#         "course_id": { "type": "integer" },
+#         "original_assignment_id": {},
+#         "original_assignment_name": {},
+#         "original_course_id": {},
+#         "original_quiz_id": {},
+#         "workflow_state": { "type": "string" }
 #       }
 #     }
 #
@@ -282,7 +311,18 @@
 #           "description": "whether the user may update the quiz",
 #           "example": true,
 #           "type": "boolean"
-#         }
+#         },
+#         "delete": { "type": "boolean" },
+#         "grade": { "type": "boolean" },
+#         "manage_assign_to": { "type": "boolean" },
+#         "preview": { "type": "boolean" },
+#         "view_answer_audits": { "type": "boolean" },
+#         "attach_submission_comment_files": { "type": "boolean" },
+#         "manage_files_add": { "type": "boolean" },
+#         "manage_files_delete": { "type": "boolean" },
+#         "manage_files_edit": { "type": "boolean" },
+#         "read_own_submission": { "type": "boolean" },
+#         "set_grading_scheme": { "type": "boolean" }
 #       }
 #     }
 #

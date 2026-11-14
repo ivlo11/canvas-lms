@@ -39,7 +39,7 @@
 #         "file_url": {
 #           "description": "The url to the report download.",
 #           "example": "https://example.com/some/path",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "attachment": {
 #           "description": "The attachment api object of the report. Only available after the report has completed.",
@@ -58,12 +58,12 @@
 #         "started_at": {
 #           "description": "The date and time the report started processing.",
 #           "example": "2013-12-02T00:03:21-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "ended_at": {
 #           "description": "The date and time the report finished processing.",
 #           "example": "2013-12-02T00:03:21-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "run_time": {
 #           "description": "The time (in seconds) the report has been waiting to run, has been running so far, or took to run to completion, depending on its current state.",
@@ -88,7 +88,10 @@
 #         "user": {
 #           "description": "The user that initiated the account report. See the Users API for details.",
 #           "$ref": "User"
-#         }
+#         },
+#         "message": {},
+#         "course_id": { "type": "integer" },
+#         "report_type": { "type": "string" }
 #       }
 #     }
 #
@@ -192,7 +195,24 @@
 #           "description": "The end date for submissions. Max time range is 2 weeks.",
 #           "example": "2012-07-13T10:55:20-06:00",
 #           "type": "datetime"
-#         }
+#         },
+#         "error": { "type": "string" },
+#         "param": { "type": "string" },
+#         "enrollment_ids": { "type": "array" },
+#         "section_ids": { "type": "array" }
+#       }
+#     }
+#
+# @model AccountReportsAvailableReportsResponse
+#     {
+#       "id": "AccountReportsAvailableReportsResponse",
+#       "properties": {
+#         "description_html": { "type": "string" },
+#         "last_run": { "type": ["object", "null"] },
+#         "parameters": { "type": ["object", "null"] },
+#         "parameters_html": { "type": "string" },
+#         "report": { "type": "string" },
+#         "title": { "type": "string" }
 #       }
 #     }
 #
@@ -254,6 +274,7 @@ class AccountReportsController < ApplicationController
   #    }
   #  ]
   #
+  # @returns [AccountReportsAvailableReportsResponse]
   def available_reports
     if authorized_action(@account, @current_user, :read_reports)
       @root_account = @account.root_account # used in partials

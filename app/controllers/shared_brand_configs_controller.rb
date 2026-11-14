@@ -33,7 +33,7 @@
 #         "account_id": {
 #           "description": "The id of the account it should be shared within.",
 #           "example": "",
-#           "type": "string"
+#           "type": ["integer", "string"]
 #         },
 #         "brand_config_md5": {
 #           "description": "The md5 (since BrandConfigs are identified by MD5 and not numeric id) of the BrandConfig to share.",

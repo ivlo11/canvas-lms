@@ -30,7 +30,7 @@
 #         "id": {
 #           "description": "the ID of the blackout date",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "context_id": {
 #           "description": "the context owning the blackout date",
@@ -44,18 +44,21 @@
 #         "start_date": {
 #           "description": "the start date of the blackout date",
 #           "example": "2022-01-01",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "end_date": {
 #           "description": "the end date of the blackout date",
 #           "example": "2022-01-02",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "event_title": {
 #           "description": "title of the blackout date",
 #           "example": "some title",
-#           "type": "string"
-#         }
+#           "type": ["string", "null"]
+#         },
+#         "created_at": { "type": ["string", "null"] },
+#         "root_account_id": { "type": ["integer", "null"] },
+#         "updated_at": { "type": ["string", "null"] }
 #       }
 #     }
 #
@@ -78,7 +81,7 @@ class BlackoutDatesController < ApplicationController
   # @API Get a single blackout date
   # Returns the blackout date with the given id.
   #
-  # @returns BlackoutDate
+  # @returns { blackout_date: BlackoutDate }
   #
   def show
     return unless authorized_action(@context, @current_user, RoleOverride::GRANULAR_MANAGE_COURSE_CONTENT_PERMISSIONS)
@@ -89,7 +92,7 @@ class BlackoutDatesController < ApplicationController
   # @API New Blackout Date
   # Initialize an unsaved Blackout Date for the given context.
   #
-  # @returns BlackoutDate
+  # @returns { blackout_date: BlackoutDate }
   #
   def new
     return unless authorized_action(@context, @current_user, RoleOverride::GRANULAR_MANAGE_COURSE_CONTENT_PERMISSIONS)
@@ -108,7 +111,7 @@ class BlackoutDatesController < ApplicationController
   # @argument event_title [String]
   #   The title of the blackout date.
   #
-  # @returns BlackoutDate
+  # @returns { blackout_date: BlackoutDate }
   #
   def create
     return unless authorized_action(@context, @current_user, :manage_course_content_add)
@@ -131,7 +134,7 @@ class BlackoutDatesController < ApplicationController
   # @argument event_title [String]
   #   The title of the blackout date.
   #
-  # @returns BlackoutDate
+  # @returns { blackout_date: BlackoutDate }
   #
   def update
     return unless authorized_action(@context, @current_user, :manage_course_content_edit)
@@ -163,7 +166,7 @@ class BlackoutDatesController < ApplicationController
   #   For array entries, if it has an id it will be updated, if not created, and if
   #   an existing BlackoutDate id is missing from the array, it will be deleted.
   #
-  # @returns BlackoutDate[]
+  # @returns [BlackoutDate]
   #   The result (which should match the input with maybe some different IDs).
   #
   def bulk_update

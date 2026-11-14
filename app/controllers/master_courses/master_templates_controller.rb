@@ -40,7 +40,7 @@
 #       "last_export_completed_at": {
 #         "description": "Time when the last export was completed",
 #         "example": "2013-08-28T23:59:00-06:00",
-#         "type": "datetime"
+#         "type": ["datetime", "null"]
 #        },
 #       "associated_course_count": {
 #         "description": "Number of associated courses for the template",
@@ -80,7 +80,7 @@
 #       "user_id": {
 #         "description": "The ID of the user who queued the migration.",
 #         "example": 3,
-#         "type": "integer",
+#         "type": ["integer", "null"],
 #         "format": "int64"
 #       },
 #       "workflow_state": {
@@ -96,23 +96,24 @@
 #       "exports_started_at": {
 #         "description": "Time when the exports begun",
 #         "example": "2013-08-28T23:59:00-06:00",
-#         "type": "datetime"
+#         "type": ["datetime", "null"]
 #       },
 #       "imports_queued_at": {
 #         "description": "Time when the exports were completed and imports were queued",
 #         "example": "2013-08-28T23:59:00-06:00",
-#         "type": "datetime"
+#         "type": ["datetime", "null"]
 #       },
 #       "imports_completed_at": {
 #         "description": "Time when the imports were completed",
 #         "example": "2013-08-28T23:59:00-06:00",
-#         "type": "datetime"
+#         "type": ["datetime", "null"]
 #       },
 #       "comment": {
 #         "description": "User-specified comment describing changes made in this operation",
 #         "example": "Fixed spelling in question 3 of midterm exam",
-#         "type": "string"
-#       }
+#         "type": ["string", "null"]
+#       },
+#       "user": { "type": "object" }
 #     }
 #   }
 #
@@ -185,7 +186,8 @@
 #         "example": [{"course_id": 101, "conflicting_changes": ["points"]}],
 #         "type": "array",
 #         "items": {"type": "object"}
-#       }
+#       },
+#       "locale": { "type": "string" }
 #     }
 #   }
 #
@@ -238,6 +240,14 @@
 #      }
 #    }
 #  }
+#
+# @model MasterCoursesMasterTemplatesUpdateAssociationsResponse
+#     {
+#       "id": "MasterCoursesMasterTemplatesUpdateAssociationsResponse",
+#       "properties": {
+#         "success": { "type": "boolean" }
+#       }
+#     }
 #
 class MasterCourses::MasterTemplatesController < ApplicationController
   before_action :get_course
@@ -310,6 +320,7 @@ class MasterCourses::MasterTemplatesController < ApplicationController
   #     -d 'course_ids_to_add[]=1' \
   #     -d 'course_ids_to_remove[]=2' \
   #
+  # @returns MasterCoursesMasterTemplatesUpdateAssociationsResponse
   def update_associations
     if authorized_action(@course.account, @current_user, :manage_courses_admin)
       # NOTE: that I'm additionally requiring course management rights on the account
@@ -431,6 +442,7 @@ class MasterCourses::MasterTemplatesController < ApplicationController
   #     -d 'content_id=2' \
   #     -d 'restricted=true'
   #
+  # @returns MasterCoursesMasterTemplatesUpdateAssociationsResponse
   def restrict_item
     content_type = params[:content_type]
     unless %w[assignment attachment course_pace discussion_topic external_tool lti-quiz quiz wiki_page].include?(content_type)

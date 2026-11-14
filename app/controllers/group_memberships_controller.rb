@@ -67,8 +67,31 @@
 #         "sis_import_id": {
 #           "description": "The id of the SIS import if created through SIS. Only included if the user has permission to manage SIS information.",
 #           "example": 4,
-#           "type": "integer"
-#         }
+#           "type": ["integer", "null"]
+#         },
+#         "created_at": { "type": "string" },
+#         "sis_group_id": {},
+#         "invalid_user_ids": { "type": "array", "items": { "type": "integer" } },
+#         "membership_errors": { "type": "array", "items": { "type": "object" } },
+#         "message": { "type": "string" }
+#       }
+#     }
+#
+# @model GroupMembershipsDestroyResponse
+#     {
+#       "id": "GroupMembershipsDestroyResponse",
+#       "properties": {
+#         "ok": { "type": "boolean" }
+#       }
+#     }
+#
+# @model JSON
+#     {
+#       "id": "JSON",
+#       "properties": {
+#         "deleted_user_ids": { "type": "array", "items": { "type": "integer" } },
+#         "message": { "type": "string" },
+#         "unauthorized_user_ids": { "type": "array", "items": { "type": "integer" } }
 #       }
 #     }
 #
@@ -297,6 +320,7 @@ class GroupMembershipsController < ApplicationController
   #     curl https://<canvas>/api/v1/groups/<group_id>/users/<user_id> \
   #          -X DELETE \
   #          -H 'Authorization: Bearer <token>'
+  # @returns GroupMembershipsDestroyResponse
   def destroy
     find_membership
     if authorized_action(@membership, @current_user, :delete)
@@ -317,7 +341,7 @@ class GroupMembershipsController < ApplicationController
   #          -F 'user_ids[]=456' \
   #          -H 'Authorization: Bearer <token>'
   #
-  # @returns [JSON]
+  # @returns JSON
   #   - For single deletion: `{ "ok": true }`
   #   - For bulk deletion:
   #     ```json

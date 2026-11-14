@@ -146,6 +146,7 @@ module LiveAssessments
     #    "results": [Result]
     #  }
     #
+    # @returns { results: [Result], meta: object }
     def index
       return unless authorized_action(@assessment.results.new, @current_user, :read)
 

@@ -59,7 +59,7 @@
 #         "context_image": {
 #           "description": "The image URL of the item's course, if it has one",
 #           "example": "https://canvas.instructure.com/files/1/download",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "plannable_id": {
 #           "description": "The id of the plannable object",
@@ -104,7 +104,9 @@
 #           "description": "The URL of the item in Canvas",
 #           "example": "http://canvas.instructure.com/courses/1/assignments/1#submit",
 #           "type": "string"
-#         }
+#         },
+#         "account_id": { "type": "integer" },
+#         "details": { "type": "object" }
 #       }
 #     }
 #

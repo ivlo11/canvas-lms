@@ -19,6 +19,18 @@
 #
 
 # @API Courses
+# @model ContentImportsCopyCourseStatusResponse
+#     {
+#       "id": "ContentImportsCopyCourseStatusResponse",
+#       "properties": {
+#         "created_at": { "type": "string" },
+#         "id": { "type": "integer" },
+#         "progress": { "type": ["number", "null"] },
+#         "status_url": { "type": "string" },
+#         "workflow_state": { "type": "string" }
+#       }
+#     }
+#
 class ContentImportsController < ApplicationController
   before_action :require_context
   before_action { |c| c.active_tab = "home" }
@@ -81,6 +93,7 @@ class ContentImportsController < ApplicationController
   #
   # @example_response
   #   {'progress':100, 'workflow_state':'completed', 'id':257, 'created_at':'2011-11-17T16:50:06Z', 'status_url':'/api/v1/courses/9457/course_copy/257'}
+  # @returns ContentImportsCopyCourseStatusResponse
   def copy_course_status
     if api_request?
       @context = api_find(Course, params[:course_id])
@@ -116,6 +129,7 @@ class ContentImportsController < ApplicationController
   #
   # The response is the same as the course copy status endpoint
   #
+  # @returns ContentImportsCopyCourseStatusResponse
   def copy_course_content
     if api_request?
       @context = api_find(Course, params[:course_id])

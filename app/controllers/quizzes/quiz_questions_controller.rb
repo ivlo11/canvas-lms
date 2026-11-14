@@ -52,50 +52,62 @@
 #       "position": {
 #         "description": "The order in which the question will be retrieved and displayed.",
 #         "example": 1,
-#         "type": "integer",
+#         "type": ["integer", "null"],
 #         "format": "int64"
 #       },
 #       "question_name": {
 #         "description": "The name of the question.",
 #         "example": "Prime Number Identification",
-#         "type": "string"
+#         "type": ["string", "null"]
 #        },
 #       "question_type": {
 #         "description": "The type of the question.",
 #         "example": "multiple_choice_question",
-#         "type": "string"
+#         "type": ["string", "null"]
 #       },
 #       "question_text": {
 #         "description": "The text of the question.",
 #         "example": "Which of the following is NOT a prime number?",
-#         "type": "string"
+#         "type": ["string", "null"]
 #       },
 #       "points_possible": {
 #         "description": "The maximum amount of points possible received for getting this question correct.",
 #         "example": 5,
-#         "type": "integer",
+#         "type": ["number", "null"],
 #         "format": "int64"
 #       },
 #       "correct_comments": {
 #         "description": "The comments to display if the student answers the question correctly.",
 #         "example": "That's correct!",
-#         "type": "string"
+#         "type": ["string", "null"]
 #       },
 #       "incorrect_comments": {
 #         "description": "The comments to display if the student answers incorrectly.",
 #         "example": "Unfortunately, that IS a prime number.",
-#         "type": "string"
+#         "type": ["string", "null"]
 #       },
 #       "neutral_comments": {
 #         "description": "The comments to display regardless of how the student answered.",
 #         "example": "Goldbach's conjecture proposes that every even integer greater than 2 can be expressed as the sum of two prime numbers.",
-#         "type": "string"
+#         "type": ["string", "null"]
 #       },
 #       "answers": {
 #         "description": "An array of available answers to display to the student.",
 #         "type": "array",
 #         "items": { "$ref": "Answer" }
-#       }
+#       },
+#       "answer_tolerance": {},
+#       "assessment_question_id": { "type": ["integer", "null"] },
+#       "correct_comments_html": { "type": ["string", "null"] },
+#       "formula_decimal_places": {},
+#       "formulas": {},
+#       "incorrect_comments_html": { "type": ["string", "null"] },
+#       "matches": {},
+#       "matching_answer_incorrect_matches": {},
+#       "neutral_comments_html": { "type": ["string", "null"] },
+#       "quiz_group_id": { "type": ["integer", "null"] },
+#       "variables": {},
+#       "assessment_question": {}
 #     }
 #   }
 #
@@ -191,7 +203,12 @@
 #         "example": 1170,
 #         "type": "integer",
 #         "format": "int64"
-#       }
+#       },
+#       "html": { "type": ["string", "null"] },
+#       "weight": { "type": "number" },
+#       "comments": { "type": "string" },
+#       "comments_html": { "type": "string" },
+#       "text": { "type": "string" }
 #     }
 #   }
 #

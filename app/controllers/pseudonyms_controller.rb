@@ -53,17 +53,17 @@
 #         "sis_user_id": {
 #           "description": "The login's unique SIS ID. Only included if the caller can read SIS data.",
 #           "example": "SIS-123",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "integration_id": {
 #           "description": "The login's unique integration ID. Only included if the caller can read SIS data.",
 #           "example": "ABC-123",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "authentication_provider_id": {
 #           "description": "The ID of the authentication provider that this login is associated with.",
 #           "example": 1,
-#           "type": "integer",
+#           "type": ["integer", "null"],
 #           "format": "int64"
 #         },
 #         "authentication_provider_type": {
@@ -84,8 +84,16 @@
 #         "declared_user_type": {
 #           "description": "The declared intention for this user's role.",
 #           "example": "student",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         }
+#       }
+#     }
+#
+# @model PseudonymsForgotPasswordResponse
+#     {
+#       "id": "PseudonymsForgotPasswordResponse",
+#       "properties": {
+#         "requested": { "type": "boolean" }
 #       }
 #     }
 #
@@ -167,6 +175,7 @@ class PseudonymsController < ApplicationController
   #   {
   #     "requested": true
   #   }
+  # @returns PseudonymsForgotPasswordResponse
   def forgot_password
     if api_request?
       return unless authorized_action(@current_user.pseudonym.account, @current_user, [:manage_user_logins])
@@ -402,6 +411,7 @@ class PseudonymsController < ApplicationController
   #        -F 'login[unique_id]=112233445566' \
   #        -H 'Authorization: Bearer <token>'
   #
+  # @returns Login
   def create
     return unless get_user
 
@@ -523,6 +533,7 @@ class PseudonymsController < ApplicationController
   #     "workflow_state": "active",
   #     "declared_user_type": "teacher"
   #   }
+  # @returns Login
   def update
     if api_request?
       @pseudonym = Pseudonym.active.find(params[:id])
@@ -577,6 +588,7 @@ class PseudonymsController < ApplicationController
   #     "id": 12345,
   #     "user_id": 2
   #   }
+  # @returns Login
   def destroy
     return unless get_user
 

@@ -51,7 +51,13 @@
 #           "description": "URL to access user, either nested to a context or directly.",
 #           "example": "https://school.instructure.com/courses/:course_id/users/:user_id",
 #           "type": "string"
-#         }
+#         },
+#         "anonymous_id": { "type": "string" },
+#         "display_name": { "type": "string" },
+#         "in_moderation_set": { "type": "boolean" },
+#         "pronouns": {},
+#         "provisional_grades": { "type": "array", "items": { "type": "object" } },
+#         "selected_provisional_grade_id": { "type": ["integer", "null"] }
 #       }
 #     }
 #
@@ -182,6 +188,174 @@
 #       }
 #     }
 #
+#
+# @model UsersActivityStreamResponse
+#     {
+#       "id": "UsersActivityStreamResponse",
+#       "properties": {
+#         "announcement_id": { "type": "integer" },
+#         "assessment_request_id": { "type": "integer" },
+#         "assignment": { "type": "object" },
+#         "assignment_id": { "type": "integer" },
+#         "attempt": { "type": ["integer", "null"] },
+#         "author_name": { "type": "string" },
+#         "body": { "type": ["string", "null"] },
+#         "cached_due_date": { "type": ["string", "null"] },
+#         "collaboration_id": { "type": "integer" },
+#         "context_type": { "type": "string" },
+#         "conversation_id": { "type": "integer" },
+#         "course": { "type": "object" },
+#         "course_id": { "type": "integer" },
+#         "created_at": { "type": "string" },
+#         "custom_grade_status_id": {},
+#         "discussion_entries": { "type": "array" },
+#         "discussion_topic_id": { "type": "integer" },
+#         "entered_grade": { "type": ["string", "null"] },
+#         "entered_score": { "type": ["number", "null"] },
+#         "excused": { "type": ["boolean", "null"] },
+#         "extra_attempts": {},
+#         "grade": { "type": ["string", "null"] },
+#         "grade_matches_current_submission": { "type": "boolean" },
+#         "graded_at": { "type": ["string", "null"] },
+#         "grader_id": { "type": ["integer", "null"] },
+#         "grading_period_id": { "type": ["integer", "null"] },
+#         "group_id": { "type": "integer" },
+#         "html_url": { "type": ["string", "null"] },
+#         "id": { "type": "integer" },
+#         "late": { "type": "boolean" },
+#         "late_policy_status": {},
+#         "latest_messages": { "type": "array", "items": { "type": "object" } },
+#         "message": { "type": ["string", "null"] },
+#         "message_id": { "type": ["integer", "null"] },
+#         "missing": { "type": "boolean" },
+#         "notification_category": { "type": ["string", "null"] },
+#         "participant_count": { "type": "integer" },
+#         "points_deducted": { "type": ["number", "null"] },
+#         "posted_at": { "type": "string" },
+#         "preview_url": { "type": "string" },
+#         "private": { "type": "boolean" },
+#         "read_state": { "type": "boolean" },
+#         "redo_request": { "type": "boolean" },
+#         "require_initial_post": { "type": "boolean" },
+#         "root_discussion_entries": { "type": "array", "items": { "type": "object" } },
+#         "score": { "type": ["number", "null"] },
+#         "seconds_late": { "type": "integer" },
+#         "sticker": {},
+#         "submission_comments": { "type": "array", "items": { "type": "object" } },
+#         "submission_id": { "type": "integer" },
+#         "submission_type": { "type": ["string", "null"] },
+#         "submitted_at": { "type": ["string", "null"] },
+#         "title": { "type": ["string", "null"] },
+#         "total_root_discussion_entries": { "type": "integer" },
+#         "type": { "type": "string" },
+#         "updated_at": { "type": "string" },
+#         "url": { "type": ["string", "null"] },
+#         "user": { "type": "object" },
+#         "user_has_posted": { "type": ["boolean", "null"] },
+#         "user_id": { "type": "integer" },
+#         "web_conference_id": { "type": "integer" },
+#         "workflow_state": { "type": "string" }
+#       }
+#     }
+#
+# @model UsersActivityStreamSummaryResponse
+#     {
+#       "id": "UsersActivityStreamSummaryResponse",
+#       "properties": {
+#         "count": { "type": "integer" },
+#         "notification_category": { "type": ["string", "null"] },
+#         "type": { "type": "string" },
+#         "unread_count": { "type": "integer" }
+#       }
+#     }
+#
+# @model UsersTodoItemCountResponse
+#     {
+#       "id": "UsersTodoItemCountResponse",
+#       "properties": {
+#         "assignments_needing_submitting": { "type": "integer" },
+#         "needs_grading_count": { "type": "integer" }
+#       }
+#     }
+#
+# @model UsersIgnoreStreamItemResponse
+#     {
+#       "id": "UsersIgnoreStreamItemResponse",
+#       "properties": {
+#         "hidden": { "type": "boolean" }
+#       }
+#     }
+#
+# @model UsersCreateFileResponse
+#     {
+#       "id": "UsersCreateFileResponse",
+#       "properties": {
+#         "file_param": { "type": "string" },
+#         "progress": { "type": "object" },
+#         "upload_params": { "type": "object" },
+#         "upload_url": { "type": "string" }
+#       }
+#     }
+#
+# @model UsersSettingsResponse
+#     {
+#       "id": "UsersSettingsResponse",
+#       "properties": {
+#         "collapse_course_nav": { "type": "boolean" },
+#         "collapse_global_nav": { "type": "boolean" },
+#         "comment_library_suggestions_enabled": { "type": "boolean" },
+#         "default_to_block_editor": { "type": "boolean" },
+#         "elementary_dashboard_disabled": { "type": "boolean" },
+#         "hide_dashcard_color_overlays": { "type": "boolean" },
+#         "manual_mark_as_read": { "type": "boolean" },
+#         "release_notes_badge_disabled": { "type": "boolean" },
+#         "widget_dashboard_dark_mode": { "type": "boolean" },
+#         "widget_dashboard_user_preference": { "type": "boolean" }
+#       }
+#     }
+#
+# @model UsersGetCustomColorsResponse
+#     {
+#       "id": "UsersGetCustomColorsResponse",
+#       "properties": {
+#         "custom_colors": { "type": "object" }
+#       }
+#     }
+#
+# @model UsersGetCustomColorResponse
+#     {
+#       "id": "UsersGetCustomColorResponse",
+#       "properties": {
+#         "hexcode": { "type": "string" }
+#       }
+#     }
+#
+# @model UsersGetDashboardPositionsResponse
+#     {
+#       "id": "UsersGetDashboardPositionsResponse",
+#       "properties": {
+#         "dashboard_positions": { "type": "object" }
+#       }
+#     }
+#
+# @model UsersTerminateSessionsResponse
+#     {
+#       "id": "UsersTerminateSessionsResponse",
+#       "properties": {
+#         "message": { "type": "string" }
+#       }
+#     }
+#
+# @model UsersPandataEventsTokenResponse
+#     {
+#       "id": "UsersPandataEventsTokenResponse",
+#       "properties": {
+#         "auth_token": { "type": "string" },
+#         "expires_at": { "type": "number" },
+#         "props_token": { "type": "string" },
+#         "url": { "type": "string" }
+#       }
+#     }
 #
 class UsersController < ApplicationController
   include SearchHelper
@@ -897,6 +1071,7 @@ class UsersController < ApplicationController
   #     'type': 'AssessmentRequest',
   #     'assessment_request_id': 1234
   #   }
+  # @returns [UsersActivityStreamResponse]
   def activity_stream
     if @current_user
       # this endpoint has undocumented params (context_code, submission_user_id and asset_type) to
@@ -932,6 +1107,7 @@ class UsersController < ApplicationController
   #       "count": 3
   #     }
   #   ]
+  # @returns [UsersActivityStreamSummaryResponse]
   def activity_stream_summary
     if @current_user
       opts = {}
@@ -1177,6 +1353,7 @@ class UsersController < ApplicationController
   #     needs_grading_count: 32,
   #     assignments_needing_submitting: 10
   #   }
+  # @returns UsersTodoItemCountResponse
   def todo_item_count
     GuardRail.activate(:secondary) do
       grading = @current_user.submissions_needing_grading_count
@@ -1254,6 +1431,7 @@ class UsersController < ApplicationController
   #       "html_url"=>"http://www.example.com/courses/12942/assignments/9729"
   #     }
   #   ]
+  # @returns [CalendarEvent]
   def upcoming_events
     GuardRail.activate(:secondary) do
       prepare_current_user_dashboard_items
@@ -1369,6 +1547,7 @@ class UsersController < ApplicationController
   #     {
   #       "hidden": true
   #     }
+  # @returns UsersIgnoreStreamItemResponse
   def ignore_stream_item
     @current_user.shard.activate do # can't just pass in the user's shard to relative_id_for, since local ids will be incorrectly scoped to the current shard, not the user's
       if (item = @current_user.stream_item_instances.where(stream_item_id: Shard.relative_id_for(params[:id], Shard.current, Shard.current)).first)
@@ -1390,6 +1569,7 @@ class UsersController < ApplicationController
   #     {
   #       "hidden": true
   #     }
+  # @returns UsersIgnoreStreamItemResponse
   def ignore_all_stream_items
     @current_user.shard.activate do # can't just pass in the user's shard to relative_id_for, since local ids will be incorrectly scoped to the current shard, not the user's
       @current_user.stream_item_instances.where(hidden: false).each do |item|
@@ -1410,6 +1590,7 @@ class UsersController < ApplicationController
   # Note that typically users will only be able to upload files to their
   # own files section. Passing a user_id of +self+ is an easy shortcut
   # to specify the current user.
+  # @returns UsersCreateFileResponse
   def create_file
     @user = api_find(User, params[:user_id])
     @attachment = @user.attachments.build
@@ -1933,6 +2114,7 @@ class UsersController < ApplicationController
   #     -X PUT \
   #     -F 'manual_mark_as_read=true'
   #     -H 'Authorization: Bearer <token>'
+  # @returns UsersSettingsResponse
   def settings
     user = api_find(User, params[:id])
 
@@ -2038,6 +2220,7 @@ class UsersController < ApplicationController
   #     }
   #   }
   #
+  # @returns UsersGetCustomColorsResponse
   def get_custom_colors
     user = api_find(User, params[:id])
     return unless authorized_action(user, @current_user, :read)
@@ -2061,6 +2244,7 @@ class UsersController < ApplicationController
   #   {
   #     "hexcode": "#abc123"
   #   }
+  # @returns UsersGetCustomColorResponse
   def get_custom_color
     user = api_find(User, params[:id])
 
@@ -2096,6 +2280,7 @@ class UsersController < ApplicationController
   #   {
   #     "hexcode": "#abc123"
   #   }
+  # @returns UsersGetCustomColorResponse
   def set_custom_color
     user = api_find(User, params[:id])
 
@@ -2217,6 +2402,7 @@ class UsersController < ApplicationController
   #     }
   #   }
   #
+  # @returns UsersGetDashboardPositionsResponse
   def get_dashboard_positions
     user = api_find(User, params[:id])
     return unless authorized_action(user, @current_user, :read)
@@ -2250,6 +2436,7 @@ class UsersController < ApplicationController
   #       "course_53": 2
   #     }
   #   }
+  # @returns UsersGetDashboardPositionsResponse
   def set_dashboard_positions
     user = api_find(User, params[:id])
 
@@ -2542,6 +2729,7 @@ class UsersController < ApplicationController
   # The user can immediately re-authenticate to access Canvas again if
   # they have the current credentials. All integrations will need to
   # be re-authorized.
+  # @returns UsersTerminateSessionsResponse
   def terminate_sessions
     user = api_find(User, params[:id])
 
@@ -2564,6 +2752,7 @@ class UsersController < ApplicationController
   #
   # @argument skip_admins [Optional, Boolean]
   #  If true, will not expire mobile sessions for account administrators.
+  # @returns UsersTerminateSessionsResponse
   def expire_mobile_sessions
     return unless authorized_action(@domain_root_account, @current_user, :manage_user_logins)
 
@@ -3049,6 +3238,7 @@ class UsersController < ApplicationController
   #     "props_token": "paowinefopwienpfiownepfiownepfownef",
   #     "expires_at": 1521667783000,
   #   }
+  # @returns UsersPandataEventsTokenResponse
   def pandata_events_token
     dk_ids = Setting.get("pandata_events_token_allowed_developer_key_ids", "").split(",")
     token_prefixes = Setting.get("pandata_events_token_prefixes", "ios,android").split(",")

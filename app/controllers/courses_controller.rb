@@ -36,11 +36,16 @@
 #         },
 #         "start_at": {
 #           "example": "2012-06-01T00:00:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "end_at": {
-#           "type": "datetime"
-#         }
+#           "type": ["datetime", "null"]
+#         },
+#         "created_at": { "type": "string" },
+#         "grading_period_group_id": {},
+#         "sis_import_id": {},
+#         "sis_term_id": {},
+#         "workflow_state": { "type": "string" }
 #       }
 #     }
 #
@@ -62,12 +67,12 @@
 #         "next_requirement_url": {
 #           "description": "url to next module item that has an unmet requirement. null if the user has completed the course or the current module does not require sequential progress",
 #           "example": "http://localhost/courses/1/modules/items/2",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "completed_at": {
 #           "description": "date the course was completed. null if the course has not been completed by this user",
 #           "example": "2013-06-01T00:00:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         }
 #       }
 #     }
@@ -106,7 +111,7 @@
 #         "pronouns": {
 #           "description": "The user's pronouns, if pronouns are enabled.",
 #           "example": "they/them",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "fake_student": {
 #           "description": "Optional: true if the user is the course's test student. Only included for test students.",
@@ -165,21 +170,21 @@
 #         },
 #         "sis_course_id": {
 #           "description": "the SIS identifier for the course, if defined. This field is only included if the user has permission to view SIS information.",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "uuid": {
 #           "description": "the UUID of the course",
 #           "example": "WvAHhY5FINzq5IyRIJybGeiXyFkG3SqHUPb7jZY5",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "integration_id": {
 #           "description": "the integration identifier for the course, if defined. This field is only included if the user has permission to view SIS information.",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "sis_import_id": {
 #           "description": "the unique identifier for the SIS import. This field is only included if the user has permission to manage SIS information.",
 #           "example": 34,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "name": {
 #           "description": "the full name of the course. If the requesting user has set a nickname for the course, the nickname will be shown here.",
@@ -189,7 +194,7 @@
 #         "course_code": {
 #           "description": "the course code",
 #           "example": "INSTCON12",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "original_name": {
 #           "description": "the actual course name. This field is returned only if the requesting user has set a nickname for the course.",
@@ -232,12 +237,12 @@
 #         "grading_standard_id": {
 #            "description": "the grading standard associated with the course",
 #            "example": 25,
-#            "type": "integer"
+#            "type": ["integer", "null"]
 #         },
 #         "grade_passback_setting": {
 #            "description": "the grade_passback_setting set on the course",
 #            "example": "nightly_sync",
-#            "type": "string"
+#            "type": ["string", "null"]
 #         },
 #         "created_at": {
 #           "description": "the date the course was created.",
@@ -247,12 +252,12 @@
 #         "start_at": {
 #           "description": "the start date for the course, if applicable",
 #           "example": "2012-06-01T00:00:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "end_at": {
 #           "description": "the end date for the course, if applicable",
 #           "example": "2012-09-01T00:00:00-06:00",
-#           "type": "datetime"
+#           "type": ["datetime", "null"]
 #         },
 #         "locale": {
 #           "description": "the course-set locale, if applicable",
@@ -276,7 +281,7 @@
 #         "default_view": {
 #           "description": "the type of page that users will see when they first visit the course - 'feed': Recent Activity Dashboard - 'wiki': Wiki Front Page - 'modules': Course Modules/Sections Page - 'assignments': Course Assignments List - 'syllabus': Course Syllabus Page other types may be added in the future",
 #           "example": "feed",
-#           "type": "string",
+#           "type": ["string", "null"],
 #           "allowableValues": {
 #             "values": [
 #               "feed",
@@ -319,7 +324,7 @@
 #         },
 #         "is_public": {
 #           "example": true,
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "is_public_to_auth_users": {
 #           "example": true,
@@ -352,7 +357,7 @@
 #         },
 #         "license": {
 #           "example": "Creative Commons",
-#           "type": "string"
+#           "type": ["string", "null"]
 #         },
 #         "allow_student_assignment_edits": {
 #           "example": false,
@@ -360,7 +365,7 @@
 #         },
 #         "allow_wiki_comments": {
 #           "example": false,
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "allow_student_forum_attachments": {
 #           "example": false,
@@ -368,11 +373,11 @@
 #         },
 #         "open_enrollment": {
 #           "example": true,
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "self_enrollment": {
 #           "example": false,
-#           "type": "boolean"
+#           "type": ["boolean", "null"]
 #         },
 #         "restrict_enrollments_to_course_dates": {
 #           "example": false,
@@ -411,7 +416,29 @@
 #           "description": "optional: whether the course is set as a template (requires the Course Templates feature)",
 #           "example": true,
 #           "type": "boolean"
-#         }
+#         },
+#         "accessibility_course_statistic": { "type": ["object", "null"] },
+#         "account_name": { "type": "string" },
+#         "concluded": { "type": "boolean" },
+#         "course_color": {},
+#         "friendly_name": { "type": ["string", "null"] },
+#         "homeroom_course": { "type": "boolean" },
+#         "post_manually": { "type": "boolean" },
+#         "teacher_count": { "type": "integer" },
+#         "teachers": { "type": "array", "items": { "type": "object" } },
+#         "account": { "type": "object" },
+#         "has_grading_periods": { "type": "boolean" },
+#         "has_weighted_grading_periods": { "type": "boolean" },
+#         "multiple_grading_periods_enabled": { "type": "boolean" },
+#         "sections": { "type": "array", "items": { "type": "object" } },
+#         "subaccount_id": { "type": "integer" },
+#         "subaccount_name": { "type": "string" },
+#         "tabs": { "type": "array", "items": { "type": "object" } },
+#         "conclude_at": { "type": ["string", "null"] },
+#         "global_id": { "type": "integer" },
+#         "syllabus_versions": { "type": "array", "items": { "type": "object" } },
+#         "term_name": { "type": "string" },
+#         "html_url": { "type": "string" }
 #       }
 #     }
 #
@@ -425,6 +452,286 @@
 #           "example": "https://canvas.instructure.com/feeds/calendars/course_abcdef.ics",
 #           "type": "string"
 #          }
+#       }
+#     }
+#
+# @model CoursesCreateFileResponse
+#     {
+#       "id": "CoursesCreateFileResponse",
+#       "properties": {
+#         "file_param": { "type": "string" },
+#         "progress": { "type": ["object", "null"] },
+#         "upload_params": { "type": "object" },
+#         "upload_url": { "type": "string" }
+#       }
+#     }
+#
+# @model CoursesPreviewHtmlResponse
+#     {
+#       "id": "CoursesPreviewHtmlResponse",
+#       "properties": {
+#         "html": { "type": "string" }
+#       }
+#     }
+#
+# @model CoursesActivityStreamSummaryResponse
+#     {
+#       "id": "CoursesActivityStreamSummaryResponse",
+#       "properties": {
+#         "count": { "type": "integer" },
+#         "notification_category": { "type": ["string", "null"] },
+#         "type": { "type": "string" },
+#         "unread_count": { "type": "integer" }
+#       }
+#     }
+#
+# @model CoursesDestroyResponse
+#     {
+#       "id": "CoursesDestroyResponse",
+#       "properties": {
+#         "conclude": { "type": "boolean" },
+#         "delete": { "type": "boolean" }
+#       }
+#     }
+#
+# @model CoursesApiSettingsResponse
+#     {
+#       "id": "CoursesApiSettingsResponse",
+#       "properties": {
+#         "allow_final_grade_override": { "type": "boolean" },
+#         "allow_student_anonymous_discussion_topics": { "type": "boolean" },
+#         "allow_student_discussion_editing": { "type": "boolean" },
+#         "allow_student_discussion_reporting": { "type": "boolean" },
+#         "allow_student_discussion_topics": { "type": "boolean" },
+#         "allow_student_forum_attachments": { "type": "boolean" },
+#         "allow_student_organized_groups": { "type": "boolean" },
+#         "banner_image": {},
+#         "banner_image_id": {},
+#         "banner_image_url": {},
+#         "conditional_release": { "type": "boolean" },
+#         "course_color": {},
+#         "default_discussion_settings": { "type": "object" },
+#         "default_due_time": { "type": "string" },
+#         "default_student_gradebook_view": { "type": "boolean" },
+#         "filter_speed_grader_by_student_group": { "type": "boolean" },
+#         "friendly_name": {},
+#         "grade_passback_setting": {},
+#         "grading_standard_enabled": { "type": "boolean" },
+#         "grading_standard_id": { "type": ["integer", "null"] },
+#         "hide_distribution_graphs": { "type": "boolean" },
+#         "hide_final_grades": { "type": "boolean" },
+#         "hide_sections_on_course_users_page": { "type": "boolean" },
+#         "home_page_announcement_limit": {},
+#         "homeroom_course": { "type": "boolean" },
+#         "image": {},
+#         "image_id": {},
+#         "image_url": {},
+#         "lock_all_announcements": { "type": "boolean" },
+#         "restrict_quantitative_data": { "type": "boolean" },
+#         "restrict_student_future_view": { "type": "boolean" },
+#         "restrict_student_past_view": { "type": "boolean" },
+#         "show_announcements_on_home_page": { "type": "boolean" },
+#         "syllabus_course_summary": { "type": "boolean" },
+#         "usage_rights_required": { "type": "boolean" },
+#         "use_default_discussion_settings": { "type": "boolean" }
+#       }
+#     }
+#
+# @model CoursesPermissionsResponse
+#     {
+#       "id": "CoursesPermissionsResponse",
+#       "properties": {
+#         "access_oak": { "type": "boolean" },
+#         "access_oak_teacher": { "type": "boolean" },
+#         "add_course_template": { "type": "boolean" },
+#         "add_designer_to_course": { "type": "boolean" },
+#         "add_observer_to_course": { "type": "boolean" },
+#         "add_student_to_course": { "type": "boolean" },
+#         "add_ta_to_course": { "type": "boolean" },
+#         "add_teacher_to_course": { "type": "boolean" },
+#         "allow_course_admin_actions": { "type": "boolean" },
+#         "apply_default_discussion_options": { "type": "boolean" },
+#         "become_user": { "type": "boolean" },
+#         "block_editor_global_template_editor": { "type": "boolean" },
+#         "block_editor_template_editor": { "type": "boolean" },
+#         "create_access_tokens": { "type": "boolean" },
+#         "create_collaborations": { "type": "boolean" },
+#         "create_conferences": { "type": "boolean" },
+#         "create_forum": { "type": "boolean" },
+#         "delete": { "type": "boolean" },
+#         "delete_access_tokens": { "type": "boolean" },
+#         "delete_course_template": { "type": "boolean" },
+#         "direct_share": { "type": "boolean" },
+#         "edit_course_availability": { "type": "boolean" },
+#         "edit_course_template": { "type": "boolean" },
+#         "edit_discussion_anonymity": { "type": "boolean" },
+#         "edit_discussion_options": { "type": "boolean" },
+#         "edit_discussion_views": { "type": "boolean" },
+#         "generate_observer_pairing_code": { "type": "boolean" },
+#         "import_outcomes": { "type": "boolean" },
+#         "import_sis": { "type": "boolean" },
+#         "manage": { "type": "boolean" },
+#         "manage_account_banks": { "type": "boolean" },
+#         "manage_account_calendar_events": { "type": "boolean" },
+#         "manage_account_calendar_visibility": { "type": "boolean" },
+#         "manage_account_memberships": { "type": "boolean" },
+#         "manage_account_settings": { "type": "boolean" },
+#         "manage_alerts": { "type": "boolean" },
+#         "manage_ask_questions_analytics_context": { "type": "boolean" },
+#         "manage_assignments_add": { "type": "boolean" },
+#         "manage_assignments_delete": { "type": "boolean" },
+#         "manage_assignments_edit": { "type": "boolean" },
+#         "manage_calendar": { "type": "boolean" },
+#         "manage_catalog": { "type": "boolean" },
+#         "manage_course_content_add": { "type": "boolean" },
+#         "manage_course_content_delete": { "type": "boolean" },
+#         "manage_course_content_edit": { "type": "boolean" },
+#         "manage_course_details": { "type": "boolean" },
+#         "manage_course_feature_options": { "type": "boolean" },
+#         "manage_course_navigation": { "type": "boolean" },
+#         "manage_course_visibility": { "type": "boolean" },
+#         "manage_courses_add": { "type": "boolean" },
+#         "manage_courses_admin": { "type": "boolean" },
+#         "manage_courses_conclude": { "type": "boolean" },
+#         "manage_courses_delete": { "type": "boolean" },
+#         "manage_courses_publish": { "type": "boolean" },
+#         "manage_courses_reset": { "type": "boolean" },
+#         "manage_data_services": { "type": "boolean" },
+#         "manage_developer_keys": { "type": "boolean" },
+#         "manage_dsr_requests": { "type": "boolean" },
+#         "manage_feature_flags": { "type": "boolean" },
+#         "manage_files_add": { "type": "boolean" },
+#         "manage_files_delete": { "type": "boolean" },
+#         "manage_files_edit": { "type": "boolean" },
+#         "manage_frozen_assignments": { "type": "boolean" },
+#         "manage_global_outcomes": { "type": "boolean" },
+#         "manage_grades": { "type": "boolean" },
+#         "manage_grading_schemes": { "type": "boolean" },
+#         "manage_groups_add": { "type": "boolean" },
+#         "manage_groups_delete": { "type": "boolean" },
+#         "manage_groups_manage": { "type": "boolean" },
+#         "manage_impact": { "type": "boolean" },
+#         "manage_institutional_tags_create": { "type": "boolean" },
+#         "manage_institutional_tags_edit": { "type": "boolean" },
+#         "manage_institutional_tags_view": { "type": "boolean" },
+#         "manage_interaction_alerts": { "type": "boolean" },
+#         "manage_internal_settings": { "type": "boolean" },
+#         "manage_jobs": { "type": "boolean" },
+#         "manage_lti_add": { "type": "boolean" },
+#         "manage_lti_delete": { "type": "boolean" },
+#         "manage_lti_edit": { "type": "boolean" },
+#         "manage_lti_registrations": { "type": "boolean" },
+#         "manage_master_courses": { "type": "boolean" },
+#         "manage_nav_menu_links": { "type": "boolean" },
+#         "manage_outcomes": { "type": "boolean" },
+#         "manage_proficiency_calculations": { "type": "boolean" },
+#         "manage_proficiency_scales": { "type": "boolean" },
+#         "manage_rate_limiting": { "type": "boolean" },
+#         "manage_release_notes": { "type": "boolean" },
+#         "manage_role_overrides": { "type": "boolean" },
+#         "manage_rubrics": { "type": "boolean" },
+#         "manage_rules_add": { "type": "boolean" },
+#         "manage_rules_delete": { "type": "boolean" },
+#         "manage_rules_edit": { "type": "boolean" },
+#         "manage_rules_view": { "type": "boolean" },
+#         "manage_sections_add": { "type": "boolean" },
+#         "manage_sections_delete": { "type": "boolean" },
+#         "manage_sections_edit": { "type": "boolean" },
+#         "manage_sis": { "type": "boolean" },
+#         "manage_site_settings": { "type": "boolean" },
+#         "manage_storage_quotas": { "type": "boolean" },
+#         "manage_students": { "type": "boolean" },
+#         "manage_tags_add": { "type": "boolean" },
+#         "manage_tags_delete": { "type": "boolean" },
+#         "manage_tags_manage": { "type": "boolean" },
+#         "manage_user_logins": { "type": "boolean" },
+#         "manage_user_observers": { "type": "boolean" },
+#         "manage_users_in_bulk": { "type": "boolean" },
+#         "manage_wiki_create": { "type": "boolean" },
+#         "manage_wiki_delete": { "type": "boolean" },
+#         "manage_wiki_update": { "type": "boolean" },
+#         "moderate_forum": { "type": "boolean" },
+#         "moderate_user_content": { "type": "boolean" },
+#         "modify_site_admin_developer_keys": { "type": "boolean" },
+#         "new_quizzes_multiple_session_detection": { "type": "boolean" },
+#         "new_quizzes_view_ip_address": { "type": "boolean" },
+#         "participate_as_student": { "type": "boolean" },
+#         "post_to_forum": { "type": "boolean" },
+#         "proxy_assignment_submission": { "type": "boolean" },
+#         "read": { "type": "boolean" },
+#         "read_announcements": { "type": "boolean" },
+#         "read_as_admin": { "type": "boolean" },
+#         "read_as_member": { "type": "boolean" },
+#         "read_course_content": { "type": "boolean" },
+#         "read_course_list": { "type": "boolean" },
+#         "read_email_addresses": { "type": "boolean" },
+#         "read_files": { "type": "boolean" },
+#         "read_forum": { "type": "boolean" },
+#         "read_grades": { "type": "boolean" },
+#         "read_messages": { "type": "boolean" },
+#         "read_outcomes": { "type": "boolean" },
+#         "read_prior_roster": { "type": "boolean" },
+#         "read_question_banks": { "type": "boolean" },
+#         "read_reports": { "type": "boolean" },
+#         "read_roster": { "type": "boolean" },
+#         "read_rubrics": { "type": "boolean" },
+#         "read_sis": { "type": "boolean" },
+#         "read_syllabus": { "type": "boolean" },
+#         "remove_designer_from_course": { "type": "boolean" },
+#         "remove_observer_from_course": { "type": "boolean" },
+#         "remove_student_from_course": { "type": "boolean" },
+#         "remove_ta_from_course": { "type": "boolean" },
+#         "remove_teacher_from_course": { "type": "boolean" },
+#         "reset_any_mfa": { "type": "boolean" },
+#         "reset_content": { "type": "boolean" },
+#         "reset_what_if_grades": { "type": "boolean" },
+#         "select_final_grade": { "type": "boolean" },
+#         "send_messages": { "type": "boolean" },
+#         "send_messages_all": { "type": "boolean" },
+#         "set_grading_scheme": { "type": "boolean" },
+#         "share_banks_with_subaccounts": { "type": "boolean" },
+#         "site_admin_self_token_create": { "type": "boolean" },
+#         "temporary_enrollments_add": { "type": "boolean" },
+#         "temporary_enrollments_delete": { "type": "boolean" },
+#         "temporary_enrollments_edit": { "type": "boolean" },
+#         "undelete_courses": { "type": "boolean" },
+#         "update": { "type": "boolean" },
+#         "update_course_details": { "type": "boolean" },
+#         "update_nav": { "type": "boolean" },
+#         "use_student_view": { "type": "boolean" },
+#         "view_accessibility_insights": { "type": "boolean" },
+#         "view_admin_analytics": { "type": "boolean" },
+#         "view_all_grades": { "type": "boolean" },
+#         "view_analytics_hub": { "type": "boolean" },
+#         "view_archived_courses": { "type": "boolean" },
+#         "view_ask_questions_analytics": { "type": "boolean" },
+#         "view_ask_questions_pinboards": { "type": "boolean" },
+#         "view_audit_trail": { "type": "boolean" },
+#         "view_course_changes": { "type": "boolean" },
+#         "view_course_readiness": { "type": "boolean" },
+#         "view_error_reports": { "type": "boolean" },
+#         "view_feature_flags": { "type": "boolean" },
+#         "view_grade_changes": { "type": "boolean" },
+#         "view_group_pages": { "type": "boolean" },
+#         "view_jobs": { "type": "boolean" },
+#         "view_notifications": { "type": "boolean" },
+#         "view_quiz_answer_audits": { "type": "boolean" },
+#         "view_rsi_report": { "type": "boolean" },
+#         "view_statistics": { "type": "boolean" },
+#         "view_students_in_need": { "type": "boolean" },
+#         "view_students_in_need_in_course": { "type": "boolean" },
+#         "view_title_iv_financial_aid_report": { "type": "boolean" },
+#         "view_unpublished_items": { "type": "boolean" },
+#         "view_user_generated_access_tokens": { "type": "boolean" },
+#         "view_user_logins": { "type": "boolean" }
+#       }
+#     }
+#
+# @model CoursesDismissMigrationLimitationMsgResponse
+#     {
+#       "id": "CoursesDismissMigrationLimitationMsgResponse",
+#       "properties": {
+#         "success": { "type": "boolean" }
 #       }
 #     }
 #
@@ -1175,6 +1482,7 @@ class CoursesController < ApplicationController
   #
   # Only those with the "Manage Files" permission on a course can upload files
   # to the course. By default, this is Teachers, TAs and Designers.
+  # @returns CoursesCreateFileResponse
   def create_file
     @attachment = Attachment.new(context: @context)
     if authorized_action(@attachment, @current_user, :create)
@@ -1518,6 +1826,7 @@ class CoursesController < ApplicationController
   #   {
   #     "html": "<p>processed html</p>"
   #   }
+  # @returns CoursesPreviewHtmlResponse
   def preview_html
     get_context
     if @context && authorized_action(@context, @current_user, :read)
@@ -1532,6 +1841,7 @@ class CoursesController < ApplicationController
   #
   # For full documentation, see the API documentation for the user activity
   # stream, in the user api.
+  # @returns [Submission]
   def activity_stream
     get_context
     if authorized_action(@context, @current_user, :read)
@@ -1544,6 +1854,7 @@ class CoursesController < ApplicationController
   #
   # For full documentation, see the API documentation for the user activity
   # stream summary, in the user api.
+  # @returns [CoursesActivityStreamSummaryResponse]
   def activity_stream_summary
     get_context
     if authorized_action(@context, @current_user, :read)
@@ -1622,6 +1933,7 @@ class CoursesController < ApplicationController
   #
   # @example_response
   #   { "delete": "true" }
+  # @returns CoursesDestroyResponse
   def destroy
     @context = api_find(Course, params[:id])
     if api_request? && !["delete", "conclude"].include?(params[:event])
@@ -1704,6 +2016,7 @@ class CoursesController < ApplicationController
   #     "default_due_time": "23:59:59",
   #     "conditional_release": false
   #   }
+  # @returns CoursesApiSettingsResponse
   def api_settings
     get_context
     if authorized_action @context, @current_user, :read
@@ -1953,6 +2266,7 @@ class CoursesController < ApplicationController
   #     -X PUT \
   #     -H 'Authorization: Bearer <token>' \
   #     -d 'allow_student_discussion_topics=false'
+  # @returns CoursesApiSettingsResponse
   def update_settings
     return unless api_request?
 
@@ -3410,6 +3724,7 @@ class CoursesController < ApplicationController
   #     "end_at": "2012-08-05T23:59:59Z",
   #     "sis_course_id": "12345"
   #   }
+  # @returns Course
   def update
     @course = api_find(Course, params[:id])
     old_settings = @course.settings
@@ -4061,6 +4376,7 @@ class CoursesController < ApplicationController
   #
   # @example_response
   #   {'manage_grades': 'false', 'send_messages': 'true'}
+  # @returns CoursesPermissionsResponse
   def permissions
     get_context
     return unless authorized_action(@context, @current_user, :read)
@@ -4264,6 +4580,7 @@ class CoursesController < ApplicationController
   #
   # @example_response
   #   { "success": "true" }
+  # @returns CoursesDismissMigrationLimitationMsgResponse
   def dismiss_migration_limitation_msg
     @course = api_find(Course, params[:id])
     quiz_migration_alert = @course.quiz_migration_alert_for_user(@current_user&.id)

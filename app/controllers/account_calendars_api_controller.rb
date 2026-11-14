@@ -47,7 +47,7 @@
 #         "parent_account_id": {
 #           "description": "the account's parent ID, or null if this is the root account",
 #           "example": 1,
-#           "type": "integer"
+#           "type": ["integer", "null"]
 #         },
 #         "root_account_id": {
 #           "description": "the ID of the root account, or null if this is the root account",
@@ -101,6 +101,14 @@
 #         }
 #       }
 #     }
+# @model AccountCalendarsBulkUpdateResponse
+#     {
+#       "id": "AccountCalendarsBulkUpdateResponse",
+#       "properties": {
+#         "message": { "type": "string" }
+#       }
+#     }
+#
 class AccountCalendarsApiController < ApplicationController
   include Api::V1::AccountCalendar
 
@@ -209,6 +217,7 @@ class AccountCalendarsApiController < ApplicationController
   #     --data '[{"id": 1, "visible": true, "auto_subscribe": false}, {"id": 13, "visible": false, "auto_subscribe": true}]'
   #
   # Returns the count of updated accounts.
+  # @returns AccountCalendarsBulkUpdateResponse
   def bulk_update
     account = api_find(Account.active, params[:account_id])
     return unless authorized_action(account, @current_user, :manage_account_calendar_visibility)

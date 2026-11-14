@@ -45,7 +45,7 @@
 #          "workflow_state": {
 #            "description": "The workflow state of the binding. Will be one of 'on', 'off', or 'allow.'",
 #            "example": "on",
-#            "type": "number"
+#            "type": ["string", "number"]
 #          },
 #          "account_owns_binding": {
 #            "description": "True if the requested context owns the binding",
