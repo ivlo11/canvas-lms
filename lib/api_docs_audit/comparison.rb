@@ -94,6 +94,20 @@ module ApiDocsAudit
       end
       compare_trace_keys(action, records)
       compare_pagination(action)
+      report_undocumented_returns(action)
+    end
+
+    # An action with no @returns and no body to fit one to, so checks can list
+    # it: a response with no body, or no evidence at all
+    def report_undocumented_returns(action)
+      return unless action.response.container == :none
+      return if @findings.any? { |finding| finding.action == action.key && finding.kind.start_with?("missing_returns") }
+
+      if @evidence.responses(action.key).any?
+        add(action, "missing_returns", "report", "response", observed: "none")
+      else
+        add(action, "missing_returns", "report", (status_of(action.key) == "static") ? "trace" : "none")
+      end
     end
 
     def compare_responses(action, records)
@@ -397,6 +411,8 @@ module ApiDocsAudit
     def compare_trace_keys(action, records)
       trace = @traces[action.key]
       return unless trace && trace[:kind] && action.response.schema
+      # A wrapper around a documented list is a container conflict, not item fields
+      return if action.response.container == :list && trace[:kind] == "object"
 
       model = action.response.models.first
       return unless model && action.response.models.size == 1

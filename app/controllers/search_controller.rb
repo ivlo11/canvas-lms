@@ -85,11 +85,265 @@
 #     }
 #
 #
-# @model SearchAllCoursesResponse
+# @model CatalogCourse
 #     {
-#       "id": "SearchAllCoursesResponse",
+#       "id": "CatalogCourse",
+#       "description": "A course in the public course catalog. This is the raw course record, not the Course object the Courses API returns: it has conclude_at instead of end_at and storage_quota in bytes, and includes columns the Courses API doesn't.",
+#       "required": ["id", "name"],
 #       "properties": {
-#         "course": { "type": "object" }
+#         "id": {
+#           "description": "The ID of the course.",
+#           "type": "integer"
+#         },
+#         "name": {
+#           "description": "The full name of the course.",
+#           "type": "string"
+#         },
+#         "account_id": {
+#           "description": "The ID of the account the course belongs to.",
+#           "type": "integer"
+#         },
+#         "group_weighting_scheme": {
+#           "description": "How assignment groups are weighted: \"equal\" or \"percent\".",
+#           "type": ["string", "null"]
+#         },
+#         "workflow_state": {
+#           "description": "The state of the course. The catalog lists only \"available\" courses.",
+#           "type": "string"
+#         },
+#         "start_at": {
+#           "description": "The start date of the course.",
+#           "type": ["datetime", "null"]
+#         },
+#         "conclude_at": {
+#           "description": "The end date of the course.",
+#           "type": ["datetime", "null"]
+#         },
+#         "grading_standard_id": {
+#           "description": "The ID of the grading standard the course uses.",
+#           "type": ["integer", "null"]
+#         },
+#         "is_public": {
+#           "description": "Whether the course is public.",
+#           "type": ["boolean", "null"]
+#         },
+#         "allow_student_wiki_edits": {
+#           "description": "Whether students can edit wiki pages.",
+#           "type": "boolean"
+#         },
+#         "created_at": {
+#           "description": "When the course was created.",
+#           "type": "datetime"
+#         },
+#         "updated_at": {
+#           "description": "When the course was last updated.",
+#           "type": "datetime"
+#         },
+#         "show_public_context_messages": {
+#           "description": "Whether public context messages are shown.",
+#           "type": ["boolean", "null"]
+#         },
+#         "syllabus_body": {
+#           "description": "The course syllabus, as HTML.",
+#           "type": ["string", "null"]
+#         },
+#         "allow_student_forum_attachments": {
+#           "description": "Whether students can attach files to discussions.",
+#           "type": "boolean"
+#         },
+#         "default_wiki_editing_roles": {
+#           "description": "The roles that can edit wiki pages by default.",
+#           "type": ["string", "null"]
+#         },
+#         "wiki_id": {
+#           "description": "The ID of the course's wiki.",
+#           "type": "integer"
+#         },
+#         "allow_student_organized_groups": {
+#           "description": "Whether students can organize their own groups.",
+#           "type": "boolean"
+#         },
+#         "course_code": {
+#           "description": "The course code.",
+#           "type": "string"
+#         },
+#         "default_view": {
+#           "description": "The type of page users see first in the course.",
+#           "type": "string"
+#         },
+#         "abstract_course_id": {
+#           "description": "The ID of the abstract course the course belongs to.",
+#           "type": ["integer", "null"]
+#         },
+#         "root_account_id": {
+#           "description": "The ID of the root account.",
+#           "type": "integer"
+#         },
+#         "enrollment_term_id": {
+#           "description": "The ID of the course's enrollment term.",
+#           "type": "integer"
+#         },
+#         "sis_source_id": {
+#           "description": "The SIS ID of the course.",
+#           "type": ["string", "null"]
+#         },
+#         "sis_batch_id": {
+#           "description": "The ID of the SIS import that last changed the course.",
+#           "type": ["integer", "null"]
+#         },
+#         "open_enrollment": {
+#           "description": "Whether the course is open for enrollment.",
+#           "type": ["boolean", "null"]
+#         },
+#         "storage_quota": {
+#           "description": "The course's storage quota, in bytes.",
+#           "type": "integer"
+#         },
+#         "tab_configuration": {
+#           "description": "The course's navigation tab settings.",
+#           "type": "array"
+#         },
+#         "allow_wiki_comments": {
+#           "description": "Whether wiki comments are allowed.",
+#           "type": ["boolean", "null"]
+#         },
+#         "turnitin_comments": {
+#           "description": "Comments shown to students on Turnitin submissions.",
+#           "type": ["string", "null"]
+#         },
+#         "self_enrollment": {
+#           "description": "Whether users can enroll themselves.",
+#           "type": ["boolean", "null"]
+#         },
+#         "license": {
+#           "description": "The license for the course's content.",
+#           "type": ["string", "null"]
+#         },
+#         "indexed": {
+#           "description": "Whether the course appears in the public course catalog.",
+#           "type": "boolean"
+#         },
+#         "restrict_enrollments_to_course_dates": {
+#           "description": "Whether enrollments are limited to the course dates.",
+#           "type": ["boolean", "null"]
+#         },
+#         "template_course_id": {
+#           "description": "The ID of the template course the course was created from.",
+#           "type": ["integer", "null"]
+#         },
+#         "locale": {
+#           "description": "The course's language.",
+#           "type": ["string", "null"]
+#         },
+#         "settings": {
+#           "description": "Course settings, keyed by name.",
+#           "type": "object"
+#         },
+#         "replacement_course_id": {
+#           "description": "The ID of the course that replaces this one.",
+#           "type": ["integer", "null"]
+#         },
+#         "stuck_sis_fields": {
+#           "description": "The fields that SIS imports won't change.",
+#           "type": "array",
+#           "items": {
+#             "type": "string"
+#           }
+#         },
+#         "public_description": {
+#           "description": "The course's public description.",
+#           "type": ["string", "null"]
+#         },
+#         "self_enrollment_code": {
+#           "description": "The code users enter to enroll themselves.",
+#           "type": ["string", "null"]
+#         },
+#         "self_enrollment_limit": {
+#           "description": "The maximum number of users who can enroll themselves.",
+#           "type": ["integer", "null"]
+#         },
+#         "integration_id": {
+#           "description": "The integration ID of the course.",
+#           "type": ["string", "null"]
+#         },
+#         "time_zone": {
+#           "description": "The course's time zone, as an IANA name.",
+#           "type": "string"
+#         },
+#         "lti_context_id": {
+#           "description": "The course's LTI context ID.",
+#           "type": ["string", "null"]
+#         },
+#         "turnitin_id": {
+#           "description": "The course's Turnitin ID.",
+#           "type": ["integer", "null"]
+#         },
+#         "show_announcements_on_home_page": {
+#           "description": "Whether recent announcements show on the home page.",
+#           "type": ["boolean", "null"]
+#         },
+#         "home_page_announcement_limit": {
+#           "description": "The number of announcements shown on the home page.",
+#           "type": ["integer", "null"]
+#         },
+#         "latest_outcome_import_id": {
+#           "description": "The ID of the latest outcome import.",
+#           "type": ["integer", "null"]
+#         },
+#         "grade_passback_setting": {
+#           "description": "The grade passback setting.",
+#           "type": ["string", "null"]
+#         },
+#         "template": {
+#           "description": "Whether the course is a blueprint for new courses.",
+#           "type": "boolean"
+#         },
+#         "homeroom_course": {
+#           "description": "Whether the course is a homeroom course.",
+#           "type": "boolean"
+#         },
+#         "sync_enrollments_from_homeroom": {
+#           "description": "Whether enrollments sync from the homeroom course.",
+#           "type": "boolean"
+#         },
+#         "homeroom_course_id": {
+#           "description": "The ID of the homeroom course enrollments sync from.",
+#           "type": ["integer", "null"]
+#         },
+#         "deleted_at": {
+#           "description": "When the course was deleted.",
+#           "type": ["datetime", "null"]
+#         },
+#         "archived_at": {
+#           "description": "When the course was archived.",
+#           "type": ["datetime", "null"]
+#         },
+#         "horizon_course": {
+#           "description": "Whether the course is a Canvas Career course.",
+#           "type": "boolean"
+#         },
+#         "content_library": {
+#           "description": "Whether the course is a content library.",
+#           "type": "boolean"
+#         },
+#         "career_learning_library_only": {
+#           "description": "Whether the course is a Canvas Career learning library only.",
+#           "type": "boolean"
+#         }
+#       }
+#     }
+#
+#
+# @model CatalogCourseEntry
+#     {
+#       "id": "CatalogCourseEntry",
+#       "description": "An item in the course catalog list. Canvas wraps each course in a \"course\" key.",
+#       "required": ["course"],
+#       "properties": {
+#         "course": {
+#           "description": "The course.",
+#           "$ref": "CatalogCourse"
+#         }
 #       }
 #     }
 #
@@ -243,7 +497,7 @@ class SearchController < ApplicationController
   # @argument open_enrollment_only [Optional, Boolean]
   #   Only return courses that allow self enrollment. Defaults to false.
   #
-  # @returns [SearchAllCoursesResponse]
+  # @returns [CatalogCourseEntry]
   def all_courses
     return render_unauthorized_action unless @domain_root_account.enable_course_catalog?
 

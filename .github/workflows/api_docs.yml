@@ -1,0 +1,45 @@
+name: API Docs
+
+# Checks @API documentation without a database: the Lint/ApiDocs cop on every
+# controller, and script/api_docs_lint against the branch the change is going
+# into. The full audit (script/api_docs_audit) needs recorded responses from the
+# spec suite and runs manually; see doc/api_docs_audit/enforcement.md.
+
+on:
+  pull_request:
+    branches:
+      - '*'
+    paths:
+      - '.github/workflows/api_docs.yml'
+      - 'app/controllers/**'
+      - 'app/serializers/**'
+      - 'lib/api/**'
+      - 'lib/api_docs_audit/**'
+      - 'lib/schemas/docs/**'
+      - 'gems/rubocop-canvas/**'
+      - 'script/api_docs_lint'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  api-docs:
+    name: Check API Docs
+    runs-on: ubuntu-22.04
+    env:
+      BUNDLE_GEMFILE: Gemfile.d/rubocop.rb
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+      - name: Check Docs Against Code
+        run: script/api_docs_lint --base origin/${{ github.base_ref }}
+      - name: Check Docs Cop
+        run: bundle exec rubocop --only Lint/ApiDocs app/controllers
