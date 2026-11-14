@@ -6,8 +6,10 @@
 #   internal           the field or response is internal and stays undocumented
 #   unverifiable       no response shows it, only the code or the docs
 #   notation           the documentation notation can't express it, such as a
-#                      nullable model reference or keys that are ids
-#   needs_description  added from responses, still without a description
+#                      nullable model reference, keys that are ids or a
+#                      response with no body
+#   needs_description  added from responses, still without a description; a
+#                      to-do list that never matches a finding
 - model: AccessToken
   reason: needs_description
 - model: AccessibilityResourceScan
@@ -2080,8 +2082,6 @@
 - model: Scope
   field: path
   reason: needs_description
-- model: SearchAllCoursesResponse
-  reason: needs_description
 - model: SearchResult
   field: due_date
   reason: needs_description
@@ -2681,6 +2681,153 @@
 - kind: malformed_model
   model: RubricAssessment
   reason: notation
+- kind: missing_returns
+  action: ai_experiences#edit
+  reason: unverifiable
+- kind: missing_returns
+  action: ai_experiences#new
+  reason: unverifiable
+- kind: missing_returns
+  action: assignment_overrides#group_alias
+  reason: unverifiable
+- kind: missing_returns
+  action: assignment_overrides#section_alias
+  reason: unverifiable
+- kind: missing_returns
+  action: canvadoc_sessions#show
+  reason: unverifiable
+- kind: missing_returns
+  action: conversations#find_recipients
+  reason: unverifiable
+- kind: missing_returns
+  action: conversations#mark_all_as_read
+  reason: notation
+- kind: missing_returns
+  action: custom_gradebook_columns_api#reorder
+  reason: notation
+- kind: missing_returns
+  action: disable_post_to_sis_api#disable_post_to_sis
+  reason: notation
+- kind: missing_returns
+  action: discussion_entries#destroy
+  reason: notation
+- kind: missing_returns
+  action: discussion_topics_api#mark_all_read
+  reason: notation
+- kind: missing_returns
+  action: discussion_topics_api#mark_all_topic_read
+  reason: notation
+- kind: missing_returns
+  action: discussion_topics_api#mark_all_unread
+  reason: notation
+- kind: missing_returns
+  action: discussion_topics_api#mark_entry_read
+  reason: notation
+- kind: missing_returns
+  action: discussion_topics_api#mark_entry_unread
+  reason: notation
+- kind: missing_returns
+  action: discussion_topics_api#mark_topic_read
+  reason: notation
+- kind: missing_returns
+  action: discussion_topics_api#mark_topic_unread
+  reason: notation
+- kind: missing_returns
+  action: discussion_topics_api#rate_entry
+  reason: notation
+- kind: missing_returns
+  action: discussion_topics_api#subscribe_topic
+  reason: notation
+- kind: missing_returns
+  action: discussion_topics_api#unsubscribe_topic
+  reason: notation
+- kind: missing_returns
+  action: eportfolios_api#moderate_all
+  reason: notation
+- kind: missing_returns
+  action: grading_period_sets#destroy
+  reason: notation
+- kind: missing_returns
+  action: grading_period_sets#update
+  reason: notation
+- kind: missing_returns
+  action: grading_periods#destroy
+  reason: notation
+- kind: missing_returns
+  action: group_categories#export
+  reason: notation
+- kind: missing_returns
+  action: group_categories#export_tags
+  reason: notation
+- kind: missing_returns
+  action: late_policy#update
+  reason: notation
+- kind: missing_returns
+  action: learning_object_dates#update
+  reason: notation
+- kind: missing_returns
+  action: lti/subscriptions_api#destroy
+  reason: notation
+- kind: missing_returns
+  action: lti/tool_configurations_api#destroy
+  reason: notation
+- kind: missing_returns
+  action: module_assignment_overrides#bulk_update
+  reason: notation
+- kind: missing_returns
+  action: outcome_results#outcome_order
+  reason: notation
+- kind: missing_returns
+  action: polling/poll_choices#destroy
+  reason: notation
+- kind: missing_returns
+  action: polling/poll_sessions#destroy
+  reason: unverifiable
+- kind: missing_returns
+  action: polling/polls#destroy
+  reason: notation
+- kind: missing_returns
+  action: quizzes/quiz_groups#destroy
+  reason: notation
+- kind: missing_returns
+  action: quizzes/quiz_groups#reorder
+  reason: notation
+- kind: missing_returns
+  action: quizzes/quiz_reports#abort
+  reason: notation
+- kind: missing_returns
+  action: quizzes/quiz_submission_events_api#create
+  reason: notation
+- kind: missing_returns
+  action: quizzes/quizzes_api#reorder
+  reason: notation
+- kind: missing_returns
+  action: submissions_api#mark_bulk_submissions_as_read
+  reason: notation
+- kind: missing_returns
+  action: submissions_api#mark_submission_item_read
+  reason: notation
+- kind: missing_returns
+  action: submissions_api#mark_submission_read
+  reason: notation
+- kind: missing_returns
+  action: submissions_api#mark_submission_unread
+  reason: notation
+- kind: missing_returns
+  action: submissions_api#submissions_clear_unread
+  reason: notation
+- kind: missing_returns
+  action: support_helpers/asset_processor#bulk_resubmit
+  reason: unverifiable
+- kind: missing_returns
+  action: support_helpers/asset_processor#bulk_resubmit_discussion
+  reason: notation
+- kind: missing_returns
+  action: support_helpers/plagiarism_platform#add_service
+  reason: notation
+- kind: missing_returns
+  action: support_helpers/plagiarism_platform#resubmit_for_assignment
+  reason: notation
 - kind: missing_returns_no_model
   action: courses#effective_due_dates
   reason: notation
@@ -2948,14 +3095,6 @@
   field: integration_id
   reason: unverifiable
 - kind: new_field
-  model: Conversation
-  field: conversation_ids
-  reason: unverifiable
-- kind: new_field
-  model: Conversation
-  field: conversations
-  reason: unverifiable
-- kind: new_field
   model: Enrollment
   field: date
   reason: unverifiable
@@ -2982,10 +3121,6 @@
 - kind: new_field
   model: Lti_ContextControl
   field: comment
-  reason: unverifiable
-- kind: new_field
-  model: Lti_ContextControl
-  field: errors
   reason: unverifiable
 - kind: new_field
   model: Lti_ContextControl

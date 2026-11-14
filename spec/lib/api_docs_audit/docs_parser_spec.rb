@@ -181,6 +181,38 @@ describe ApiDocsAudit::DocsParser do # rubocop:disable RSpec/MultipleDescribes
       expect(docs.model_properties("Schemas::Docs::Gadget")).to eql("size" => { "type" => "integer", "example" => 1 })
     end
   end
+
+  describe ".returns_documented?" do
+    it "is true for a @returns" do
+      expect(described_class.returns_documented?(["# @API Show", "# @returns Widget"])).to be(true)
+    end
+
+    it "is true for an example response wrapping a list of a model" do
+      expect(described_class.returns_documented?(["# @API List", "# @example_response", '#   { "widgets": [Widget] }'])).to be(true)
+    end
+
+    it "is false for any other example response" do
+      expect(described_class.returns_documented?(["# @API Show", "# @example_response", '#   { "id": 1 }'])).to be(false)
+    end
+  end
+
+  describe ".model_at" do
+    it "returns the properties and the line after the model" do
+      lines = ["# @model Widget", '#   { "properties": { "id": { "type": "integer" } } }', "# @model Gear"]
+      expect(described_class.model_at(lines, 0)).to eql([{ "id" => { "type" => "integer" } }, 2])
+    end
+
+    it "returns nil properties for malformed JSON" do
+      expect(described_class.model_at(["# @model Widget", '#   { "properties": {'], 0).first).to be_nil
+    end
+  end
+
+  describe ".comment_block_above" do
+    it "stops at the first line that isn't a comment" do
+      lines = ["x = 1", "# @API Show", "# @returns Widget", "def show; end"]
+      expect(described_class.comment_block_above(lines, 3)).to eql(["# @API Show", "# @returns Widget"])
+    end
+  end
 end
 
 describe ApiDocsAudit::Source do

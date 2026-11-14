@@ -116,7 +116,9 @@ def raw_api_call(method, path, params, body_params = {}, headers = {}, opts = {}
       end
     end
     allow(LoadAccount).to receive(:default_domain_root_account).and_return(opts[:domain_root_account]) if opts.key?(:domain_root_account)
-    __send__(method, path, headers:, params: params.except(*route_params.keys).merge(body_params), as: opts[:as])
+    result = __send__(method, path, headers:, params: params.except(*route_params.keys).merge(body_params), as: opts[:as])
+    ApiDocsCheck.check!(controller) if ApiDocsCheck.enabled?
+    result
   end
 end
 

@@ -59,6 +59,42 @@ module ApiDocsAudit
 
     attr_reader :actions, :definitions, :source
 
+    # The comment lines directly above lines[index]
+    def self.comment_block_above(lines, index)
+      first = index
+      first -= 1 while first.positive? && lines[first - 1].match?(COMMENT)
+      lines[first...index]
+    end
+
+    # The properties of the @model at lines[index], or nil when its JSON is
+    # malformed, and the index of the line after it
+    def self.model_at(lines, index)
+      last = index + 1
+      last += 1 while last < lines.size && lines[last].match?(COMMENT) && !lines[last].match?(ANY_TAG)
+      body = lines[(index + 1)...last].map { |line| line.sub(/\A\s*#/, "") }.join("\n")
+      properties = begin
+        JSON.parse(body.gsub("::", "_")).fetch("properties", {})
+      rescue JSON::ParserError, TypeError
+        nil
+      end
+      [properties, last]
+    end
+
+    # Whether an action's comments give its response: a @returns, or an
+    # example response of the form { "<key>": [<Model>] }
+    def self.returns_documented?(comments)
+      return true if comments.any? { |line| line.match?(RETURNS_TAG) }
+
+      WRAPPED_LIST_EXAMPLE.match?(example_text(comments).to_s)
+    end
+
+    def self.example_text(comments)
+      index = comments.index { |line| line.match?(EXAMPLE_RESPONSE_TAG) }
+      return unless index
+
+      comments[(index + 1)..].take_while { |line| !line.match?(ANY_TAG) }.map { |line| line.sub(/\A\s*#/, "") }.join.strip
+    end
+
     def initialize(source)
       @source = source
       @actions = []
@@ -112,20 +148,11 @@ module ApiDocsAudit
     end
 
     def comment_block_above(lines, index)
-      first = index
-      first -= 1 while first.positive? && lines[first - 1].match?(COMMENT)
-      lines[first...index]
+      self.class.comment_block_above(lines, index)
     end
 
     def parse_model(path, lines, index, name)
-      last = index + 1
-      last += 1 while last < lines.size && lines[last].match?(COMMENT) && !lines[last].match?(ANY_TAG)
-      body = lines[(index + 1)...last].map { |line| line.sub(/\A\s*#/, "") }.join
-      properties = begin
-        JSON.parse(body.gsub("::", "_")).fetch("properties", {})
-      rescue JSON::ParserError, TypeError
-        nil
-      end
+      properties, last = self.class.model_at(lines, index)
       malformed = properties.nil?
       @definitions[canonical(name)] << Definition.new(canonical(name), path, index + 1, last, properties || {}, malformed, name)
     end
@@ -195,10 +222,9 @@ module ApiDocsAudit
 
     # A { "<key>": [<Model>] } example counts as a @returns when there is none
     def example_response(comments)
-      index = comments.index { |line| line.match?(EXAMPLE_RESPONSE_TAG) }
-      return Response.new(:none, [], nil, nil) unless index
+      text = self.class.example_text(comments)
+      return Response.new(:none, [], nil, nil) unless text
 
-      text = comments[(index + 1)..].take_while { |line| !line.match?(ANY_TAG) }.map { |line| line.sub(/\A\s*#/, "") }.join.strip
       match = WRAPPED_LIST_EXAMPLE.match(text)
       return Response.new(:none, [], nil, nil) unless match && model?(match[2])
 

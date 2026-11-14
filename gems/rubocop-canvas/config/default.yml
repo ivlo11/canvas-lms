@@ -9,6 +9,11 @@ Datafixup/StrandDownstreamJobs:
   Include:
     - "**/lib/data_fixup/*.rb"
 
+Lint/ApiDocs:
+  Enabled: true
+  Include:
+    - "app/controllers/**/*_controller.rb"
+
 Lint/NoFileUtilsRmRf:
   Enabled: true
 
