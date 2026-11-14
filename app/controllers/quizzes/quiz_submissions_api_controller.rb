@@ -101,26 +101,22 @@
 #         "score": {
 #           "description": "The score of the quiz submission, if graded.",
 #           "example": 3,
-#           "type": "integer",
-#           "format": "int64"
+#           "type": "number"
 #         },
 #         "score_before_regrade": {
 #           "description": "The original score of the quiz submission prior to any re-grading.",
 #           "example": 2,
-#           "type": "integer",
-#           "format": "int64"
+#           "type": "number"
 #         },
 #         "kept_score": {
 #           "description": "For quizzes that allow multiple attempts, this is the score that will be used, which might be the score of the latest, or the highest, quiz submission.",
 #           "example": 5,
-#           "type": "integer",
-#           "format": "int64"
+#           "type": "number"
 #         },
 #         "fudge_points": {
 #           "description": "Number of points the quiz submission's score was fudged by.",
 #           "example": 1,
-#           "type": "integer",
-#           "format": "int64"
+#           "type": "number"
 #         },
 #         "has_seen_results": {
 #           "description": "Whether the student has viewed their results to the quiz.",

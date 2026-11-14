@@ -21,6 +21,93 @@
 # @API Planner
 #
 # API for listing learning objects to display on the student planner and calendar
+#
+# @model PlannerItem
+#     {
+#       "id": "PlannerItem",
+#       "description": "An object to be shown on the planner, with the planner override that controls its visibility for the user",
+#       "required": [
+#         "plannable_id",
+#         "plannable_type"
+#       ],
+#       "properties": {
+#         "context_type": {
+#           "description": "The type of the item's context: Course, Group or User. Absent for a planner note without a course.",
+#           "example": "Course",
+#           "type": "string"
+#         },
+#         "course_id": {
+#           "description": "The id of the item's course, when the context is a course",
+#           "example": 1,
+#           "type": "integer"
+#         },
+#         "group_id": {
+#           "description": "The id of the item's group, when the context is a group",
+#           "example": 2,
+#           "type": "integer"
+#         },
+#         "user_id": {
+#           "description": "The id of the item's user, when the context is a user",
+#           "example": 3,
+#           "type": "integer"
+#         },
+#         "context_name": {
+#           "description": "The name of the item's context",
+#           "example": "Biology 101",
+#           "type": "string"
+#         },
+#         "context_image": {
+#           "description": "The image URL of the item's course, if it has one",
+#           "example": "https://canvas.instructure.com/files/1/download",
+#           "type": "string"
+#         },
+#         "plannable_id": {
+#           "description": "The id of the plannable object",
+#           "example": 123,
+#           "type": "integer"
+#         },
+#         "plannable_type": {
+#           "description": "The type of the plannable object: discussion_topic, announcement, quiz, assignment, wiki_page, planner_note, calendar_event, assessment_request, sub_assignment or peer_review_sub_assignment",
+#           "example": "assignment",
+#           "type": "string"
+#         },
+#         "plannable_date": {
+#           "description": "The date the item is shown on the planner",
+#           "example": "2017-05-30T06:00:00Z",
+#           "type": "datetime"
+#         },
+#         "plannable": {
+#           "description": "The plannable object's attributes. Its fields depend on plannable_type.",
+#           "example": {
+#             "id": 1,
+#             "title": "hello"
+#           }
+#         },
+#         "planner_override": {
+#           "description": "The user's planner override for this item, or null if they haven't set one",
+#           "$ref": "PlannerOverride"
+#         },
+#         "new_activity": {
+#           "description": "Whether the item has new or unread activity for the user",
+#           "example": false,
+#           "type": "boolean"
+#         },
+#         "submissions": {
+#           "description": "false if the item has no associated assignment; otherwise the status of the user's submission, with submitted, excused, graded, posted_at, late, missing, needs_grading, has_feedback and redo_request",
+#           "example": {
+#             "submitted": false,
+#             "graded": false,
+#             "missing": true
+#           }
+#         },
+#         "html_url": {
+#           "description": "The URL of the item in Canvas",
+#           "example": "http://canvas.instructure.com/courses/1/assignments/1#submit",
+#           "type": "string"
+#         }
+#       }
+#     }
+#
 
 class PlannerController < ApplicationController
   include Api::V1::PlannerItem
@@ -134,6 +221,8 @@ class PlannerController < ApplicationController
   #     "html_url": "http://canvas.instructure.com/api/v1/planner_notes.1"
   #   }
   #  ]
+  #
+  # @returns [PlannerItem]
   def index
     @user&.clear_checkpoint_data_cache!
     GuardRail.activate(:secondary) do

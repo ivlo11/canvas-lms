@@ -48,7 +48,7 @@
 #         },
 #         "points_possible": {
 #           "example": "10.0",
-#           "type": "integer"
+#           "type": "number"
 #         },
 #         "reusable": {
 #           "example": "false",
@@ -258,6 +258,28 @@
 #       }
 #     }
 #
+# @model RubricUsedLocation
+#     {
+#       "id": "RubricUsedLocation",
+#       "description": "A course where a rubric is used, with the assignments that use it",
+#       "properties": {
+#         "id": { "description": "The course's id", "example": 1, "type": "integer" },
+#         "name": { "description": "The course's name", "example": "Biology 101", "type": "string" },
+#         "concluded?": { "description": "Whether the course has concluded", "example": false, "type": "boolean" },
+#         "assignments": {
+#           "description": "The course's assignments that use the rubric",
+#           "type": "array",
+#           "items": {
+#             "type": "object",
+#             "properties": {
+#               "id": { "description": "The assignment's id", "example": 1, "type": "integer" },
+#               "title": { "description": "The assignment's title", "example": "Lab Report", "type": "string" }
+#             }
+#           }
+#         }
+#       }
+#     }
+#
 class RubricsApiController < ApplicationController
   include Api::V1::Rubric
   include Api::V1::RubricAssessment
@@ -273,6 +295,7 @@ class RubricsApiController < ApplicationController
 
   # @API List rubrics
   # Returns the paginated list of active rubrics for the current context.
+  # @returns [Rubric]
 
   def index
     return unless authorized_action(@context, @current_user, :manage_rubrics)
@@ -311,7 +334,7 @@ class RubricsApiController < ApplicationController
 
   # @API Get the courses and assignments for a rubric
   # Returns the courses and assignments where a rubric is being used
-  # @returns UsedLocations
+  # @returns [RubricUsedLocation]
   def used_locations
     return unless authorized_action(@context, @current_user, :manage_rubrics)
 

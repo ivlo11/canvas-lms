@@ -44,13 +44,13 @@
 #         },
 #         "current_score": {
 #           "description": "The user's current score in the class. Only included if user has permissions to view this score.",
-#           "example": "",
-#           "type": "string"
+#           "example": 95.8,
+#           "type": "number"
 #         },
 #         "final_score": {
 #           "description": "The user's final score for the class. Only included if user has permissions to view this score.",
-#           "example": "",
-#           "type": "string"
+#           "example": 95.8,
+#           "type": "number"
 #         },
 #         "current_points": {
 #           "description": "The total points the user has earned in the class. Only included if user has permissions to view this score and 'current_points' is passed in the request's 'include' parameter.",
@@ -69,13 +69,13 @@
 #         },
 #         "unposted_current_score": {
 #           "description": "The user's current score in the class including muted/unposted assignments. Only included if user has permissions to view this score, typically teachers, TAs, and admins..",
-#           "example": "",
-#           "type": "string"
+#           "example": 95.8,
+#           "type": "number"
 #         },
 #         "unposted_final_score": {
 #           "description": "The user's final score for the class including muted/unposted assignments. Only included if user has permissions to view this score, typically teachers, TAs, and admins..",
-#           "example": "",
-#           "type": "string"
+#           "example": 95.8,
+#           "type": "number"
 #         },
 #         "unposted_current_points": {
 #           "description": "The total points the user has earned in the class, including muted/unposted assignments. Only included if user has permissions to view this score (typically teachers, TAs, and admins) and 'current_points' is passed in the request's 'include' parameter.",
@@ -263,13 +263,13 @@
 #           },
 #           "unposted_current_score": {
 #             "description": "The user's current score in the class including muted/unposted assignments. Only included if user has permissions to view this score, typically teachers, TAs, and admins..",
-#             "example": "",
-#             "type": "string"
+#             "example": 95.8,
+#             "type": "number"
 #           },
 #           "unposted_final_score": {
 #             "description": "The user's final score for the class including muted/unposted assignments. Only included if user has permissions to view this score, typically teachers, TAs, and admins..",
-#             "example": "",
-#             "type": "string"
+#             "example": 95.8,
+#             "type": "number"
 #           },
 #           "has_grading_periods": {
 #             "description": "optional: Indicates whether the course the enrollment belongs to has grading periods set up. (applies only to student enrollments, and only available in course endpoints)",
@@ -300,6 +300,46 @@
 #             "description": "The user's override score for the current grading period.",
 #             "example": 99.99,
 #             "type": "number"
+#           },
+#           "computed_current_score": {
+#             "description": "optional: The student's score in the course, ignoring ungraded assignments. (applies only to student enrollments, and only available in course endpoints with include[]=total_scores)",
+#             "example": 90.25,
+#             "type": "number"
+#           },
+#           "computed_final_score": {
+#             "description": "optional: The student's score in the course including ungraded assignments with a score of 0. (applies only to student enrollments, and only available in course endpoints with include[]=total_scores)",
+#             "example": 80.67,
+#             "type": "number"
+#           },
+#           "computed_current_grade": {
+#             "description": "optional: The letter grade equivalent of computed_current_score, if the course uses a grading scheme. (applies only to student enrollments, and only available in course endpoints with include[]=total_scores)",
+#             "example": "A-",
+#             "type": "string"
+#           },
+#           "computed_final_grade": {
+#             "description": "optional: The letter grade equivalent of computed_final_score, if the course uses a grading scheme. (applies only to student enrollments, and only available in course endpoints with include[]=total_scores)",
+#             "example": "B-",
+#             "type": "string"
+#           },
+#           "current_period_computed_current_score": {
+#             "description": "optional: The student's score in the course for the current grading period, ignoring ungraded assignments. If the course the enrollment belongs to does not have grading periods, or if no currently active grading period exists, the value will be null. (applies only to student enrollments, and only available in course endpoints with include[]=current_grading_period_scores)",
+#             "example": 95.80,
+#             "type": "number"
+#           },
+#           "current_period_computed_final_score": {
+#             "description": "optional: The student's score in the course for the current grading period, including ungraded assignments with a score of 0. If the course the enrollment belongs to does not have grading periods, or if no currently active grading period exists, the value will be null. (applies only to student enrollments, and only available in course endpoints with include[]=current_grading_period_scores)",
+#             "example": 85.25,
+#             "type": "number"
+#           },
+#           "current_period_computed_current_grade": {
+#             "description": "optional: The letter grade equivalent of current_period_computed_current_score, if available. If the course the enrollment belongs to does not have grading periods, or if no currently active grading period exists, the value will be null. (applies only to student enrollments, and only available in course endpoints with include[]=current_grading_period_scores)",
+#             "example": "A",
+#             "type": "string"
+#           },
+#           "current_period_computed_final_grade": {
+#             "description": "optional: The letter grade equivalent of current_period_computed_final_score, if available. If the course the enrollment belongs to does not have grading periods, or if no currently active grading period exists, the value will be null. (applies only to student enrollments, and only available in course endpoints with include[]=current_grading_period_scores)",
+#             "example": "B",
+#             "type": "string"
 #           },
 #           "current_period_unposted_current_score": {
 #             "description": "optional: The student's score in the course for the current grading period, including muted/unposted assignments. Only included if user has permission to view this score, typically teachers, TAs, and admins. If the course the enrollment belongs to does not have grading periods, or if no currently active grading period exists, the value will be null. (applies only to student enrollments, and only available in course endpoints)",

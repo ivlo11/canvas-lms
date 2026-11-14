@@ -24,6 +24,7 @@
 #
 # This adapter allows SwaggerYard to parse Canvas's existing YARD documentation
 # and generate OpenAPI 3.0 specifications from it.
+require "securerandom"
 
 module SwaggerYard
   module CanvasAdapter
@@ -37,8 +38,38 @@ module SwaggerYard
     # Format: { operation_id => { response_status => model_name } }
     @operation_models = {}
 
+    # Storage for tracking unique operation ids
+    @operation_ids = []
+
+    # Storage for operations typed from a { "<key>": [<Model>] } example response
+    @wrapped_list_operations = []
+
+    # Storage for [operation id, model name] of @returns models that resolve to
+    # no collected schema
+    @unresolved_returns = []
+
+    # Matches Canvas example responses of the form { "<key>": [<Model>] }
+    WRAPPED_LIST_EXAMPLE = /\A\{\s*"?([a-z][a-z0-9_]*)"?\s*:\s*\[\s*([A-Z][A-Za-z0-9_:]*)\s*\]\s*\}\z/
+
+    # One <key>: <value> entry of an inline object @returns; the key may be quoted
+    INLINE_OBJECT_ENTRY = /\A(?:"([a-z][a-z0-9_]*)"|([a-z][a-z0-9_]*))\s*:\s*(.+)\z/m
+
+    # A model or primitive type name in an inline object @returns
+    INLINE_OBJECT_NAME = /[A-Za-z][A-Za-z0-9_]*(?:::[A-Za-z][A-Za-z0-9_]*)*/
+
+    # object is an untyped mapping, for entries whose keys vary (e.g. audit
+    # links and linked)
+    INLINE_OBJECT_PRIMITIVES = %w[integer string boolean number object].freeze
+
+    # A model reference in a @returns type: an identifier with optional ::
+    # segments. Prose ("the input arguments") and status lines don't match
+    RETURNS_MODEL_REFERENCE = /\A[A-Z][A-Za-z0-9_]*(::[A-Z][A-Za-z0-9_]*)*\z/
+
+    # @returns type names that are primitives, not models
+    RETURNS_PRIMITIVES = %w[string integer int float number numeric boolean bool array object hash].freeze
+
     class << self
-      attr_accessor :canvas_examples, :canvas_schemas, :operation_models
+      attr_accessor :canvas_examples, :canvas_schemas, :operation_models, :wrapped_list_operations, :unresolved_returns
 
       # Single source of truth for controller patterns to scan
       # Used by both SwaggerYard config and model schema collection
@@ -59,13 +90,35 @@ module SwaggerYard
       example_response: { name: "Example response", handler: :example_response },
     }.freeze
 
+    # Original list of contexts
+    # CONTEXT = %w[courses groups accounts users]
+
+    # While reviewing duplicate operation IDs these additional contexts were in the output
+    CONTEXT = %w[courses groups accounts users sections assessment_questions assignments quizzes quiz_statistics group_categories].freeze
+
+    # Not all APIs start with context, update to optionally match below prefix
+    #  * /api/v1/
+    #  * /api/sis/
+    #
+    CONTEXT_REGEX =   %r{\A(/api/(v\d|sis))?/(#{Regexp.union(CONTEXT).source})/\{[^\}]+\}/.*}im
+    LOOKUP_BY_REGEX = %r{\A(/api/(v\d|sis))?/(#{Regexp.union(CONTEXT).source})/\{[^\}]+\}/.*/\{([^\}]+)\}(/[^/]+){0,2}\z}im
+    SPECIAL_PATH_VARIABLES = %w[full_path self latest all_quizzes].freeze
+
     # Public: call once before building the spec
     def self.install!
       define_canvas_tags
       load_canvas_routes!
       patch_api_group!
       patch_operation!
+      patch_extended_attributes!
       collect_model_schemas!
+    end
+
+    # A class defined inside another class, such as a controller's error class or
+    # Struct constant. Controllers are only ever namespaced by modules, so these are
+    # helpers that must not take over the controller's API group.
+    def self.nested_class?(yard_object)
+      yard_object.type == :class && yard_object.namespace.respond_to?(:type) && yard_object.namespace.type == :class
     end
 
     # Load Canvas routes to map controller#action to actual route paths
@@ -75,6 +128,9 @@ module SwaggerYard
       @canvas_examples = {} # Reset examples storage
       @canvas_schemas = {} # Reset schemas storage
       @operation_models = {} # Reset operation model tracking
+      @operation_ids = [] # Reset operation ids tracking
+      @wrapped_list_operations = [] # Reset wrapped list operation tracking
+      @unresolved_returns = [] # Reset unresolved @returns model tracking
       load_routes_from_api_route_set!
     end
 
@@ -116,10 +172,17 @@ module SwaggerYard
 
     def self.add_route_entry(action_name, path, method)
       @canvas_routes[action_name] ||= []
+
+      context = detect_context_from_path(path)
+      lookup_by = detect_lookup_by_from_path(path)
+
+      name = resolve_unique_name(action_name, path, method, context, lookup_by)
+
       route_entry = {
         method: method.upcase,
         path:,
-        context: detect_context_from_path(path)
+        context:,
+        name:,
       }
 
       return if route_exists?(@canvas_routes[action_name], path, method)
@@ -291,6 +354,159 @@ module SwaggerYard
       name.to_s.gsub("::", "_")
     end
 
+    # Returns the collected schema name for a documented model name (namespaced
+    # or not), or nil when no such schema was collected. A lib/schemas/docs
+    # class (@returns Schemas::Docs::User) is stored under its own name, as
+    # Canvas's doc tooling strips the prefix too.
+    def self.resolve_schema_name(name)
+      schema_name = sanitize_schema_name(name.to_s.delete_prefix("Schemas::Docs::"))
+      schema_name if @canvas_schemas.key?(schema_name)
+    end
+
+    # The model names in a @returns type ("Model", "[Model]", "Array<Model>",
+    # "A | B") that resolve to no collected schema. Primitives and anything
+    # that isn't a model reference are skipped
+    def self.unresolved_return_models(type_text)
+      inner = type_text.to_s.strip
+      inner = $1 if inner =~ /\A\[(.+)\]\z/ || inner =~ /\AArray<(.+)>\z/i
+      inner.split("|").map(&:strip).select do |name|
+        name.match?(RETURNS_MODEL_REFERENCE) &&
+          !RETURNS_PRIMITIVES.include?(name.downcase) &&
+          resolve_schema_name(name).nil?
+      end
+    end
+
+    # Records and prints a warning for each unresolved model in a @returns type
+    def self.warn_unresolved_returns(operation_id, type_text)
+      unresolved_return_models(type_text).each do |name|
+        @unresolved_returns << [operation_id, name]
+        # rubocop:disable Rails/Output
+        puts "[warn]: unresolved @returns model #{name} for #{operation_id}"
+        # rubocop:enable Rails/Output
+      end
+    end
+
+    # Parses an example response of the form { "<key>": [<Model>] } whose model
+    # is a collected schema. Returns [key, schema name] or nil.
+    def self.wrapped_list_example(text)
+      match = WRAPPED_LIST_EXAMPLE.match(text.to_s.strip)
+      return nil unless match
+
+      key, model = match.captures
+      schema_name = [model, sanitize_schema_name(model)].find { |name| @canvas_schemas.key?(name) }
+      schema_name && [key, schema_name]
+    end
+
+    # Parses an inline object @returns, { <key>: <value>, ... } [prose], into wrapper
+    # schema properties. Values may be [Model], Model, a primitive type name (quoted
+    # or not, any case) or a primitive literal. Returns nil unless every entry is
+    # typeable, so a partially understood object stays a plain mapping.
+    def self.inline_object_properties(text)
+      inner, prose = split_inline_object(text.to_s.strip)
+      return nil if inner.nil? || prose.start_with?("|")
+
+      entries = split_top_level(inner)
+      return nil if entries.empty?
+
+      entries.each_with_object({}) do |entry, properties|
+        match = INLINE_OBJECT_ENTRY.match(entry.strip)
+        return nil unless match
+
+        key = match[1] || match[2]
+        schema = inline_object_value_schema(match[3].strip)
+        return nil if schema.nil? || properties.key?(key)
+
+        properties[key] = schema
+      end
+    end
+
+    # Splits "{ ... } prose" into the text between the braces and the prose after
+    # them, or returns nil when the text is not a single balanced brace literal
+    def self.split_inline_object(text)
+      return nil unless text.start_with?("{")
+
+      depth = 0
+      quoted = false
+      text.each_char.with_index do |char, index|
+        quoted = !quoted if char == '"'
+        next if quoted
+
+        depth += 1 if "{[".include?(char)
+        depth -= 1 if "}]".include?(char)
+        return [text[1...index], text[(index + 1)..].strip] if depth.zero?
+      end
+      nil
+    end
+
+    # Splits on commas outside quotes, brackets and braces
+    def self.split_top_level(text)
+      entries = [+""]
+      depth = 0
+      quoted = false
+      text.each_char do |char|
+        quoted = !quoted if char == '"'
+        unless quoted
+          depth += 1 if "{[".include?(char)
+          depth -= 1 if "}]".include?(char)
+          if char == "," && depth.zero?
+            entries << +""
+            next
+          end
+        end
+        entries.last << char
+      end
+      entries.reject { |entry| entry.strip.empty? }
+    end
+
+    def self.inline_object_value_schema(value)
+      case value
+      when /\A\[\s*(#{INLINE_OBJECT_NAME})\s*\]\z/o
+        schema_name = resolve_schema_name($1)
+        schema_name && { "type" => "array", "items" => { "$ref" => "#/components/schemas/#{schema_name}" } }
+      when "true", "false"
+        { "type" => "boolean" }
+      when /\A\d+\z/
+        { "type" => "integer" }
+      when /\A"([^"]*)"\z/
+        { "type" => INLINE_OBJECT_PRIMITIVES.include?($1.downcase) ? $1.downcase : "string" }
+      when /\A#{INLINE_OBJECT_NAME}\z/o
+        return { "type" => value.downcase } if INLINE_OBJECT_PRIMITIVES.include?(value.downcase)
+
+        schema_name = resolve_schema_name(value)
+        schema_name && { "$ref" => "#/components/schemas/#{schema_name}" }
+      end
+    end
+
+    # The wrapper schema name for an operation: its controller resource and Rails
+    # action, so route aliases share it and other operations never change it
+    def self.wrapper_schema_name(resource, action)
+      "#{resource}#{action.to_s.camelize}Response"
+    end
+
+    # Registers a wrapper schema with the given properties, none of them required.
+    # source is :returns (an inline object @returns) or :example_response (a
+    # { "<key>": [<Model>] } example). Reuses an identical schema; never overwrites
+    # a different one. Returns the wrapper name, or nil when the name is taken.
+    def self.register_wrapper_schema(wrapper_name, properties, source)
+      description = if source == :example_response
+                      "Paginated `#{properties.keys.first}` list response (from the Canvas example response)."
+                    else
+                      "Object response with #{properties.keys.map { |key| "`#{key}`" }.join(", ")} (from the Canvas `@returns`)."
+                    end
+      wrapper = { "type" => "object", "description" => description, "properties" => properties }
+
+      existing = @canvas_schemas[wrapper_name]
+      return wrapper_name if existing == wrapper
+
+      if existing
+        puts "   Warning: #{wrapper_name} already exists and differs; not inferring it" # rubocop:disable Rails/Output
+        return nil
+      end
+
+      @canvas_schemas[wrapper_name] = wrapper
+      wrapper_name
+    end
+
     # Clean up schema type conflicts (e.g., object with items field)
     def self.clean_schema_type_conflicts(schema)
       return unless schema.is_a?(Hash)
@@ -379,7 +595,13 @@ module SwaggerYard
     end
 
     def self.convert_single_property(prop_def)
-      return { "$ref" => "#/components/schemas/#{sanitize_schema_name(prop_def["$ref"])}" } if prop_def["$ref"]
+      if prop_def["$ref"]
+        ref = { "$ref" => "#/components/schemas/#{sanitize_schema_name(prop_def["$ref"])}" }
+        # "string|Model": Canvas sends either the model or a plain string
+        return { "oneOf" => [{ "type" => "string" }, ref] } if prop_def["type"].to_s.split("|").map(&:strip).include?("string")
+
+        return ref
+      end
 
       converted_prop = {}
       convert_property_type(converted_prop, prop_def)
@@ -395,8 +617,20 @@ module SwaggerYard
         handle_property_enum(converted_prop, prop_def)
         handle_property_items(converted_prop, prop_def)
       end
+      handle_nested_properties(converted_prop, prop_def)
 
       converted_prop
+    end
+
+    # An object property with its own fields keeps them, converted like
+    # top-level properties, so clients get a nested model instead of a map
+    def self.handle_nested_properties(converted_prop, prop_def)
+      return unless prop_def["properties"].is_a?(Hash)
+
+      converted_prop["type"] ||= "object"
+      converted_prop["properties"] = convert_properties(prop_def["properties"])
+      required = prop_def["required"]
+      converted_prop["required"] = required.is_a?(String) ? [required] : required if required
     end
 
     def self.convert_property_type(converted_prop, prop_def)
@@ -529,13 +763,116 @@ module SwaggerYard
 
     # Detect context (courses, groups, accounts, users) from path
     def self.detect_context_from_path(path)
-      case path
-      when %r{^/courses/} then :courses
-      when %r{^/groups/} then :groups
-      when %r{^/accounts/} then :accounts
-      when %r{^/users/} then :users
-      else :other
+      # Context that should be different than what REGEX pulls
+      # distinguish between user/{user_id} and /user/self/
+      if path.include?("/self/")
+        return "self"
       end
+
+      # copy what open_api_generator did for assignment groups
+      if %r{^(/api/(v\d|sis))?/courses/[^/]+/assignment_groups/}.match?(path)
+        return "assignment_groups"
+      end
+
+      # handle duplicate audit urls
+      if %r{^(/api/(v\d|sis))?/audit/grade_change/}.match?(path)
+        return "audit"
+      end
+
+      # Context extraction. Do what past switch case did with regex. Simplifies adding additional contexts
+      match = path.match(CONTEXT_REGEX)
+      match.nil? ? "other" : match[3]
+    end
+
+    # Detect lookup by from path after the context's path variable to solve for less duplicate operationIds
+    def self.detect_lookup_by_from_path(path)
+      # Extract path variables
+      #  * /api/v1/courses/{course_id}/files/{file_id}
+      #  * /api/v1/section/{section_id}/assignments/{assignment_id}/submissions
+      match = path.match(LOOKUP_BY_REGEX)
+      return match[4].gsub(/[{}]/, "").gsub(/[^a-zA-Z0-9_-]/, "_") unless match.nil?
+
+      # Extract special variables that showed up in the duplicate operation ids
+      matched_word = SPECIAL_PATH_VARIABLES.find { |param| path.end_with?(param) }
+      return matched_word unless matched_word.nil?
+
+      # Fallback of last segment in case needed when generating unique names
+      match = path.match(%r{/([^/]+)\z})
+      match[1]&.gsub(/[{}]/, "")&.gsub(/[^a-zA-Z0-9_-]/, "_")
+    end
+
+    # Generate unique operation IDs. Attempt to follow previous pattern to only rename when duplicate found
+    def self.resolve_unique_name(action_name, path, method, context, lookup_by)
+      method_name = action_name.split("#").last
+      class_name = action_name.split("#").first
+      if class_name.include?("/")
+        class_name = class_name.split("/").last
+      end
+      full_name = method_name
+
+      # This is current default naming convention (happy path)
+      unless @operation_ids.include?("#{class_name}-#{full_name}")
+        @operation_ids.push("#{class_name}-#{full_name}")
+        return full_name
+      end
+
+      method_name_with_context = ""
+      method_name_with_lookup = ""
+      method_name_with_dynamic_context = ""
+      method_name_with_dynamic_lookup = path.scan(/\{([^}]+)\}/).flatten.join("_")
+
+      unless method_name_with_dynamic_lookup == ""
+        method_name_with_dynamic_lookup = "#{method_name}_by_#{method_name_with_dynamic_lookup}"
+      end
+
+      unless lookup_by.nil?
+        full_name += "_by_#{lookup_by}"
+        method_name_with_lookup = "#{method_name}_by_#{lookup_by}"
+      end
+
+      unless context.nil?
+        full_name += "_for_#{context}"
+        method_name_with_context = "#{method_name}_for_#{context}"
+
+        unless method_name_with_dynamic_lookup == ""
+          method_name_with_dynamic_lookup += "_for_#{context}"
+        end
+      end
+
+      if (context == "other") && lookup_by.nil?
+        match = path.match(%r{^(/api/(v\d|sis))?/([^/]+).*})
+        new_context = match[3] || nil
+        unless new_context.nil?
+          method_name_with_dynamic_context = "#{method_name}_#{new_context}"
+        end
+      end
+
+      if !@operation_ids.include?("#{class_name}-#{method_name_with_context}") && method_name_with_context.present?
+        # Adds context like open_api_generator did
+        # Rename to <method>_for_<context>
+        full_name = method_name_with_context
+      elsif !@operation_ids.include?("#{class_name}-#{full_name}")
+        # Breaking change where generators will resolve a different name - but since generators were broken non-issue?
+        # Rename to <method>_by_<path_variable>_for_<context>
+        full_name
+      elsif !@operation_ids.include?("#{class_name}-#{method_name_with_lookup}") && method_name_with_lookup.present?
+        # Rename to <method>_by_<path_variable>
+        full_name = method_name_with_lookup
+      elsif !@operation_ids.include?("#{class_name}-#{method_name_with_dynamic_context}") && method_name_with_dynamic_context.present?
+        # Rename to <method>_by_<first_path_segment>
+        full_name = method_name_with_dynamic_context
+      elsif !@operation_ids.include?("#{class_name}-#{method_name_with_dynamic_lookup}") && method_name_with_dynamic_lookup.present?
+        full_name = method_name_with_dynamic_lookup
+      else
+        # Fall back if in the future new paths result in more duplication
+        # Rename to <method>_by_<path_variable>_for_<context>_<random_string>
+        puts "[warn]: attaching random string to #{class_name}-#{full_name} for #{method} -> #{path}"
+        full_name = "#{full_name}_#{SecureRandom.alphanumeric(3).downcase}"
+      end
+
+      # Store and return unique name
+      @operation_ids.push("#{class_name}-#{full_name}")
+      full_name
     end
 
     class << self
@@ -554,6 +891,14 @@ module SwaggerYard
       # Patch SwaggerYard::ApiGroup to auto-generate @resource from class name
       def patch_api_group!
         SwaggerYard::ApiGroup.prepend(Module.new do
+          # Skip nested classes entirely: when reached from the controller's children they
+          # would rename its resource and route lookups, and on their own they stay invalid.
+          def add_yard_object(yard_object)
+            return self if SwaggerYard::CanvasAdapter.nested_class?(yard_object)
+
+            super
+          end
+
           def add_info(yard_object)
             super
 
@@ -579,13 +924,38 @@ module SwaggerYard
               path = path_info[:path]
               http_method = path_info[:http_method]
               path_info[:context]
+              name = path_info[:name]
 
               path_item = (path_items[path] ||= SwaggerYard::PathItem.new(self))
 
-              # Add @path tag to yard_object so SwaggerYard processes it
-              yard_object.add_tag(YARD::Tags::Tag.new("path", path, [http_method]))
+              cloned_yard_object = yard_object.clone
 
-              path_item.add_operation(yard_object)
+              # Set unique name so that generated operation id has no conflicts and can be used by tracker
+              cloned_yard_object.instance_variable_set(:@name, name.to_sym)
+
+              # Fully detach and clone the underlying docstring since added tags were ignored as duplicate tags
+              if yard_object.respond_to?(:docstring) && yard_object.docstring
+                # Create a copy of the docstring string object itself
+                cloned_docstring = yard_object.docstring.clone
+
+                # Deep copy the internal tag collections within the docstring
+                if yard_object.docstring.instance_variable_defined?(:@tags)
+                  cloned_tags = yard_object.docstring.instance_variable_get(:@tags).map(&:clone)
+                  cloned_docstring.instance_variable_set(:@tags, cloned_tags)
+                end
+
+                if yard_object.docstring.instance_variable_defined?(:@ref_tags)
+                  cloned_ref_tags = yard_object.docstring.instance_variable_get(:@ref_tags).map(&:clone)
+                  cloned_docstring.instance_variable_set(:@ref_tags, cloned_ref_tags)
+                end
+
+                # Associate the fully detached docstring with cloned object
+                cloned_yard_object.docstring = cloned_docstring
+              end
+
+              # Safely append without mutating the original object
+              cloned_yard_object.add_tag(YARD::Tags::Tag.new("path", path, [http_method]))
+              path_item.add_operation(cloned_yard_object)
             end
 
             paths.first[:path] # Return first path for compatibility
@@ -617,7 +987,8 @@ module SwaggerYard
               {
                 path: route_info[:path],
                 http_method: route_info[:method],
-                context: route_info[:context]
+                context: route_info[:context],
+                name: route_info[:name],
               }
             end
           end
@@ -628,6 +999,30 @@ module SwaggerYard
                .gsub(/([a-z\d])([A-Z])/, '\1_\2')
                .tr("-", "_")
                .downcase
+          end
+        end)
+      end
+
+      # Add OpenAPI Spec vendor extension so that generators can conditionally add Canvas LMS specific features.
+      def patch_extended_attributes!
+        SwaggerYard::Operation.prepend(Module.new do
+          def extended_attributes
+            attributes = super
+
+            if http_method.to_s.upcase == "GET"
+              existing_params = parameters.map { |p| p.name.to_s }
+              has_page = existing_params.include?("page")
+              has_per_page = existing_params.include?("per_page")
+
+              # Add OpenAPI Spec vendor extension for pagination so that generators can Link header support
+              # Two reasons: SwaggerYard does not allow adding expected response headers and OpenAPI spec
+              # does not allow a way to specify how Link header should be parsed.
+              if has_page && has_per_page
+                attributes["x-paginated"] = true
+              end
+            end
+
+            attributes
           end
         end)
       end
@@ -715,7 +1110,10 @@ module SwaggerYard
           def normalize_nested_param_name(name, types, desc)
             first_type = types.first
             return [name, types] unless first_type
-            return [name, types] if first_type.match?(/^(String|Integer|Float|Number|Boolean|Array|Hash|Object|DateTime|Date|Time|Numeric|nil|optional|required)$/i)
+
+            # Check if first_type is a primitive type or generic type like Array<Integer>
+            # Generic types like Array<Integer>, Hash<String,User> should NOT be treated as nested params
+            return [name, types] if first_type.match?(/^(String|Integer|Float|Number|Boolean|Array|Hash|Object|DateTime|Date|Time|Numeric|nil|optional|required)([<>,\s\w]+)?$/i)
 
             # YARD parser treats brackets as type notation
             # @argument account_notification[subject] → name="account_notification", types=["subject", ...]
@@ -770,8 +1168,17 @@ module SwaggerYard
           end
 
           def add_query_parameter(operation, param_info, schema, required)
-            param = create_parameter(param_info[:name], "query", schema, param_info[:description], required)
+            name = query_parameter_name(param_info[:name], schema)
+            param = create_parameter(name, "query", schema, param_info[:description], required)
             operation.add_or_update_parameter(param)
+          end
+
+          # Canvas only reads list query parameters in Rails bracket form
+          # (include[]=a&include[]=b), so any array-schema query parameter gets
+          # a trailing [] whether it was documented as name[] or name [Array]
+          def query_parameter_name(name, schema)
+            array = schema.is_a?(Hash) ? schema["type"] == "array" : schema.to_s.start_with?("array")
+            array ? "#{name.chomp("[]")}[]" : name
           end
 
           def add_body_parameter(body_params, param_info, schema, required)
@@ -793,8 +1200,27 @@ module SwaggerYard
           end
 
           def process_returns_tags(docstring, operation)
-            docstring.tags(:returns).each do |tag|
-              types = tag.types || ["String"]
+            returns_lines = returns_tag_lines(docstring)
+
+            docstring.tags(:returns).each_with_index do |tag, index|
+              # YARD strips both {} and [] from a type list, so an inline object can
+              # only be told apart from a list in the raw docstring
+              if returns_lines[index]&.start_with?("{")
+                process_inline_object_returns(tag, returns_lines[index], docstring, operation)
+                next
+              end
+
+              if tag.types.nil?
+                unless tag.text.nil?
+                  types = [tag.text]
+                end
+              else
+                types = [tag.types.to_s.tr('"', "")]
+              end
+              return unless types
+
+              SwaggerYard::CanvasAdapter.warn_unresolved_returns(operation.operation_id, types.first)
+
               desc = tag.text.to_s.strip
 
               # Extract model name from types before building schema
@@ -809,6 +1235,29 @@ module SwaggerYard
                 track_operation_model(operation.operation_id, model_name, response_schema)
               end
             end
+          end
+
+          # The text after each "@returns" in the raw docstring, in tag order
+          def returns_tag_lines(docstring)
+            docstring.all.to_s.scan(/^@returns\b[ \t]*(.*)$/).map { |(text)| text.strip }
+          end
+
+          # An inline object @returns is always an object response: a wrapper schema
+          # when every entry is typeable, otherwise a plain mapping
+          def process_inline_object_returns(tag, text, docstring, operation)
+            operation.add_response_type(SwaggerYard::Type.new("object"), tag.text.to_s.strip)
+
+            properties = SwaggerYard::CanvasAdapter.inline_object_properties(text)
+            return unless properties
+
+            wrapper_name = SwaggerYard::CanvasAdapter.register_wrapper_schema(wrapper_schema_name(docstring, operation), properties, :returns)
+            track_operation_model(operation.operation_id, wrapper_name, "object") if wrapper_name
+          end
+
+          # Operations are cloned per route and renamed, but the docstring still
+          # belongs to the documented method, whose name is the Rails action
+          def wrapper_schema_name(docstring, operation)
+            SwaggerYard::CanvasAdapter.wrapper_schema_name(operation.api_group.resource, docstring.object.name)
           end
 
           def add_pagination_parameters_if_needed(_docstring, operation, yard_object)
@@ -890,9 +1339,17 @@ module SwaggerYard
             false
           rescue
             # If we can't get the source, fall back to conservative heuristic
-            # Only add pagination to endpoints that end with _index or _list
+            # Original check expected exact match and not ends with _index or _list as comment intended.
+            # But, also unique naming breaks this now. Feature parity could be starts with, and assumes rest of name is
+            # context or lookup, but won't catch mistakes like GradingStandardsApi context_index_for_accounts.
+            # Visual scan shows match on any word in name that is index or list won't catch false positives in current
+            # state.
             operation_id = yard_object.name.to_s
-            %w[index list].include?(operation_id)
+            if operation_id.split("_").intersect?(%w[index list])
+              return true
+            end
+
+            false
           end
 
           def extract_model_name_from_types(types)
@@ -925,7 +1382,7 @@ module SwaggerYard
 
             SwaggerYard::CanvasAdapter.operation_models[operation_id] ||= {}
             SwaggerYard::CanvasAdapter.operation_models[operation_id]["200"] = {
-              model: model_name,
+              model: SwaggerYard::CanvasAdapter.resolve_schema_name(model_name),
               is_array: response_schema.include?("array")
             }
           end
@@ -954,10 +1411,29 @@ module SwaggerYard
             example_text = example_resp.text.to_s.strip
             return if example_text.empty?
 
+            infer_wrapped_list_response(docstring, operation, example_text)
+
             parsed_example = parse_json_example(example_text)
             op_id = operation.operation_id
             SwaggerYard::CanvasAdapter.canvas_examples[op_id] ||= {}
             SwaggerYard::CanvasAdapter.canvas_examples[op_id][:response] = parsed_example
+          end
+
+          # Treats a { "<key>": [<Model>] } example as an implied @returns of a
+          # wrapper schema when the operation documents no @returns of its own
+          def infer_wrapped_list_response(docstring, operation, example_text)
+            return unless docstring.tags(:returns).empty?
+
+            key, schema_name = SwaggerYard::CanvasAdapter.wrapped_list_example(example_text)
+            return unless key
+
+            properties = { key => { "type" => "array", "items" => { "$ref" => "#/components/schemas/#{schema_name}" } } }
+            wrapper_name = SwaggerYard::CanvasAdapter.register_wrapper_schema(wrapper_schema_name(docstring, operation), properties, :example_response)
+            return unless wrapper_name
+
+            operation.add_response_type(SwaggerYard::Type.new("object"), operation.default_response.description)
+            track_operation_model(operation.operation_id, wrapper_name, "object")
+            SwaggerYard::CanvasAdapter.wrapped_list_operations << operation.operation_id
           end
 
           def parse_json_example(text)
@@ -1115,7 +1591,8 @@ module SwaggerYard
 
             nested_params[parent_name] ||= { properties: {}, required: [] }
             nested_params[parent_name][:properties][child_name] = param
-            nested_params[parent_name][:required] << child_name if param[:required]
+            # Don't add "*" to required list since it's a wildcard
+            nested_params[parent_name][:required] << child_name if param[:required] && child_name != "*"
           end
 
           def process_flat_params(flat_params, properties, required_fields)
@@ -1183,8 +1660,15 @@ module SwaggerYard
               properties: nested_properties
             }
 
+            # Check for wildcard property "*"
+            if nested_properties.key?("*")
+              nested_properties.delete("*")
+              nested_schema["additionalProperties"] = true
+            end
+
             # Only include required array if there are required properties (OpenAPI spec requires at least 1 item)
             required_list = nested_data[:required].uniq
+            required_list.delete("*") # Remove wildcard from required if present
             nested_schema[:required] = required_list unless required_list.empty?
 
             nested_schema
@@ -1213,29 +1697,35 @@ module SwaggerYard
 
               if schema_info[:properties].present?
                 props = {}
+                has_wildcard = false
                 schema_info[:properties].each do |name, prop_info|
-                  props[name.to_s] = if prop_info.is_a?(Hash)
-                                       result = prop_info.transform_keys(&:to_s)
-                                       # Recursively transform nested properties if present
-                                       if result["properties"].is_a?(Hash)
-                                         result["properties"] = result["properties"].transform_keys(&:to_s)
-                                       end
-                                       # Clean up required array (OpenAPI requires at least 1 item)
-                                       if result["required"].is_a?(Array)
-                                         unique_required = result["required"].map(&:to_s).uniq
-                                         if unique_required.empty?
-                                           result.delete("required")
-                                         else
-                                           result["required"] = unique_required
+                  if name.to_s == "*"
+                    has_wildcard = true
+                  else
+                    props[name.to_s] = if prop_info.is_a?(Hash)
+                                         result = prop_info.transform_keys(&:to_s)
+                                         # Recursively transform nested properties if present
+                                         if result["properties"].is_a?(Hash)
+                                           result["properties"] = result["properties"].transform_keys(&:to_s)
                                          end
+                                         # Clean up required array (OpenAPI requires at least 1 item)
+                                         if result["required"].is_a?(Array)
+                                           unique_required = result["required"].map(&:to_s).uniq
+                                           if unique_required.empty?
+                                             result.delete("required")
+                                           else
+                                             result["required"] = unique_required
+                                           end
+                                         end
+                                         result
+                                       else
+                                         # Simple type string
+                                         { "type" => prop_info, "description" => "" }
                                        end
-                                       result
-                                     else
-                                       # Simple type string
-                                       { "type" => prop_info, "description" => "" }
-                                     end
+                  end
                 end
-                schema["properties"] = props
+                schema["properties"] = props unless props.empty?
+                schema["additionalProperties"] = true if has_wildcard
               end
 
               unless schema_info[:required].empty?
@@ -1300,7 +1790,7 @@ module SwaggerYard
           end
 
           def model_schema_exists?(model_name)
-            SwaggerYard::CanvasAdapter.canvas_schemas.key?(model_name)
+            !SwaggerYard::CanvasAdapter.resolve_schema_name(model_name).nil?
           end
 
           # rubocop:disable Naming/PredicateMethod

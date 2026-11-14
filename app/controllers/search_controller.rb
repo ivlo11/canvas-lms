@@ -19,6 +19,71 @@
 #
 
 # @API Search
+#
+# @model Recipient
+#     {
+#       "id": "Recipient",
+#       "description": "A user or a context (course, section, group, or a synthetic group of a course's users) that the current user can send messages to. Users carry full_name, pronouns, common_courses and common_groups; contexts carry type \"context\", user_count or item_count, permissions and context_name.",
+#       "properties": {
+#         "id": {
+#           "description": "The unique identifier for the user (an integer), or for the context (a string prefixed by its type, for example \"course_5\" or \"group_1\").",
+#           "example": "course_5"
+#         },
+#         "name": {
+#           "description": "The name of the context or short name of the user.",
+#           "example": "greg",
+#           "type": "string"
+#         },
+#         "full_name": {
+#           "description": "Only set for users. The full name of the user.",
+#           "example": "greg jones",
+#           "type": "string"
+#         },
+#         "pronouns": {
+#           "description": "Only set for users. The user's pronouns, if any.",
+#           "example": "he/him",
+#           "type": "string"
+#         },
+#         "avatar_url": {
+#           "description": "Avatar image url for the user/context.",
+#           "example": "http://www.example.com/images/messages/avatar-50.png",
+#           "type": "string"
+#         },
+#         "type": {
+#           "description": "Only set for contexts: \"context\".",
+#           "example": "context",
+#           "type": "string"
+#         },
+#         "user_count": {
+#           "description": "Only set for contexts. The number of users in the context.",
+#           "example": 3,
+#           "type": "integer"
+#         },
+#         "item_count": {
+#           "description": "Only set for synthetic contexts that group sections or groups (for example \"course_5_groups\"). The number of items in the group.",
+#           "example": 2,
+#           "type": "integer"
+#         },
+#         "context_name": {
+#           "description": "Only set for some contexts. The name of the context's parent course.",
+#           "example": "the course",
+#           "type": "string"
+#         },
+#         "permissions": {
+#           "description": "Only set for contexts. The requested permissions the current user has in the context.",
+#           "type": "object"
+#         },
+#         "common_courses": {
+#           "description": "Only set for users. Course ids the user shares with the current user, mapped to the user's enrollment types.",
+#           "type": "object"
+#         },
+#         "common_groups": {
+#           "description": "Only set for users. Group ids the user shares with the current user, mapped to the user's roles.",
+#           "type": "object"
+#         }
+#       }
+#     }
+#
 
 class SearchController < ApplicationController
   include SearchHelper
@@ -111,6 +176,8 @@ class SearchController < ApplicationController
   # @response_field permissions[] Only set for contexts. Mapping of requested
   #   permissions that the context grants the current user, e.g.
   #   { send_messages: true }
+  #
+  # @returns [Recipient]
   def recipients
     GuardRail.activate(:secondary) do
       # admins may not be able to see the course listed at the top level (since

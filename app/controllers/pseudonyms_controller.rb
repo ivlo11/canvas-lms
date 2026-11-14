@@ -20,6 +20,75 @@
 
 # @API Logins
 # API for creating and viewing user logins under an account
+#
+# @model Login
+#     {
+#       "id": "Login",
+#       "description": "A user's login (pseudonym) on an account.",
+#       "required": ["id", "user_id", "account_id", "unique_id"],
+#       "properties": {
+#         "id": {
+#           "description": "The unique, numeric ID for the login.",
+#           "example": 2,
+#           "type": "integer",
+#           "format": "int64"
+#         },
+#         "user_id": {
+#           "description": "The unique ID of the login's user.",
+#           "example": 2,
+#           "type": "integer",
+#           "format": "int64"
+#         },
+#         "account_id": {
+#           "description": "The ID of the login's account.",
+#           "example": 1,
+#           "type": "integer",
+#           "format": "int64"
+#         },
+#         "unique_id": {
+#           "description": "The unique ID for the login.",
+#           "example": "belieber@example.com",
+#           "type": "string"
+#         },
+#         "sis_user_id": {
+#           "description": "The login's unique SIS ID. Only included if the caller can read SIS data.",
+#           "example": "SIS-123",
+#           "type": "string"
+#         },
+#         "integration_id": {
+#           "description": "The login's unique integration ID. Only included if the caller can read SIS data.",
+#           "example": "ABC-123",
+#           "type": "string"
+#         },
+#         "authentication_provider_id": {
+#           "description": "The ID of the authentication provider that this login is associated with.",
+#           "example": 1,
+#           "type": "integer",
+#           "format": "int64"
+#         },
+#         "authentication_provider_type": {
+#           "description": "The type of the authentication provider that this login is associated with. Only included when the login has a provider.",
+#           "example": "facebook",
+#           "type": "string"
+#         },
+#         "created_at": {
+#           "description": "When the login was created.",
+#           "example": "2012-05-30T17:45:25Z",
+#           "type": "datetime"
+#         },
+#         "workflow_state": {
+#           "description": "The current status of the login.",
+#           "example": "active",
+#           "type": "string"
+#         },
+#         "declared_user_type": {
+#           "description": "The declared intention for this user's role.",
+#           "example": "student",
+#           "type": "string"
+#         }
+#       }
+#     }
+#
 class PseudonymsController < ApplicationController
   before_action :get_context, only: [:index, :create]
   skip_before_action :require_user, only: %i[change_password confirm_change_password forgot_password]
@@ -58,6 +127,8 @@ class PseudonymsController < ApplicationController
   #       "declared_user_type": null,
   #     }
   #   ]
+  #
+  # @returns [Login]
   def index
     return unless get_user && authorized_action(@user, @current_user, :read)
 

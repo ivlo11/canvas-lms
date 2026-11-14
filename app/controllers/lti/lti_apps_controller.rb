@@ -32,8 +32,8 @@ module Lti
   #       },
   #       "definition_id": {
   #         "description": "The Canvas ID of the tool",
-  #         "example": "123",
-  #         "type": "string"
+  #         "example": 123,
+  #         "type": "integer"
   #       },
   #       "name": {
   #         "description": "The display name of the tool for the given placement",
@@ -116,6 +116,7 @@ module Lti
     # @argument placements[Array] The placements to return launch definitions for. If not provided, an empty list will be returned.
     # @argument only_visible[Boolean] If true, only return launch definitions that are visible to the current user. Defaults to true.
     # @argument include_context_name[Boolean] If true, includes the deployment context name (account or course) of the tool definition in the response. This helps distinguish between tools with identical names deployed at different levels of the context hierarchy. Defaults to false.
+    # @returns [Lti::LaunchDefinition]
     def launch_definitions
       placements = params["placements"] || []
       if authorized_for_launch_definitions(@context, @current_user, placements)

@@ -110,9 +110,8 @@
 #         },
 #         "session_id": {
 #           "description": "The session identifier for the user session that made the request",
-#           "example": "b4f5c8e0-e2f3-0130-51e0-02e33aa501ef",
-#           "type": "string",
-#           "format": "uuid"
+#           "example": "0ca9e5e58964bc58d4c1a0a8df509805",
+#           "type": "string"
 #         },
 #        "developer_key_id": {
 #          "description": "The ID of the developer key that authorized the API request, if applicable",

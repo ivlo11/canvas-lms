@@ -344,7 +344,7 @@ module Lti
     # @argument []available [boolean] The state of this tool in this context. `true` shows the tool in this context and all contexts
     #   below it. `false` disables the tool for this context and all contexts below it. Defaults to true.
     #
-    # @returns Lti::ContextControl
+    # @returns [Lti::ContextControl]
     #
     # @example_request
     #

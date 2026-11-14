@@ -19,9 +19,9 @@
 
 # @API What If Grades
 #
-# @model Grade
+# @model WhatIfGrade
 #     {
-#       "id": "Grade",
+#       "id": "WhatIfGrade",
 #       "properties": {
 #         "grade": {
 #           "description": "The grade for the course",
@@ -103,13 +103,13 @@
 #       "id": "Grades",
 #       "properties": {
 #         "current": {
-#            "$ref": "Grade"
+#            "$ref": "WhatIfGrade"
 #         },
 #         "current_groups": {
 #            "$ref": "GradeGroup"
 #         },
 #         "final": {
-#            "$ref": "Grade"
+#            "$ref": "WhatIfGrade"
 #         },
 #         "final_groups": {
 #            "$ref": "GradeGroup"
@@ -117,9 +117,9 @@
 #       }
 #     }
 #
-# @model Submission
+# @model WhatIfSubmission
 #     {
-#       "id": "Submission",
+#       "id": "WhatIfSubmission",
 #       "properties": {
 #         "id": {
 #           "description": "The ID of the submission",
@@ -209,7 +209,7 @@ class WhatIfGradesApiController < ApplicationController
   #       }
   #   }
   #
-  # @returns {"grades": [Grades], "submission": Submission}
+  # @returns {"grades": [Grades], "submission": WhatIfSubmission}
   def update
     submission = @current_user.submissions.find(params[:id])
     return render_unauthorized_action unless submission.grants_right?(@current_user, :submit)

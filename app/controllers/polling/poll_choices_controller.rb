@@ -24,17 +24,17 @@ module Polling
   # @model PollChoice
   #   {
   #     "id": "PollChoice",
-  #     "required": ["id", "poll_id", "text"],
+  #     "required": ["id", "text"],
   #     "properties": {
   #       "id": {
   #         "description": "The unique identifier for the poll choice.",
-  #         "example": 1023,
-  #         "type": "integer"
+  #         "example": "1023",
+  #         "type": "string"
   #       },
   #       "poll_id": {
   #         "description": "The id of the poll this poll choice belongs to.",
-  #         "example": 1779,
-  #         "type": "integer"
+  #         "example": "1779",
+  #         "type": "string"
   #       },
   #       "is_correct": {
   #         "description": "Specifies whether or not this poll choice is a 'correct' choice.",

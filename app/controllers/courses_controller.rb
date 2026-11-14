@@ -72,6 +72,87 @@
 #       }
 #     }
 #
+# @model UserProgress
+#     {
+#       "id": "UserProgress",
+#       "description": "A user's display fields with their progress in the course.",
+#       "properties": {
+#         "id": {
+#           "description": "The ID of the user.",
+#           "example": 2,
+#           "type": "integer",
+#           "format": "int64"
+#         },
+#         "anonymous_id": {
+#           "description": "The anonymous ID of the user, for use in anonymous grading.",
+#           "example": "b",
+#           "type": "string"
+#         },
+#         "display_name": {
+#           "description": "The name of the user, as it should be displayed.",
+#           "example": "Test Student 1",
+#           "type": "string"
+#         },
+#         "avatar_image_url": {
+#           "description": "The URL of the user's avatar image.",
+#           "example": "https://<canvas>/images/messages/avatar-50.png",
+#           "type": "string"
+#         },
+#         "html_url": {
+#           "description": "The URL of the user's page in the course.",
+#           "example": "https://<canvas>/courses/1/users/1",
+#           "type": "string"
+#         },
+#         "pronouns": {
+#           "description": "The user's pronouns, if pronouns are enabled.",
+#           "example": "they/them",
+#           "type": "string"
+#         },
+#         "fake_student": {
+#           "description": "Optional: true if the user is the course's test student. Only included for test students.",
+#           "example": true,
+#           "type": "boolean"
+#         },
+#         "progress": {
+#           "description": "The user's progress through the course's module requirements. If it can't be evaluated for this user, it holds an error instead.",
+#           "$ref": "CourseProgress"
+#         }
+#       }
+#     }
+#
+# @model CourseGradingPeriod
+#     {
+#       "id": "CourseGradingPeriod",
+#       "description": "A grading period of the course's term, as included with include[]=grading_periods",
+#       "properties": {
+#         "id": {
+#           "description": "The unique identifier for the grading period.",
+#           "example": 1023,
+#           "type": "integer"
+#         },
+#         "title": {
+#           "description": "The title for the grading period.",
+#           "example": "First Block",
+#           "type": "string"
+#         },
+#         "start_date": {
+#           "description": "The start date of the grading period.",
+#           "example": "2014-01-07T15:04:00Z",
+#           "type": "datetime"
+#         },
+#         "end_date": {
+#           "description": "The end date of the grading period.",
+#           "example": "2014-05-07T17:07:00Z",
+#           "type": "datetime"
+#         },
+#         "workflow_state": {
+#           "description": "The state of the grading period: active or deleted.",
+#           "example": "active",
+#           "type": "string"
+#         }
+#       }
+#     }
+#
 # @model Course
 #     {
 #       "id": "Course",
@@ -146,7 +227,7 @@
 #         "grading_periods": {
 #           "description": "A list of grading periods associated with the course",
 #           "type": "array",
-#           "items": { "$ref": "GradingPeriod" }
+#           "items": { "$ref": "CourseGradingPeriod" }
 #         },
 #         "grading_standard_id": {
 #            "description": "the grading standard associated with the course",
@@ -1476,6 +1557,8 @@ class CoursesController < ApplicationController
   # Returns the current user's course-specific todo items.
   #
   # For full documentation, see the API documentation for the user todo items, in the user api.
+  #
+  # @returns [TodoItem]
   def todo_items
     GuardRail.activate(:secondary) do
       get_context
@@ -4024,6 +4107,8 @@ class CoursesController < ApplicationController
   #       }
   #     }
   #   ]
+  #
+  # @returns [UserProgress]
   def bulk_user_progress
     get_context
     return unless authorized_action(@context, @current_user, :view_all_grades)

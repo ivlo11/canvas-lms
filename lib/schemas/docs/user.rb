@@ -122,6 +122,38 @@ module Schemas::Docs
             description: "Optional: This field is only returned if pronouns are enabled, and will return the pronouns of the user.",
             example: "he/him",
             type: "string"
+          },
+          effective_locale: {
+            description: "Optional: This field is only returned in certain API calls, and only for the current user. It will return the locale the user sees Canvas in, in RFC 5646 format.",
+            example: "en",
+            type: "string"
+          },
+          uuid: {
+            description: "Optional: This field is only returned in certain API calls (for example with include[]=uuid), and will return the user's Canvas UUID.",
+            example: "WvAHhY5FINzq5IyRIJybGeiXyFkG3SqHUPb7jZY5",
+            type: "string"
+          },
+          permissions: {
+            description: "Optional: This field is only returned in certain API calls, and will return a non-comprehensive list of permissions for the user.",
+            example: { can_update_name: true, can_update_avatar: false, limit_parent_app_web_access: false },
+            type: "object",
+            properties: {
+              can_update_name: {
+                description: "Whether the user can update their name.",
+                example: true,
+                type: "boolean"
+              },
+              can_update_avatar: {
+                description: "Whether the user can update their avatar.",
+                example: false,
+                type: "boolean"
+              },
+              limit_parent_app_web_access: {
+                description: "Whether the user can interact with Canvas web from the Canvas Parent app.",
+                example: false,
+                type: "boolean"
+              }
+            }
           }
         }
       }

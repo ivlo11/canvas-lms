@@ -148,7 +148,7 @@
 #         "points_possible": {
 #           "description": "The total point value given to the quiz",
 #           "example": 20,
-#           "type": "integer"
+#           "type": "number"
 #         },
 #         "cant_go_back": {
 #           "description": "lock questions after answering? only valid if one_question_at_a_time=true",

@@ -193,13 +193,15 @@
 #           "type": "string"
 #         },
 #         "created_by": {
-#           "description": "The user that created this binding",
+#           "description": "The user that created this binding. If a string, this binding was created by Instructure.",
 #           "example": { "type": "User" },
+#           "type": "string|User",
 #           "$ref": "User"
 #         },
 #         "updated_by": {
-#           "description": "The user that last updated this binding",
+#           "description": "The user that last updated this binding. If a string, this binding was last updated by Instructure.",
 #           "example": { "type": "User" },
+#           "type": "string|User",
 #           "$ref": "User"
 #         }
 #       }
@@ -935,7 +937,7 @@
 #           "type": "array",
 #           "items": {
 #             "type": "array",
-#             "items": {"type": "object"}
+#             "items": {}
 #           }
 #         },
 #         "lti_overlay_id": {
@@ -947,6 +949,48 @@
 #           "description": "The id of the account this version is for",
 #           "example": 1,
 #           "type": "integer"
+#         }
+#       }
+#     }
+#
+# @model Lti::RegistrationHistoryEntry
+#     {
+#       "id": "Lti::RegistrationHistoryEntry",
+#       "description": "A change made to an LTI registration, its configuration or its context controls",
+#       "properties": {
+#         "id": { "description": "The Canvas id of the history entry", "example": 1, "type": "integer" },
+#         "root_account_id": { "description": "The Canvas id of the root account", "example": 1, "type": "integer" },
+#         "lti_registration_id": { "description": "The id of the registration this entry is for", "example": 1, "type": "integer" },
+#         "created_at": { "description": "Timestamp of the entry's creation", "example": "2024-01-01T00:00:00Z", "type": "datetime" },
+#         "updated_at": { "description": "Timestamp of the entry's last update", "example": "2024-01-01T00:00:00Z", "type": "datetime" },
+#         "diff": {
+#           "description": "The changes made, keyed by the changed part of the registration",
+#           "example": { "context_controls": [["+", [2], { "id": 2, "available": true }]] },
+#           "type": "object"
+#         },
+#         "update_type": {
+#           "description": "What caused the change: manual_edit, registration_update, bulk_control_create or control_edit",
+#           "example": "control_edit",
+#           "type": "string"
+#         },
+#         "comment": { "description": "A comment entered with the change, if any", "example": "Enabled for the course", "type": "string" },
+#         "old_configuration": { "description": "The registration's configuration before the change, for configuration changes", "example": {}, "type": "object" },
+#         "new_configuration": { "description": "The registration's configuration after the change, for configuration changes", "example": {}, "type": "object" },
+#         "created_by": {
+#           "description": "The user that made the change. If a string, the change was made by Instructure.",
+#           "example": "Instructure",
+#           "type": "string|User",
+#           "$ref": "User"
+#         },
+#         "old_controls_by_deployment": {
+#           "description": "The affected deployments and their context controls before the change, for control changes",
+#           "type": "array",
+#           "items": { "$ref": "Lti::Deployment" }
+#         },
+#         "new_controls_by_deployment": {
+#           "description": "The affected deployments and their context controls after the change, for control changes",
+#           "type": "array",
+#           "items": { "$ref": "Lti::Deployment" }
 #         }
 #       }
 #     }
