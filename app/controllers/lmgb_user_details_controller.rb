@@ -18,6 +18,56 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+# @model LmgbUserDetails
+#     {
+#       "id": "LmgbUserDetails",
+#       "description": "A user's details for the Learning Mastery Gradebook, in the context of a course",
+#       "required": ["course", "user"],
+#       "properties": {
+#         "course": {
+#           "description": "The course",
+#           "type": "object",
+#           "properties": {
+#             "name": {
+#               "description": "The name of the course",
+#               "example": "Course's Name",
+#               "type": "string"
+#             }
+#           }
+#         },
+#         "user": {
+#           "description": "The user",
+#           "type": "object",
+#           "properties": {
+#             "sections": {
+#               "description": "The sections of the course the user is enrolled in, ordered by name",
+#               "type": "array",
+#               "items": {
+#                 "type": "object",
+#                 "properties": {
+#                   "id": {
+#                     "description": "The ID of the section",
+#                     "example": 1,
+#                     "type": "integer"
+#                   },
+#                   "name": {
+#                     "description": "The name of the section",
+#                     "example": "Section 1",
+#                     "type": "string"
+#                   }
+#                 }
+#               }
+#             },
+#             "last_login": {
+#               "description": "When the user last logged in with any of their logins, or null if never",
+#               "example": "2024-06-01T12:00:00Z",
+#               "type": ["datetime", "null"]
+#             }
+#           }
+#         }
+#       }
+#     }
+#
 class LmgbUserDetailsController < ApplicationController
   include Outcomes::Enrollments
 
@@ -31,7 +81,7 @@ class LmgbUserDetailsController < ApplicationController
   # @argument id [Required, String]
   #   The ID of the user to retrieve details for
   #
-  # @returns OutcomeRollupLinks
+  # @returns LmgbUserDetails
   #
   # @example_request
   #   curl https://<canvas>/api/v1/courses/1/users/2/lmgb_user_details \
@@ -56,8 +106,6 @@ class LmgbUserDetailsController < ApplicationController
   #       "last_login": "2024-06-01T12:00:00Z"
   #     }
   #   }
-  # @returns OutcomeRollupLinks
-  # @returns OutcomeRollupLinks
   def show
     user = User.find(params[:id])
 

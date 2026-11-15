@@ -177,8 +177,6 @@ class EportfoliosApiController < ApplicationController
   # Get details for the pages of an ePortfolio
   #
   # @returns [ePortfolioPage]
-  # @returns [ePortfolioPage]
-  # @returns [ePortfolioPage]
   def pages
     portfolio = Eportfolio.find(params[:eportfolio_id])
     return unless authorized_action(portfolio, @current_user, :read)
