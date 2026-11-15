@@ -7,7 +7,7 @@ what the API returns. Each one fails only on findings that
 
 | Check | Runs | Needs a database | Catches |
 |---|---|---|---|
-| `Lint/ApiDocs` cop | `script/rlint` and the pre-commit hook, on changed controllers; CI on every controller | No | An `@API` action with no `@returns`, and `@model` JSON that doesn't parse |
+| `Lint/ApiDocs` cop | `script/rlint` and the pre-commit hook, on changed controllers; CI on every controller | No | An `@API` action with no `@returns` or with the same `@returns` twice, and `@model` JSON that doesn't parse |
 | `script/api_docs_lint` | CI, and the pre-commit hook when enabled | No | Docs that a change makes disagree with the traced code |
 | Response check | API specs, when `API_DOCS_CHECK` is set | Yes | Fields, types and nulls a spec response has but the docs don't |
 | `script/api_docs_audit` | Manually | Recorded responses | All of the above, across every action |

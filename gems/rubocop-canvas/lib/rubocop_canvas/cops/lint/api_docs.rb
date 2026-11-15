@@ -24,12 +24,14 @@ require File.join(canvas_root, "lib/api_docs_audit/exceptions")
 module RuboCop
   module Cop
     module Lint
-      # Flags an @API action with no @returns, and @model JSON that doesn't
-      # parse, unless lib/api_docs_audit/exceptions.yml lists it. Reads the
+      # Flags an @API action with no @returns or with the same @returns twice,
+      # and @model JSON that doesn't parse. A missing @returns or malformed
+      # @model passes when lib/api_docs_audit/exceptions.yml lists it. Reads the
       # comments the way script/api_docs_audit and the OpenAPI generator do.
       class ApiDocs < Base
         RETURNS_MSG = "Document this @API action's response with @returns, " \
                       "or list it in lib/api_docs_audit/exceptions.yml with a reason."
+        REPEATED_RETURNS_MSG = "This @returns repeats one above it for the same action; remove it."
         MODEL_MSG = "This @model's JSON doesn't parse, so the generator drops the model."
         CONTROLLER = %r{(?:\A|/)app/controllers/(.+)_controller\.rb\z}
 
@@ -53,12 +55,26 @@ module RuboCop
         def check_action(lines, index, controller, name)
           comments = parser.comment_block_above(lines, index)
           return unless comments.any? { |comment| comment.match?(parser::API_TAG) }
+
+          check_repeated_returns(comments, index - comments.size)
           return if parser.returns_documented?(comments)
 
           action = "#{controller}##{name}"
           return if %w[missing_returns missing_returns_no_model].any? { |kind| exceptions.listed?(kind:, action:) }
 
           add_offense(line_range(index), message: RETURNS_MSG)
+        end
+
+        # A @returns line identical to an earlier one in the block adds nothing
+        def check_repeated_returns(comments, first)
+          seen = []
+          comments.each_with_index do |comment, offset|
+            returns = comment[parser::RETURNS_TAG, 1]&.strip
+            next unless returns
+
+            add_offense(line_range(first + offset), message: REPEATED_RETURNS_MSG) if seen.include?(returns)
+            seen << returns
+          end
         end
 
         def check_model(lines, index, name)
