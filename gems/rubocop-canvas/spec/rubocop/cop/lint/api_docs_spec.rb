@@ -48,6 +48,46 @@ describe RuboCop::Cop::Lint::ApiDocs do
       RUBY
     end
 
+    it "flags a @returns repeated for the same action" do
+      expect_offense(<<~RUBY, path)
+        class WidgetsController < ApplicationController
+          # @API Show a widget
+          # @returns Widget
+          #
+          # @example_request
+          #   curl https://<canvas>/api/v1/widgets/1
+          # @returns Widget
+          ^^^^^^^^^^^^^^^^^ Lint/ApiDocs: This @returns repeats one above it for the same action; remove it.
+          def show; end
+        end
+      RUBY
+    end
+
+    it "accepts different @returns for one action" do
+      expect_no_offenses(<<~RUBY, path)
+        class WidgetsController < ApplicationController
+          # @API Start a widget query
+          # @returns WidgetQuery
+          # @returns ApiErrorResponse
+          def query; end
+        end
+      RUBY
+    end
+
+    it "accepts the same @returns on different actions" do
+      expect_no_offenses(<<~RUBY, path)
+        class WidgetsController < ApplicationController
+          # @API Show a widget
+          # @returns Widget
+          def show; end
+
+          # @API Update a widget
+          # @returns Widget
+          def update; end
+        end
+      RUBY
+    end
+
     it "accepts an example response wrapping a list of a model" do
       expect_no_offenses(<<~RUBY, path)
         class WidgetsController < ApplicationController
